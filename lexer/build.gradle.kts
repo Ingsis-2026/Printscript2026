@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm")
+    id("printscript.kotlin-library-conventions")
 }
 
 dependencies {
