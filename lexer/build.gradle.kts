@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":token"))
+    implementation(project(":commons"))
 }

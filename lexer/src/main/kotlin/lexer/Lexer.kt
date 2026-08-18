@@ -1,7 +1,5 @@
 package lexer
 
-import lexer.mapper.PatternMatcher
-import lexer.mapper.TokenMapper
 import token.Token
 import token.TokenPosition
 import token.TokenType
@@ -23,29 +21,27 @@ class Lexer(private val classifier: TokenMapper) {
     private fun processLine(
         lineContent: String,
         row: Int,
-        tokens: MutableList<Token>
+        tokens: MutableList<Token>,
     ) {
         val matcher = createMatcher(lineContent)
         while (matcher.find()) {
             val tokenValue = matcher.group()
             val tokenType = classifier.classify(tokenValue)
 
-            when (tokenType) {
-                TokenType.UNKNOWN -> {
-                    throw IllegalArgumentException("Invalid character found: '$tokenValue'")
-                }
-                TokenType.LITERAL -> {
-                    val actualValue = extractTokenValue(tokenType, matcher)
-                    val startPos = TokenPosition(row, matcher.start() + 1)
-                    val endPos = TokenPosition(row, matcher.end() - 1)
-                    tokens.add(Token(tokenType, actualValue, startPos, endPos))
-                }
-                else -> {
-                    val actualValue = extractTokenValue(tokenType, matcher)
-                    val startPos = TokenPosition(row, matcher.start())
-                    val endPos = TokenPosition(row, matcher.end())
-                    tokens.add(Token(tokenType, actualValue, startPos, endPos))
-                }
+            if (tokenType == TokenType.LITERAL) {
+                val actualValue = extractTokenValue(tokenType, matcher)
+                val startPos = TokenPosition(row, matcher.start() + 1)
+                val endPos = TokenPosition(row, matcher.end() - 1)
+                tokens.add(Token(tokenType, actualValue, startPos, endPos))
+            }
+
+            if (tokenType != TokenType.UNKNOWN) {
+                val actualValue = extractTokenValue(tokenType, matcher)
+                val startPos = TokenPosition(row, matcher.start())
+                val endPos = TokenPosition(row, matcher.end())
+                tokens.add(Token(tokenType, actualValue, startPos, endPos))
+            } else {
+                throw IllegalArgumentException("Carácter inválido encontrado: '$tokenValue'")
             }
         }
     }
@@ -57,7 +53,7 @@ class Lexer(private val classifier: TokenMapper) {
 
     private fun extractTokenValue(
         tokenType: TokenType,
-        matcher: Matcher
+        matcher: Matcher,
     ): String {
         return when (tokenType) {
             TokenType.STRINGLITERAL -> {

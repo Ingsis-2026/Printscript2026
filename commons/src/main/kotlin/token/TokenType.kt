@@ -1,0 +1,20 @@
+package token
+
+enum class TokenType {
+    IDENTIFIER,
+    KEYWORD,
+    PUNCTUATOR,
+    OPERATOR,
+    STRINGLITERAL,
+    NUMBERLITERAL,
+    BOOLEANLITERAL,
+    DECLARATOR,
+    ASSIGNATION,
+    PARENTHESIS,
+    BOOLEAN,
+    DATA_TYPE,
+    FUNCTION,
+    CONDITIONAL,
+    LITERAL,
+    UNKNOWN,
+}

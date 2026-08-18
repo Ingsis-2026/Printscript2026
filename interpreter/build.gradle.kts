@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":token"))
-    implementation(project(":ast"))
+    implementation(project(":commons"))
+    testImplementation(project(":lexer"))
+    testImplementation(project(":parser"))
 }

@@ -3,8 +3,7 @@ plugins {
 }
 rootProject.name = "Printscript2026"
 
-include(":token")
-include(":ast")
 include(":lexer")
 include(":parser")
 include(":interpreter")
+include(":commons")
