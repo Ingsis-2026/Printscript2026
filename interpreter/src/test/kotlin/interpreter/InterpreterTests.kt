@@ -1120,4 +1120,29 @@ class InterpreterTests {
         val result = interpreter.execute(nilNode)
         assertNull(result, "NilNode should return null")
     }
+
+    @Test
+    fun `test interpreter version 1_0 throws on conditional`() {
+        val version10Interpreter = Interpreter.forVersion("1.0", printer, reader)
+        val condition = LiteralNode("true", TokenType.BOOLEANLITERAL, position)
+        val thenBlock = PrintNode(LiteralNode("Condition is true", TokenType.STRINGLITERAL, position), position)
+        val elseBlock = PrintNode(LiteralNode("Condition is false", TokenType.STRINGLITERAL, position), position)
+        val node = ConditionalNode(condition, thenBlock, elseBlock, position)
+
+        assertThrows(RuntimeException::class.java) {
+            version10Interpreter.execute(node)
+        }
+    }
+
+    @Test
+    fun `test custom node evaluator plugin`() {
+        val customEvaluator = object : interpreter.evaluators.NodeEvaluator {
+            override fun canEvaluate(node: ast.ASTNode): Boolean = node is ast.NilNode
+            override fun evaluate(node: ast.ASTNode, interpreter: Interpreter): Any = "Custom Nil Evaluated!"
+        }
+
+        val interpreter = Interpreter(printer, reader, listOf(customEvaluator))
+        val result = interpreter.execute(NilNode)
+        assertEquals("Custom Nil Evaluated!", result)
+    }
 }

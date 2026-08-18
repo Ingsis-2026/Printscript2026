@@ -258,4 +258,41 @@ class ParserTests {
             parser.execute(tokens)
         }
     }
+
+    @Test
+    fun `test parser version 1_0 does not support conditionals`() {
+        val version10Parser = Parser.forVersion("1.0")
+        val tokens = listOf(
+            Token(TokenType.CONDITIONAL, "if", startPos, endPos),
+            Token(TokenType.PARENTHESIS, "(", startPos, endPos),
+            Token(TokenType.BOOLEANLITERAL, "true", startPos, endPos),
+            Token(TokenType.PARENTHESIS, ")", startPos, endPos),
+            Token(TokenType.PUNCTUATOR, "{", startPos, endPos),
+            Token(TokenType.KEYWORD, "println", startPos, endPos),
+            Token(TokenType.PARENTHESIS, "(", startPos, endPos),
+            Token(TokenType.NUMBERLITERAL, "1", startPos, endPos),
+            Token(TokenType.PARENTHESIS, ")", startPos, endPos),
+            Token(TokenType.PUNCTUATOR, ";", startPos, endPos),
+            Token(TokenType.PUNCTUATOR, "}", startPos, endPos),
+        )
+
+        assertThrows<Exception> {
+            version10Parser.execute(tokens)
+        }
+    }
+
+    @Test
+    fun `test parser with custom injected factories`() {
+        val customParser = Parser(listOf(factories.PrintlnFactory()))
+        val printTokens = listOf(
+            Token(TokenType.FUNCTION, "println", startPos, endPos),
+            Token(TokenType.PARENTHESIS, "(", startPos, endPos),
+            Token(TokenType.NUMBERLITERAL, "42", startPos, endPos),
+            Token(TokenType.PARENTHESIS, ")", startPos, endPos),
+            Token(TokenType.PUNCTUATOR, ";", startPos, endPos),
+        )
+        val result = customParser.execute(printTokens)
+        assertEquals(1, result.size)
+        assertEquals(true, result[0] is PrintNode)
+    }
 }

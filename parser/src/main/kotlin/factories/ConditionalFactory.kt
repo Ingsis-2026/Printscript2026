@@ -9,7 +9,9 @@ import parser.Parser
 import token.Token
 import token.TokenType
 
-class ConditionalFactory : ASTFactory {
+class ConditionalFactory(
+    private val subParserProvider: () -> Parser = { Parser() },
+) : ASTFactory {
     override fun createAST(tokens: List<Token>): ASTNode {
         val startCondition = tokens.indexOfFirst { it.value == "(" } + 1
         val conditionToken = tokens[startCondition]
@@ -53,7 +55,7 @@ class ConditionalFactory : ASTFactory {
         }
 
         return BlockNode(
-            nodes = Parser().execute(tokens.subList(startBlock + 1, endBlock + 1)),
+            nodes = subParserProvider().execute(tokens.subList(startBlock + 1, endBlock + 1)),
             position = tokens[startBlock + 1].getPosition(),
         )
     }
