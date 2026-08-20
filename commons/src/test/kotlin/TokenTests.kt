@@ -43,7 +43,7 @@ class TokenTests {
 
         val expectedString =
             "Token(type = 'LITERAL', value = '42', start = 'TokenPosition(row=1, column=5)'," +
-                    " end = 'TokenPosition(row=1, column=10)')"
+                " end = 'TokenPosition(row=1, column=10)')"
         assertEquals(expectedString, token.toString())
     }
 }

@@ -1038,9 +1038,7 @@ class InterpreterTests {
             Interpreter(
                 printer,
                 object : Reader {
-                    override fun input(message: String): String {
-                        return "John Doe"
-                    }
+                    override fun input(message: String): String = "John Doe"
                 },
             )
 
@@ -1096,9 +1094,7 @@ class InterpreterTests {
             Interpreter(
                 printer,
                 object : Reader {
-                    override fun input(message: String): String {
-                        return "User input"
-                    }
+                    override fun input(message: String): String = "User input"
                 },
             )
 
@@ -1136,10 +1132,15 @@ class InterpreterTests {
 
     @Test
     fun `test custom node evaluator plugin`() {
-        val customEvaluator = object : interpreter.evaluators.NodeEvaluator {
-            override fun canEvaluate(node: ast.ASTNode): Boolean = node is ast.NilNode
-            override fun evaluate(node: ast.ASTNode, interpreter: Interpreter): Any = "Custom Nil Evaluated!"
-        }
+        val customEvaluator =
+            object : interpreter.evaluators.NodeEvaluator {
+                override fun canEvaluate(node: ast.ASTNode): Boolean = node is ast.NilNode
+
+                override fun evaluate(
+                    node: ast.ASTNode,
+                    interpreter: Interpreter,
+                ): Any = "Custom Nil Evaluated!"
+            }
 
         val interpreter = Interpreter(printer, reader, listOf(customEvaluator))
         val result = interpreter.execute(NilNode)

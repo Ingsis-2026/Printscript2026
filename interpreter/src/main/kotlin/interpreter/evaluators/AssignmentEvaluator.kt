@@ -8,7 +8,10 @@ import token.TokenType
 class AssignmentEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is AssignationNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val assignation = node as AssignationNode
         val value = interpreter.execute(assignation.expression) ?: throw RuntimeException("Invalid assignment in Assignment")
 

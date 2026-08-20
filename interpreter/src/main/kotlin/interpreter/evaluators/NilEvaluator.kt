@@ -7,5 +7,8 @@ import interpreter.Interpreter
 class NilEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is NilNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? = null
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? = null
 }

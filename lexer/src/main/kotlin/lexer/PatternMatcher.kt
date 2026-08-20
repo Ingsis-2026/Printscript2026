@@ -3,7 +3,9 @@ package lexer
 import token.TokenType
 import java.util.regex.Pattern
 
-class PatternMatcher(private val strategyMap: Map<TokenType, TokenClassifierStrategy>) {
+class PatternMatcher(
+    private val strategyMap: Map<TokenType, TokenClassifierStrategy>,
+) {
     fun createPattern(): Pattern {
         val patternBuilder = StringBuilder()
         for ((_, strategy) in strategyMap) {

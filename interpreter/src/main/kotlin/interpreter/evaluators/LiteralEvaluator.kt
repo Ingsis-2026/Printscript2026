@@ -8,12 +8,15 @@ import token.TokenType
 class LiteralEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is LiteralNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val literal = node as LiteralNode
         return when (literal.type) {
             TokenType.NUMBERLITERAL -> {
                 literal.value.toIntOrNull() ?: literal.value.toDoubleOrNull()
-                ?: throw RuntimeException("Invalid number literal: ${literal.value}")
+                    ?: throw RuntimeException("Invalid number literal: ${literal.value}")
             }
             TokenType.STRINGLITERAL -> literal.value
             TokenType.BOOLEANLITERAL ->

@@ -98,15 +98,17 @@ class TokenMapperTest {
 
     @Test
     fun `test custom strategies injection`() {
-        val customStrategies = mapOf(
-            TokenType.KEYWORD to RegexTokenClassifier("""\bcustom\b""".toRegex()),
-            TokenType.NUMBERLITERAL to RegexTokenClassifier("""\d+""".toRegex()),
-        )
+        val customStrategies =
+            mapOf(
+                TokenType.KEYWORD to RegexTokenClassifier("""\bcustom\b""".toRegex()),
+                TokenType.NUMBERLITERAL to RegexTokenClassifier("""\d+""".toRegex()),
+            )
         val customKeywords = mapOf("custom" to TokenType.KEYWORD)
-        val tokenMapper = TokenMapper(
-            strategyMap = customStrategies,
-            reservedKeywords = customKeywords,
-        )
+        val tokenMapper =
+            TokenMapper(
+                strategyMap = customStrategies,
+                reservedKeywords = customKeywords,
+            )
 
         assertEquals(TokenType.KEYWORD, tokenMapper.classify("custom"))
         assertEquals(TokenType.NUMBERLITERAL, tokenMapper.classify("456"))
