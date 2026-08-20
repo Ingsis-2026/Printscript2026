@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo "🔍 [Pre-commit] Ejecutando validaciones de calidad (Formatter, Linter, Tests, Cobertura)..."
+
+# Detectar el ejecutable de Gradle según el sistema operativo
+if [ -f "./gradlew" ]; then
+    ./gradlew check
+elif [ -f "./gradlew.bat" ]; then
+    ./gradlew.bat check
+else
+    gradle check
+fi
+
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo ""
+    echo "❌ [Pre-commit] Error: La verificación falló."
+    echo "💡 Revisa los errores anteriores (formato, linter Detekt, tests fallidos o cobertura < 80%)."
+    echo "💡 Puedes ejecutar './gradlew ktlintFormat' para corregir problemas de estilo automáticamente."
+    echo ""
+    exit 1
+fi
+
+echo "✅ [Pre-commit] Todas las comprobaciones pasaron con éxito. Creando commit..."
+exit 0
