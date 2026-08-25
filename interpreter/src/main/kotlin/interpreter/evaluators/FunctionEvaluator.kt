@@ -9,7 +9,10 @@ import token.TokenType
 class FunctionEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is FunctionNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val functionNode = node as FunctionNode
         return when (functionNode.type) {
             TokenType.FUNCTION -> {

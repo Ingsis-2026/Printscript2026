@@ -13,36 +13,38 @@ class Parser(
     private val factories: List<ASTFactory> = defaultFactories(),
 ) {
     companion object {
-        fun defaultFactories(): List<ASTFactory> = listOf(
-            ConditionalFactory(),
-            PrintlnFactory(),
-            DeclarationFactory(),
-            AssignationFactory(),
-            FunctionFactory(),
-        )
+        fun defaultFactories(): List<ASTFactory> =
+            listOf(
+                ConditionalFactory(),
+                PrintlnFactory(),
+                DeclarationFactory(),
+                AssignationFactory(),
+                FunctionFactory(),
+            )
 
-        fun forVersion(version: String): Parser {
-            return when (version) {
-                "1.0" -> Parser(
-                    listOf(
-                        PrintlnFactory(),
-                        DeclarationFactory(),
-                        AssignationFactory(),
-                        FunctionFactory(),
-                    ),
-                )
-                "1.1" -> Parser(
-                    listOf(
-                        ConditionalFactory(),
-                        PrintlnFactory(),
-                        DeclarationFactory(),
-                        AssignationFactory(),
-                        FunctionFactory(),
-                    ),
-                )
+        fun forVersion(version: String): Parser =
+            when (version) {
+                "1.0" ->
+                    Parser(
+                        listOf(
+                            PrintlnFactory(),
+                            DeclarationFactory(),
+                            AssignationFactory(),
+                            FunctionFactory(),
+                        ),
+                    )
+                "1.1" ->
+                    Parser(
+                        listOf(
+                            ConditionalFactory(),
+                            PrintlnFactory(),
+                            DeclarationFactory(),
+                            AssignationFactory(),
+                            FunctionFactory(),
+                        ),
+                    )
                 else -> throw IllegalArgumentException("Unsupported version: $version")
             }
-        }
     }
 
     fun execute(tokens: List<Token>): List<ASTNode> {
@@ -59,9 +61,7 @@ class Parser(
         return result
     }
 
-    private fun determineFactory(tokens: List<Token>): ASTFactory? {
-        return factories.find { it.canHandle(tokens) }
-    }
+    private fun determineFactory(tokens: List<Token>): ASTFactory? = factories.find { it.canHandle(tokens) }
 
     private fun getSameLineTokens(tokenList: List<Token>): List<List<Token>> {
         val rows = mutableListOf<List<Token>>()

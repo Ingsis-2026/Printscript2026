@@ -27,7 +27,5 @@ class FunctionFactory : ASTFactory {
         )
     }
 
-    override fun canHandle(tokens: List<Token>): Boolean {
-        return tokens.any { it.getType() == TokenType.FUNCTION }
-    }
+    override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.FUNCTION }
 }

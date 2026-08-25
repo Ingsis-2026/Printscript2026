@@ -7,7 +7,10 @@ import interpreter.Interpreter
 class ConditionalEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is ConditionalNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val conditional = node as ConditionalNode
         val condition = interpreter.execute(conditional.condition)
 

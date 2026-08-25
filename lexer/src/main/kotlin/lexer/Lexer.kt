@@ -5,7 +5,9 @@ import token.TokenPosition
 import token.TokenType
 import java.util.regex.Matcher
 
-class Lexer(private val classifier: TokenMapper) {
+class Lexer(
+    private val classifier: TokenMapper,
+) {
     private val patternMatcher = PatternMatcher(classifier.getStrategyMap())
 
     fun execute(input: String): List<Token> {
@@ -54,12 +56,11 @@ class Lexer(private val classifier: TokenMapper) {
     private fun extractTokenValue(
         tokenType: TokenType,
         matcher: Matcher,
-    ): String {
-        return when (tokenType) {
+    ): String =
+        when (tokenType) {
             TokenType.STRINGLITERAL -> {
                 matcher.group().substring(1, matcher.group().length - 1)
             }
             else -> matcher.group()
         }
-    }
 }

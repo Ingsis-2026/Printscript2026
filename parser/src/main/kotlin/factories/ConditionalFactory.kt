@@ -60,7 +60,5 @@ class ConditionalFactory(
         )
     }
 
-    override fun canHandle(tokens: List<Token>): Boolean {
-        return tokens.any { it.getType() == TokenType.CONDITIONAL && it.value == "if" }
-    }
+    override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.CONDITIONAL && it.value == "if" }
 }

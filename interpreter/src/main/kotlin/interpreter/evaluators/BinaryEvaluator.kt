@@ -7,7 +7,10 @@ import interpreter.Interpreter
 class BinaryEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is BinaryNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val binary = node as BinaryNode
         val leftValue = interpreter.execute(binary.left) ?: throw RuntimeException("Invalid left operand")
         val rightValue = interpreter.execute(binary.right) ?: throw RuntimeException("Invalid right operand")
@@ -27,8 +30,8 @@ class BinaryEvaluator : NodeEvaluator {
     private fun handleAddition(
         leftValue: Any,
         rightValue: Any,
-    ): Any? {
-        return when {
+    ): Any? =
+        when {
             leftValue is Int && rightValue is Int -> leftValue + rightValue
             leftValue is String && rightValue is String -> leftValue + rightValue
             leftValue is Int && rightValue is String -> leftValue.toString() + rightValue
@@ -41,13 +44,12 @@ class BinaryEvaluator : NodeEvaluator {
             leftValue is Double && rightValue is Int -> leftValue + rightValue.toDouble()
             else -> throw RuntimeException("Unsupported operands for +")
         }
-    }
 
     private fun handleSubtraction(
         leftValue: Any,
         rightValue: Any,
-    ): Any? {
-        return when {
+    ): Any? =
+        when {
             leftValue is Int && rightValue is Int -> leftValue - rightValue
             leftValue is Float && rightValue is Float -> leftValue - rightValue
             leftValue is Double && rightValue is Double -> leftValue - rightValue
@@ -57,7 +59,6 @@ class BinaryEvaluator : NodeEvaluator {
             leftValue is Double && rightValue is Int -> leftValue - rightValue.toDouble()
             else -> throw RuntimeException("Unsupported operands for -")
         }
-    }
 
     private fun handleMultiplication(
         leftValue: Any,
@@ -121,22 +122,20 @@ class BinaryEvaluator : NodeEvaluator {
     private fun handleGreaterThan(
         leftValue: Any,
         rightValue: Any,
-    ): Any? {
-        return if (leftValue is Int && rightValue is Int) {
+    ): Any? =
+        if (leftValue is Int && rightValue is Int) {
             leftValue > rightValue
         } else {
             throw RuntimeException("Unsupported operands for >")
         }
-    }
 
     private fun handleLessThan(
         leftValue: Any,
         rightValue: Any,
-    ): Any? {
-        return if (leftValue is Int && rightValue is Int) {
+    ): Any? =
+        if (leftValue is Int && rightValue is Int) {
             leftValue < rightValue
         } else {
             throw RuntimeException("Unsupported operands for <")
         }
-    }
 }
