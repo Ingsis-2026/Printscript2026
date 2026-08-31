@@ -18,8 +18,8 @@ class LinterOutput {
     }
 
     // new function for CLI, it basically generates the error message
-    fun getBrokenRules(): List<BrokenRule> {
-        return brokenRulesList.map { brokenRule ->
+    fun getBrokenRules(): List<BrokenRule> =
+        brokenRulesList.map { brokenRule ->
             val parts = brokenRule.split(" at ")
             val ruleDescription = parts[0].removePrefix("Broken rule: ")
             val positionParts = parts[1].split(":")
@@ -27,5 +27,4 @@ class LinterOutput {
             val column = positionParts[1].toInt()
             BrokenRule(ruleDescription, TokenPosition(row, column))
         }
-    }
 }

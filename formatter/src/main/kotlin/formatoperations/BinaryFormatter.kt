@@ -1,16 +1,11 @@
-package formatOperations
+package formatoperations
 
 import ast.ASTNode
 import ast.BinaryNode
-import formatOperations.commons.HandleSpace
 import formatter.Formatter
 
 class BinaryFormatter : FormattingOperation {
-    private val handleSpace: HandleSpace = HandleSpace()
-
-    override fun canHandle(astNode: ASTNode): Boolean {
-        return astNode is BinaryNode
-    }
+    override fun canHandle(astNode: ASTNode): Boolean = astNode is BinaryNode
 
     override fun format(
         node: ASTNode,

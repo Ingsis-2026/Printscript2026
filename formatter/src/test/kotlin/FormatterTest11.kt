@@ -1,14 +1,9 @@
 import formatter.FormatterBuilderPS
-import lexer.Lexer
-import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import parser.Parser
 
 class FormatterTest11 {
     private val yamlPath = "src/test/resources/rules11.yaml"
-    private val lexer = Lexer(TokenMapper("1.1"))
-    private val parser = Parser()
 
     private val formatter =
         FormatterBuilderPS().build(

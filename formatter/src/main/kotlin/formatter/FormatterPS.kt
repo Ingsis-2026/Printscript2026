@@ -1,9 +1,9 @@
 package formatter
 
 import ast.ASTNode
-import formatOperations.FormattingOperation
-import formatOperations.commons.HandleLineBreak
-import formatOperations.commons.HandleSemicolon
+import formatoperations.FormattingOperation
+import formatoperations.commons.LineBreakHandler
+import formatoperations.commons.SemicolonHandler
 import lexer.Lexer
 import parser.Parser
 import rules.RulesReader
@@ -17,8 +17,8 @@ class FormatterPS(
     private val lexer: Lexer,
     private val parser: Parser,
 ) : Formatter {
-    private val handleSemicolon = HandleSemicolon()
-    private val handleLineBreak = HandleLineBreak()
+    private val semicolonHandler = SemicolonHandler()
+    private val lineBreakHandler = LineBreakHandler()
 
     override fun format(input: String): String {
         val tokens: List<Token> = lexer.execute(input)
@@ -28,28 +28,23 @@ class FormatterPS(
         val formatedNodes: List<String> = astNodes.map { node -> formatNode(node) }
 
         val formatedNodesWithSemicolon =
-            formatedNodes.map {
-                    line ->
-                if (!line.contains("if")) handleSemicolon.handleSemicolon(line) else line
+            formatedNodes.map { line ->
+                if (!line.contains("if")) semicolonHandler.handleSemicolon(line) else line
             }
 
-        val result = handleLineBreak.handleLineBreak(formatedNodesWithSemicolon, 1)
+        val result = lineBreakHandler.handleLineBreak(formatedNodesWithSemicolon, 1)
 
         return result
     }
 
-    override fun format(astNode: ASTNode): String {
-        return formatNode(astNode)
-    }
+    override fun format(astNode: ASTNode): String = formatNode(astNode)
 
     private fun formatNode(node: ASTNode): String {
-        val formatter = formattingOperations.find { it -> it.canHandle(node) }
+        val formatter = formattingOperations.find { it.canHandle(node) }
         return formatter?.format(node, this) ?: ""
     }
 
-    override fun getRules(): Map<String, Any> {
-        return rulesReader.readFile(rulesPath)
-    }
+    override fun getRules(): Map<String, Any> = rulesReader.readFile(rulesPath)
 
     private fun addSemicolonForEachStatement(tokens: List<Token>): List<Token> {
         val result: MutableList<Token> = mutableListOf()

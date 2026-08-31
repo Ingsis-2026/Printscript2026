@@ -2,16 +2,15 @@ package rules
 
 import linter.LinterVersion
 
-class RuleFactory() {
+class RuleFactory {
     fun createRules(
         jsonRules: List<Rule>,
         version: LinterVersion,
-    ): List<Rule> {
-        return when (version) {
+    ): List<Rule> =
+        when (version) {
             LinterVersion.VERSION_1_0 -> createVersion10(jsonRules)
             LinterVersion.VERSION_1_1 -> createVersion11(jsonRules)
         }
-    }
 
     private fun createVersion10(jsonRules: List<Rule>): List<Rule> {
         val rules = mutableListOf<Rule>()

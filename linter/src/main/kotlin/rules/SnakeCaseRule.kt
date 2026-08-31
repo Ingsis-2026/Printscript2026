@@ -19,21 +19,17 @@ class SnakeCaseRule(
         return brokenRules
     }
 
-    private fun isSnakeCase(identifier: String): Boolean {
-        if (identifier.isEmpty()) return false
-        if (!identifier[0].isLowerCase()) return false // Should start with lowercase
-        if (identifier.contains("__")) return false // Should not have consecutive underscores
-
-        return identifier.all { it.isLowerCase() || it == '_' }
-    }
+    private fun isSnakeCase(identifier: String): Boolean =
+        identifier.isNotEmpty() &&
+            identifier[0].isLowerCase() &&
+            // Should start with lowercase
+            !identifier.contains("__") &&
+            // Should not have consecutive underscores
+            identifier.all { it.isLowerCase() || it == '_' }
 
     private fun isIdentifierType(token: Token) = token.getType() == TokenType.IDENTIFIER
 
-    override fun getRuleName(): String {
-        return "SnakeCase"
-    }
+    override fun getRuleName(): String = "SnakeCase"
 
-    override fun getRuleDescription(): String {
-        return errorMessage
-    }
+    override fun getRuleDescription(): String = errorMessage
 }

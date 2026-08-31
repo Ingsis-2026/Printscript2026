@@ -1,6 +1,6 @@
-package formatOperations.commons
+package formatoperations.commons
 
-class HandleLineBreak {
+class LineBreakHandler {
     fun handleLineBreak(
         lines: List<String>,
         numberOfLineBreaks: Int,

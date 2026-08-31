@@ -1,19 +1,17 @@
-package formatOperations
+package formatoperations
 
 import ast.ASTNode
 import ast.DeclarationNode
-import formatOperations.commons.HandleSpace
+import formatoperations.commons.SpaceHandler
 import formatter.Formatter
 
 class DeclarationFormatter(
     private val allowedDeclarationKeywords: List<String>,
     private val allowedDataTypes: List<String>,
 ) : FormattingOperation {
-    private val handleSpace: HandleSpace = HandleSpace()
+    private val spaceHandler: SpaceHandler = SpaceHandler()
 
-    override fun canHandle(astNode: ASTNode): Boolean {
-        return astNode is DeclarationNode
-    }
+    override fun canHandle(astNode: ASTNode): Boolean = astNode is DeclarationNode
 
     override fun format(
         node: ASTNode,
@@ -36,7 +34,8 @@ class DeclarationFormatter(
 
         val formatOperationsList = listOf(LiteralFormatter(), BinaryFormatter())
         val exprValue =
-            formatOperationsList.find { it -> it.canHandle(declarationNode.expr) }
+            formatOperationsList
+                .find { it.canHandle(declarationNode.expr) }
                 ?.format(declarationNode.expr, formatter)
 
         val dataType =
@@ -52,21 +51,19 @@ class DeclarationFormatter(
         val spaceAfterColon = formatter.getRules()["spaceAfterColon"] as Boolean
         val spaceAroundEquals = formatter.getRules()["spaceAroundEquals"] as Boolean
 
-        val equal = handleSpace.handleSpace("=", spaceAroundEquals, spaceAroundEquals)
-        val colon = handleSpace.handleSpace(":", spaceBeforeColon, spaceAfterColon)
+        val equal = spaceHandler.handleSpace("=", spaceAroundEquals, spaceAroundEquals)
+        val colon = spaceHandler.handleSpace(":", spaceBeforeColon, spaceAfterColon)
 
         return "$declKeywordValue $id$colon$dataType$equal$exprValue"
     }
 
-    private fun allowedDeclarationKeyword(declKeyword: String): Boolean {
-        return allowedDeclarationKeywords.contains(
+    private fun allowedDeclarationKeyword(declKeyword: String): Boolean =
+        allowedDeclarationKeywords.contains(
             declKeyword,
         )
-    }
 
-    private fun allowedDataType(dataType: String): Boolean {
-        return allowedDataTypes.contains(
+    private fun allowedDataType(dataType: String): Boolean =
+        allowedDataTypes.contains(
             dataType,
         )
-    }
 }

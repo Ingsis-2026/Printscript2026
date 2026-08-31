@@ -1,4 +1,4 @@
-package formatOperations
+package formatoperations
 
 import ast.ASTNode
 import formatter.Formatter

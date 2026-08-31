@@ -1,13 +1,11 @@
-package formatOperations
+package formatoperations
 
 import ast.ASTNode
 import ast.FunctionNode
 import formatter.Formatter
 
 class FunctionFormatter : FormattingOperation {
-    override fun canHandle(astNode: ASTNode): Boolean {
-        return astNode is FunctionNode
-    }
+    override fun canHandle(astNode: ASTNode): Boolean = astNode is FunctionNode
 
     override fun format(
         node: ASTNode,

@@ -6,7 +6,9 @@ import rules.Rule
 import rules.RuleFactory
 import rules.RuleValidator
 
-class Linter(private var version: LinterVersion) {
+class Linter(
+    private var version: LinterVersion,
+) {
     private var rules: List<Rule> = listOf()
     private val jsonReader = RuleJsonReader()
     private val ruleFactory = RuleFactory()
@@ -38,15 +40,9 @@ class Linter(private var version: LinterVersion) {
         fileManager.saveToFile(content, filePath)
     }
 
-    fun createTxtContent(brokenRules: List<BrokenRule>): String {
-        return fileManager.createTxtReport(brokenRules)
-    }
+    fun createTxtContent(brokenRules: List<BrokenRule>): String = fileManager.createTxtReport(brokenRules)
 
-    fun createHtmlContent(brokenRules: List<BrokenRule>): String {
-        return fileManager.createHtmlReport(brokenRules)
-    }
+    fun createHtmlContent(brokenRules: List<BrokenRule>): String = fileManager.createHtmlReport(brokenRules)
 
-    fun getRules(): List<Rule> {
-        return rules
-    }
+    fun getRules(): List<Rule> = rules
 }

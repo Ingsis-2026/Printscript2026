@@ -62,7 +62,11 @@ class RulesTests {
         val camelCaseRule = CamelCaseRule(customMessage)
         val ruleDescription = camelCaseRule.getRuleDescription()
 
-        assertEquals(customMessage, ruleDescription, "The rule description should match the custom error message provided")
+        assertEquals(
+            customMessage,
+            ruleDescription,
+            "The rule description should match the custom error message provided",
+        )
     }
 
     @Test
@@ -104,7 +108,11 @@ class RulesTests {
         val inputOnlyRule = InputOnlyRule(customMessage)
         val ruleDescription = inputOnlyRule.getRuleDescription()
 
-        assertEquals(customMessage, ruleDescription, "The rule description should match the custom error message provided")
+        assertEquals(
+            customMessage,
+            ruleDescription,
+            "The rule description should match the custom error message provided",
+        )
     }
 
     @Test
@@ -259,9 +267,12 @@ class RulesTests {
     fun `checkRule should apply multiple rules correctly`() {
         val rule1 =
             object : Rule {
-                override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> {
-                    return if (tokens.isNotEmpty()) listOf(BrokenRule("Rule 1 violation", TokenPosition(0, 0))) else emptyList()
-                }
+                override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> =
+                    if (tokens.isNotEmpty()) {
+                        listOf(BrokenRule("Rule 1 violation", TokenPosition(0, 0)))
+                    } else {
+                        emptyList()
+                    }
 
                 override fun getRuleName() = "Rule1"
 
@@ -270,9 +281,8 @@ class RulesTests {
 
         val rule2 =
             object : Rule {
-                override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> {
-                    return if (tokens.size > 1) listOf(BrokenRule("Rule 2 violation", TokenPosition(1, 0))) else emptyList()
-                }
+                override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> =
+                    if (tokens.size > 1) listOf(BrokenRule("Rule 2 violation", TokenPosition(1, 0))) else emptyList()
 
                 override fun getRuleName() = "Rule2"
 

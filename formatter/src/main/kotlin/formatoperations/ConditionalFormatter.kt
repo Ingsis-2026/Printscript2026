@@ -1,4 +1,4 @@
-package formatOperations
+package formatoperations
 
 import ast.ASTNode
 import ast.BlockNode
@@ -7,9 +7,7 @@ import ast.NilNode
 import formatter.Formatter
 
 class ConditionalFormatter : FormattingOperation {
-    override fun canHandle(astNode: ASTNode): Boolean {
-        return astNode is ConditionalNode
-    }
+    override fun canHandle(astNode: ASTNode): Boolean = astNode is ConditionalNode
 
     override fun format(
         node: ASTNode,
@@ -22,10 +20,12 @@ class ConditionalFormatter : FormattingOperation {
         val thenBlock = conditionalNode.thenBlock as BlockNode
         val elseBlock = if (conditionalNode.elseBlock != NilNode) conditionalNode.elseBlock as BlockNode else null
 
+        val thenBody = formatBlock(thenBlock.nodes, formatter)
+
         return if (elseBlock == null) {
-            "if ($condition) {\n${formatBlock(thenBlock.nodes, formatter)}\n}"
+            "if ($condition) {\n$thenBody\n}"
         } else {
-            "if ($condition) {\n${formatBlock(thenBlock.nodes, formatter)}\n} else {\n${formatBlock(elseBlock.nodes, formatter)}\n}"
+            "if ($condition) {\n$thenBody\n} else {\n${formatBlock(elseBlock.nodes, formatter)}\n}"
         }
     }
 
@@ -34,7 +34,7 @@ class ConditionalFormatter : FormattingOperation {
         formatter: Formatter,
     ): String {
         val indentationConditional = formatter.getRules()["conditionalIndentation"] as Int
-        val formattedNodes = list.map { it -> formatter.format(it) }
+        val formattedNodes = list.map { formatter.format(it) }
         val result = formattedNodes.joinToString("\n")
 
         var resultWithIndentation = ""

@@ -24,9 +24,7 @@ class PrintOnlyRule(
         return isPrintlnType(firstToken)
     }
 
-    private fun isPrintlnType(token: Token): Boolean {
-        return token.getType() == TokenType.FUNCTION && token.value.lowercase() == "println"
-    }
+    private fun isPrintlnType(token: Token): Boolean = token.isFunctionNamed("println")
 
     fun containsExpression(tokens: List<Token>): Boolean {
         for (token in tokens) {
@@ -37,17 +35,12 @@ class PrintOnlyRule(
         return false
     }
 
-    private fun isExpressionType(token: Token): Boolean {
-        return token.getType() != TokenType.IDENTIFIER &&
+    private fun isExpressionType(token: Token): Boolean =
+        token.getType() != TokenType.IDENTIFIER &&
             token.getType() != TokenType.PUNCTUATOR &&
             token.getType() != TokenType.LITERAL
-    }
 
-    override fun getRuleName(): String {
-        return "PrintOnly"
-    }
+    override fun getRuleName(): String = "PrintOnly"
 
-    override fun getRuleDescription(): String {
-        return errorMessage
-    }
+    override fun getRuleDescription(): String = errorMessage
 }

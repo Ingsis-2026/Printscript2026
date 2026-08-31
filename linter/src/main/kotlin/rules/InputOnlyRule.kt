@@ -12,7 +12,9 @@ class InputOnlyRule(
     override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> {
         for (row in tokens) {
             if (containsReadInput(row)) {
-                if (containsExpression(splitTokens(row))) brokenRules.add(BrokenRule(errorMessage, row[0].getPosition()))
+                if (containsExpression(splitTokens(row))) {
+                    brokenRules.add(BrokenRule(errorMessage, row[0].getPosition()))
+                }
             }
         }
         return brokenRules
@@ -27,9 +29,7 @@ class InputOnlyRule(
         return false
     }
 
-    private fun isReadInputType(token: Token): Boolean {
-        return token.getType() == TokenType.FUNCTION && token.value.lowercase() == "inputonly"
-    }
+    private fun isReadInputType(token: Token): Boolean = token.isFunctionNamed("inputonly")
 
     fun containsExpression(tokens: List<Token>): Boolean {
         for (token in tokens) {
@@ -40,11 +40,10 @@ class InputOnlyRule(
         return false
     }
 
-    private fun isExpressionType(token: Token): Boolean {
-        return token.getType() != TokenType.IDENTIFIER &&
+    private fun isExpressionType(token: Token): Boolean =
+        token.getType() != TokenType.IDENTIFIER &&
             token.getType() != TokenType.PUNCTUATOR &&
             token.getType() != TokenType.LITERAL
-    }
 
     private fun splitTokens(tokens: List<Token>): List<Token> {
         var readInputPosition = 0
@@ -57,11 +56,7 @@ class InputOnlyRule(
         return tokens.subList(readInputPosition + 1, tokens.size)
     }
 
-    override fun getRuleName(): String {
-        return "InputOnly"
-    }
+    override fun getRuleName(): String = "InputOnly"
 
-    override fun getRuleDescription(): String {
-        return errorMessage
-    }
+    override fun getRuleDescription(): String = errorMessage
 }

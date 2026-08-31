@@ -1,13 +1,13 @@
 package formatter
 
-import formatOperations.AssignationFormatter
-import formatOperations.BinaryFormatter
-import formatOperations.BlockFormatter
-import formatOperations.ConditionalFormatter
-import formatOperations.DeclarationFormatter
-import formatOperations.FormattingOperation
-import formatOperations.LiteralFormatter
-import formatOperations.PrintFormatter
+import formatoperations.AssignationFormatter
+import formatoperations.BinaryFormatter
+import formatoperations.BlockFormatter
+import formatoperations.ConditionalFormatter
+import formatoperations.DeclarationFormatter
+import formatoperations.FormattingOperation
+import formatoperations.LiteralFormatter
+import formatoperations.PrintFormatter
 import lexer.Lexer
 import lexer.TokenMapper
 import parser.Parser
@@ -17,13 +17,12 @@ open class FormatterBuilderPS : FormatterBuilder {
     override fun build(
         rulesPath: String,
         version: String,
-    ): Formatter {
-        return when (version) {
+    ): Formatter =
+        when (version) {
             "1.0" -> formatter10(rulesPath)
             "1.1" -> formatter11(rulesPath)
             else -> throw IllegalArgumentException("Formatter version $version doesn't exist.")
         }
-    }
 
     private fun formatter10(rulesPath: String): Formatter {
         val formattingOperations: List<FormattingOperation> =
@@ -81,21 +80,19 @@ open class FormatterBuilderPS : FormatterBuilder {
         return FormatterPS(rulesReader, rulesPath, formattingOperations, lexer, parser)
     }
 
-    private fun getAllowedDeclarationKeywords(version: String): List<String> {
-        return when (version) {
+    private fun getAllowedDeclarationKeywords(version: String): List<String> =
+        when (version) {
             "1.0" -> listOf("let")
             "1.1" -> listOf("let", "const")
             else -> throw IllegalArgumentException("unsupported version")
         }
-    }
 
-    private fun getAllowedDataTypes(version: String): List<String> {
-        return when (version) {
+    private fun getAllowedDataTypes(version: String): List<String> =
+        when (version) {
             "1.0" ->
                 listOf("number", "string")
             "1.1" ->
                 listOf("number", "string", "boolean")
             else -> throw IllegalArgumentException("unsupported version")
         }
-    }
 }

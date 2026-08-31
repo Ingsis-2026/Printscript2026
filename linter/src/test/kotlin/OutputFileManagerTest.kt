@@ -14,8 +14,14 @@ class OutputFileManagerTest {
     @Test
     fun `test createHtmlReport returns basic structure for no broken rules`() {
         val report = outputFileManager.createHtmlReport(emptyList())
-        val expectedReport = "<html><head><title>Broken Rules Report</title></head><body><h1>Broken Rules</h1><ul></ul></body></html>"
-        assertEquals(expectedReport, report, "The HTML report should have the basic structure even with no broken rules")
+        val expectedReport =
+            "<html><head><title>Broken Rules Report</title></head>" +
+                "<body><h1>Broken Rules</h1><ul></ul></body></html>"
+        assertEquals(
+            expectedReport,
+            report,
+            "The HTML report should have the basic structure even with no broken rules",
+        )
     }
     /*
     @Test

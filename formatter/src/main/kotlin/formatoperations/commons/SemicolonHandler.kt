@@ -1,6 +1,6 @@
-package formatOperations.commons
+package formatoperations.commons
 
-class HandleSemicolon {
+class SemicolonHandler {
     fun handleSemicolon(text: String): String {
         val result = text.trimEnd()
         return if (result != "" &&

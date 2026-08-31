@@ -1,6 +1,6 @@
-package formatOperations.commons
+package formatoperations.commons
 
-class HandleSpace {
+class SpaceHandler {
     fun handleSpace(
         tokenValue: String,
         spaceBefore: Boolean,

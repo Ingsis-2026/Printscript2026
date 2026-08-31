@@ -28,11 +28,7 @@ class CamelCaseRule(
         return segment.size <= 1
     }
 
-    override fun getRuleName(): String {
-        return "CamelCase"
-    }
+    override fun getRuleName(): String = "CamelCase"
 
-    override fun getRuleDescription(): String {
-        return errorMessage
-    }
+    override fun getRuleDescription(): String = errorMessage
 }
