@@ -45,13 +45,12 @@ class AssignationFactory : ASTFactory {
         )
     }
 
-    private fun createLiteralNode(token: Token): ASTNode {
-        return LiteralNode(
+    private fun createLiteralNode(token: Token): ASTNode =
+        LiteralNode(
             value = token.value,
             type = token.getType(),
             position = token.getPosition(),
         )
-    }
 
     private fun getRightTokens(
         tokens: List<Token>,
@@ -60,19 +59,14 @@ class AssignationFactory : ASTFactory {
 
     private fun getLeftTokens(tokens: List<Token>) = tokens.takeWhile { it.getType() != TokenType.ASSIGNATION }
 
-    private fun createAssignedTree(tokens: List<Token>): ASTNode {
-        return if (tokens.any { it.getType() == TokenType.FUNCTION }) {
+    private fun createAssignedTree(tokens: List<Token>): ASTNode =
+        if (tokens.any { it.getType() == TokenType.FUNCTION }) {
             FunctionFactory().createAST(tokens)
         } else {
             OperationFactory().createAST(tokens)
         }
-    }
 
-    private fun variableDeclaration(tokens: List<Token>): ASTNode {
-        return DeclarationFactory().createAST(tokens)
-    }
+    private fun variableDeclaration(tokens: List<Token>): ASTNode = DeclarationFactory().createAST(tokens)
 
-    override fun canHandle(tokens: List<Token>): Boolean {
-        return tokens.any { it.getType() == TokenType.ASSIGNATION }
-    }
+    override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.ASSIGNATION }
 }

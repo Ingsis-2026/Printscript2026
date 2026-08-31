@@ -7,7 +7,10 @@ import interpreter.Interpreter
 class PrintEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is PrintNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val printNode = node as PrintNode
         val value = interpreter.execute(printNode.expression) ?: throw RuntimeException("Invalid expression in PrintNode")
         interpreter.printer.print(value.toString())

@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import parser.Parser
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
 import java.util.Scanner
 
 class ProgramTest {
@@ -25,13 +23,17 @@ class ProgramTest {
             }
         }
 
-    private fun runProgram(input: String, version: String = "1.0"): String {
+    private fun runProgram(
+        input: String,
+        version: String = "1.0",
+    ): String {
         val outputs = mutableListOf<String>()
-        val testPrinter = object : Printer {
-            override fun print(message: String) {
-                outputs.add(message)
+        val testPrinter =
+            object : Printer {
+                override fun print(message: String) {
+                    outputs.add(message)
+                }
             }
-        }
         val tokenMapper = TokenMapper.forVersion(version)
         val lexer = Lexer(tokenMapper)
         val tokens = lexer.execute(input)

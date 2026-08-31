@@ -5,5 +5,9 @@ import interpreter.Interpreter
 
 interface NodeEvaluator {
     fun canEvaluate(node: ASTNode): Boolean
-    fun evaluate(node: ASTNode, interpreter: Interpreter): Any?
+
+    fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any?
 }

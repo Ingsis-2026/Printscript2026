@@ -37,34 +37,34 @@ class TokenMapper(
         return TokenType.UNKNOWN
     }
 
-    fun getStrategyMap(): Map<TokenType, TokenClassifierStrategy> {
-        return strategyMap
-    }
+    fun getStrategyMap(): Map<TokenType, TokenClassifierStrategy> = strategyMap
 
     companion object {
-        fun defaultReservedKeywords(): Map<String, TokenType> = mapOf(
-            "if" to TokenType.CONDITIONAL,
-            "else" to TokenType.CONDITIONAL,
-            "let" to TokenType.KEYWORD,
-            "const" to TokenType.KEYWORD,
-            "println" to TokenType.FUNCTION,
-            "true" to TokenType.BOOLEANLITERAL,
-            "false" to TokenType.BOOLEANLITERAL,
-        )
+        fun defaultReservedKeywords(): Map<String, TokenType> =
+            mapOf(
+                "if" to TokenType.CONDITIONAL,
+                "else" to TokenType.CONDITIONAL,
+                "let" to TokenType.KEYWORD,
+                "const" to TokenType.KEYWORD,
+                "println" to TokenType.FUNCTION,
+                "true" to TokenType.BOOLEANLITERAL,
+                "false" to TokenType.BOOLEANLITERAL,
+            )
 
-        fun version10Strategies(): Map<TokenType, TokenClassifierStrategy> = mapOf(
-            TokenType.KEYWORD to RegexTokenClassifier("""\blet\b""".toRegex()),
-            TokenType.FUNCTION to RegexTokenClassifier("""\bprintln\b""".toRegex()),
-            TokenType.PARENTHESIS to RegexTokenClassifier("""\(|\)""".toRegex()),
-            TokenType.DECLARATOR to RegexTokenClassifier(""":""".toRegex()),
-            TokenType.ASSIGNATION to RegexTokenClassifier("""=""".toRegex()),
-            TokenType.DATA_TYPE to RegexTokenClassifier("""\bstring\b|\bnumber\b""".toRegex()),
-            TokenType.OPERATOR to RegexTokenClassifier("""[\+\-\*/%=><!&|^~]+""".toRegex()),
-            TokenType.IDENTIFIER to RegexTokenClassifier("""\b[a-zA-Z_][a-zA-Z0-9_]*\b""".toRegex()),
-            TokenType.STRINGLITERAL to RegexTokenClassifier("\'[^\']*\'|\"[^\"]*\"".toRegex()),
-            TokenType.NUMBERLITERAL to RegexTokenClassifier("[0-9]+(\\.[0-9]+)?".toRegex()),
-            TokenType.PUNCTUATOR to RegexTokenClassifier("""[()\[\],;.]""".toRegex()),
-        )
+        fun version10Strategies(): Map<TokenType, TokenClassifierStrategy> =
+            mapOf(
+                TokenType.KEYWORD to RegexTokenClassifier("""\blet\b""".toRegex()),
+                TokenType.FUNCTION to RegexTokenClassifier("""\bprintln\b""".toRegex()),
+                TokenType.PARENTHESIS to RegexTokenClassifier("""\(|\)""".toRegex()),
+                TokenType.DECLARATOR to RegexTokenClassifier(""":""".toRegex()),
+                TokenType.ASSIGNATION to RegexTokenClassifier("""=""".toRegex()),
+                TokenType.DATA_TYPE to RegexTokenClassifier("""\bstring\b|\bnumber\b""".toRegex()),
+                TokenType.OPERATOR to RegexTokenClassifier("""[\+\-\*/%=><!&|^~]+""".toRegex()),
+                TokenType.IDENTIFIER to RegexTokenClassifier("""\b[a-zA-Z_][a-zA-Z0-9_]*\b""".toRegex()),
+                TokenType.STRINGLITERAL to RegexTokenClassifier("\'[^\']*\'|\"[^\"]*\"".toRegex()),
+                TokenType.NUMBERLITERAL to RegexTokenClassifier("[0-9]+(\\.[0-9]+)?".toRegex()),
+                TokenType.PUNCTUATOR to RegexTokenClassifier("""[()\[\],;.]""".toRegex()),
+            )
 
         fun version11Strategies(): Map<TokenType, TokenClassifierStrategy> {
             val map = version10Strategies().toMutableMap()
@@ -77,24 +77,20 @@ class TokenMapper(
             return map
         }
 
-        fun forVersion(version: String): TokenMapper {
-            return TokenMapper(version)
-        }
+        fun forVersion(version: String): TokenMapper = TokenMapper(version)
 
-        private fun getStrategiesForVersion(version: String): Map<TokenType, TokenClassifierStrategy> {
-            return when (version) {
+        private fun getStrategiesForVersion(version: String): Map<TokenType, TokenClassifierStrategy> =
+            when (version) {
                 "1.0" -> version10Strategies()
                 "1.1" -> version11Strategies()
                 else -> throw IllegalArgumentException("Unsupported version: $version")
             }
-        }
 
-        private fun getDisallowedForVersion(version: String): Map<String, String> {
-            return when (version) {
+        private fun getDisallowedForVersion(version: String): Map<String, String> =
+            when (version) {
                 "1.0" -> mapOf("const" to "Const declarations are not allowed in version 1.0")
                 "1.1" -> emptyMap()
                 else -> throw IllegalArgumentException("Unsupported version: $version")
             }
-        }
     }
 }

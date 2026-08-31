@@ -32,8 +32,8 @@ class LexerTests {
     fun `test multi-line input with new lines`() {
         val input =
             "let a : number = 12;\n" +
-                    "let b : number = 4;\n" +
-                    "a = a / b;\n"
+                "let b : number = 4;\n" +
+                "a = a / b;\n"
 
         val result =
             listOf(

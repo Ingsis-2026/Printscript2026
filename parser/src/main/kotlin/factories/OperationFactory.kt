@@ -58,9 +58,8 @@ class OperationFactory {
         return tokens.subList(1, tokens.size - 1)
     }
 
-    private fun createLiteralNode(token: Token): ASTNode {
-        return LiteralNode(value = token.value, type = token.getType(), position = token.getPosition())
-    }
+    private fun createLiteralNode(token: Token): ASTNode =
+        LiteralNode(value = token.value, type = token.getType(), position = token.getPosition())
 
     private fun isMultiplicationOrDivision(token: Token) = token.value == "*" || token.value == "/"
 

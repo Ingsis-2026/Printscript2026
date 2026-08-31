@@ -43,7 +43,8 @@ class ConditionalFactoryTest {
                 Token(TokenType.PUNCTUATOR, "}", startPos, endPos),
             )
 
-        assertThrows<Exception> { // Change this to the appropriate exception if needed
+        assertThrows<Exception> {
+            // Change this to the appropriate exception if needed
             factory.createAST(tokens)
         }
     }

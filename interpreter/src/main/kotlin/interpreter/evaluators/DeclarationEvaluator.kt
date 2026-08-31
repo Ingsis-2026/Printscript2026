@@ -8,7 +8,10 @@ import interpreter.Interpreter
 class DeclarationEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is DeclarationNode
 
-    override fun evaluate(node: ASTNode, interpreter: Interpreter): Any? {
+    override fun evaluate(
+        node: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
         val declaration = node as DeclarationNode
         if (interpreter.variables.containsKey(declaration.id)) {
             throw RuntimeException("La variable '${declaration.id}' ya ha sido declarada")

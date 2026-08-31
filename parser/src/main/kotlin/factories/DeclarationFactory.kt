@@ -39,9 +39,7 @@ class DeclarationFactory : ASTFactory {
         )
     }
 
-    override fun canHandle(tokens: List<Token>): Boolean {
-        return tokens.any { it.getType() == TokenType.KEYWORD }
-    }
+    override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.KEYWORD }
 
     private fun checkConsistencyOfExpressionWithDataType(
         dataTypeValue: String,
@@ -49,24 +47,21 @@ class DeclarationFactory : ASTFactory {
     ) {
         when (dataTypeValue) {
             "number" ->
-                if (expressionTokens.any {
-                            it ->
+                if (expressionTokens.any { it ->
                         it.getType() == TokenType.BOOLEANLITERAL || it.getType() == TokenType.STRINGLITERAL
                     }
                 ) {
                     throw Exception("declared data type $dataTypeValue is inconsistent with the expression")
                 }
             "string" ->
-                if (!expressionTokens.any {
-                            it ->
-                        it.getType()==TokenType.STRINGLITERAL
+                if (!expressionTokens.any { it ->
+                        it.getType() == TokenType.STRINGLITERAL
                     }
                 ) {
                     throw Exception("declared data type $dataTypeValue is inconsistent with the expression")
                 }
             "boolean" ->
-                if (expressionTokens.any {
-                            it ->
+                if (expressionTokens.any { it ->
                         it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.STRINGLITERAL
                     }
                 ) {
@@ -90,8 +85,8 @@ class DeclarationFactory : ASTFactory {
         }
     }
 
-    private fun findExpressionNode(expressionTokens: List<Token>): ASTNode {
-        return if (expressionTokens.size == 1) {
+    private fun findExpressionNode(expressionTokens: List<Token>): ASTNode =
+        if (expressionTokens.size == 1) {
             createLiteralNode(
                 expressionTokens[0],
             )
@@ -102,13 +97,11 @@ class DeclarationFactory : ASTFactory {
                 OperationFactory().createAST(expressionTokens)
             }
         }
-    }
 
-    private fun createLiteralNode(token: Token): ASTNode {
-        return LiteralNode(
+    private fun createLiteralNode(token: Token): ASTNode =
+        LiteralNode(
             value = token.value,
             type = token.getType(),
             position = token.getPosition(),
         )
-    }
 }

@@ -28,7 +28,6 @@ class PrintlnFactory : ASTFactory {
         return PrintNode(expressionNode, tokens[0].getPosition())
     }
 
-    override fun canHandle(tokens: List<Token>): Boolean {
-        return tokens.isNotEmpty() && tokens[0].getType() == TokenType.FUNCTION && tokens[0].value == "println"
-    }
+    override fun canHandle(tokens: List<Token>): Boolean =
+        tokens.isNotEmpty() && tokens[0].getType() == TokenType.FUNCTION && tokens[0].value == "println"
 }
