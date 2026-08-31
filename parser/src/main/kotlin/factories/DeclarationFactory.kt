@@ -4,6 +4,7 @@ import ast.ASTNode
 import ast.DeclarationNode
 import ast.LiteralNode
 import ast.NilNode
+import parser.ParserException
 import token.Token
 import token.TokenType
 
@@ -19,7 +20,7 @@ class DeclarationFactory : ASTFactory {
             tokens.find { it.getType() == TokenType.DATA_TYPE }
                 ?: throw IllegalArgumentException("Expected a DATA_TYPE or DATA_TYPE token but found none.")
 
-        val initialPositionExpression = tokens.indexOfFirst { it -> it.value == "=" } + 1
+        val initialPositionExpression = tokens.indexOfFirst { it.value == "=" } + 1
         val expressionTokens: List<Token>? = findExpressionTokens(initialPositionExpression, tokens)
 
         val expressionNode: ASTNode = if (expressionTokens == null) NilNode else findExpressionNode(expressionTokens)
@@ -45,28 +46,21 @@ class DeclarationFactory : ASTFactory {
         dataTypeValue: String,
         expressionTokens: List<Token>,
     ) {
-        when (dataTypeValue) {
-            "number" ->
-                if (expressionTokens.any { it ->
+        val isInconsistent =
+            when (dataTypeValue) {
+                "number" ->
+                    expressionTokens.any {
                         it.getType() == TokenType.BOOLEANLITERAL || it.getType() == TokenType.STRINGLITERAL
                     }
-                ) {
-                    throw Exception("declared data type $dataTypeValue is inconsistent with the expression")
-                }
-            "string" ->
-                if (!expressionTokens.any { it ->
-                        it.getType() == TokenType.STRINGLITERAL
-                    }
-                ) {
-                    throw Exception("declared data type $dataTypeValue is inconsistent with the expression")
-                }
-            "boolean" ->
-                if (expressionTokens.any { it ->
+                "string" -> !expressionTokens.any { it.getType() == TokenType.STRINGLITERAL }
+                "boolean" ->
+                    expressionTokens.any {
                         it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.STRINGLITERAL
                     }
-                ) {
-                    throw Exception("declared data type $dataTypeValue is inconsistent with the expression")
-                }
+                else -> false
+            }
+        if (isInconsistent) {
+            throw ParserException("declared data type $dataTypeValue is inconsistent with the expression")
         }
     }
 

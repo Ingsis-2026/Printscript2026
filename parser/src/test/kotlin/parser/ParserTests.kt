@@ -1,4 +1,4 @@
-package org.example
+package parser
 import ast.AssignationNode
 import ast.BinaryNode
 import ast.DeclarationNode

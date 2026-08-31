@@ -23,7 +23,7 @@ class Interpreter(
     fun execute(node: ASTNode): Any? {
         val evaluator =
             evaluators.find { it.canEvaluate(node) }
-                ?: throw RuntimeException("Unsupported node type: ${node::class.simpleName}")
+                ?: throw InterpreterException("Unsupported node type: ${node::class.simpleName}")
         return evaluator.evaluate(node, this)
     }
 

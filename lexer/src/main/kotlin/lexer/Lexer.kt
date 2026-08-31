@@ -37,14 +37,12 @@ class Lexer(
                 tokens.add(Token(tokenType, actualValue, startPos, endPos))
             }
 
-            if (tokenType != TokenType.UNKNOWN) {
-                val actualValue = extractTokenValue(tokenType, matcher)
-                val startPos = TokenPosition(row, matcher.start())
-                val endPos = TokenPosition(row, matcher.end())
-                tokens.add(Token(tokenType, actualValue, startPos, endPos))
-            } else {
-                throw IllegalArgumentException("Carácter inválido encontrado: '$tokenValue'")
-            }
+            require(tokenType != TokenType.UNKNOWN) { "Carácter inválido encontrado: '$tokenValue'" }
+
+            val actualValue = extractTokenValue(tokenType, matcher)
+            val startPos = TokenPosition(row, matcher.start())
+            val endPos = TokenPosition(row, matcher.end())
+            tokens.add(Token(tokenType, actualValue, startPos, endPos))
         }
     }
 

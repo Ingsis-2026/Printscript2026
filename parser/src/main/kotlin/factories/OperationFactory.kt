@@ -3,6 +3,7 @@ package factories
 import ast.ASTNode
 import ast.BinaryNode
 import ast.LiteralNode
+import parser.ParserException
 import token.Token
 
 class OperationFactory {
@@ -18,11 +19,25 @@ class OperationFactory {
             } else {
                 listTokens
             }
-        val parenthesis1 = emptyList<Token>().toMutableList()
+        return splitOnOperator(tokens, ::isAdditionOrSubtraction)
+            ?: splitOnOperator(tokens, ::isMultiplicationOrDivision)
+            ?: throw ParserException("Error in operation")
+    }
+
+    /**
+     * Parte la lista por el primer token que cumpla [isOperator] fuera de todo
+     * paréntesis, y construye el nodo binario correspondiente. Devuelve `null`
+     * si no hay ningún operador de ese tipo en el nivel más externo.
+     */
+    private fun splitOnOperator(
+        tokens: List<Token>,
+        isOperator: (Token) -> Boolean,
+    ): ASTNode? {
+        val openParentheses = emptyList<Token>().toMutableList()
         for (token in tokens) {
-            if (token.value == "(") parenthesis1.add(token)
-            if (token.value == ")") parenthesis1.removeLast()
-            if (isAdditionOrSubtraction(token) && parenthesis1.isEmpty()) {
+            if (token.value == "(") openParentheses.add(token)
+            if (token.value == ")") openParentheses.removeLast()
+            if (isOperator(token) && openParentheses.isEmpty()) {
                 return BinaryNode(
                     left = createAST(tokens.subList(0, tokens.indexOf(token))),
                     right = createAST(tokens.subList(tokens.indexOf(token) + 1, tokens.size)),
@@ -31,20 +46,7 @@ class OperationFactory {
                 )
             }
         }
-        val parenthesis2 = emptyList<Token>().toMutableList()
-        for (token in tokens) {
-            if (token.value == "(") parenthesis2.add(token)
-            if (token.value == ")") parenthesis2.removeLast()
-            if (isMultiplicationOrDivision(token) && parenthesis2.isEmpty()) {
-                return BinaryNode(
-                    left = createAST(tokens.subList(0, tokens.indexOf(token))),
-                    right = createAST(tokens.subList(tokens.indexOf(token) + 1, tokens.size)),
-                    operator = token,
-                    position = token.getPosition(),
-                )
-            }
-        }
-        throw Exception("Error in operation")
+        return null
     }
 
     private fun removeFirstAndLastParentheses(tokens: List<Token>): List<Token> {

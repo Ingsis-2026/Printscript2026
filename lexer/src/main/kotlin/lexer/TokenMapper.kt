@@ -16,26 +16,18 @@ class TokenMapper(
         if (disallowedKeywords.containsKey(input)) {
             throw IllegalArgumentException(disallowedKeywords[input])
         }
-        if (input.isBlank()) {
-            return TokenType.UNKNOWN
+        return when {
+            input.isBlank() -> TokenType.UNKNOWN
+            reservedKeywords.containsKey(input) -> reservedKeywords[input] ?: TokenType.UNKNOWN
+            else -> classifyByStrategy(input) ?: fallbackType(input)
         }
-
-        if (reservedKeywords.containsKey(input)) {
-            return reservedKeywords[input] ?: TokenType.UNKNOWN
-        }
-
-        for ((type, strategy) in strategyMap) {
-            if (strategy.classify(input)) {
-                return type
-            }
-        }
-
-        if (input == "numberResult" || input == "stringResult") {
-            return TokenType.IDENTIFIER
-        }
-
-        return TokenType.UNKNOWN
     }
+
+    private fun classifyByStrategy(input: String): TokenType? =
+        strategyMap.entries.firstOrNull { (_, strategy) -> strategy.classify(input) }?.key
+
+    private fun fallbackType(input: String): TokenType =
+        if (input == "numberResult" || input == "stringResult") TokenType.IDENTIFIER else TokenType.UNKNOWN
 
     fun getStrategyMap(): Map<TokenType, TokenClassifierStrategy> = strategyMap
 
