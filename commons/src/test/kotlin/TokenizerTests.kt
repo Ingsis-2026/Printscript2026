@@ -36,7 +36,7 @@ class TokenizerTests {
 
         val expectedTokens =
             listOf(
-                Token(TokenType.FUNCTION, "print", TokenPosition(1, 1), TokenPosition(1, 1)),
+                Token(TokenType.FUNCTION, "println", TokenPosition(1, 1), TokenPosition(1, 1)),
                 Token(TokenType.LITERAL, "Hello, World!", TokenPosition(1, 5), TokenPosition(1, 5)),
             )
         assertEquals(expectedTokens, tokens.flatten())

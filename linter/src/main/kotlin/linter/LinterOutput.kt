@@ -1,15 +1,18 @@
 package linter
 
-import token.TokenPosition
-
 class LinterOutput {
     var isCorrect: Boolean = true
-    var brokenRulesList: MutableList<String> = mutableListOf()
+        private set
+
+    private val brokenRules: MutableList<BrokenRule> = mutableListOf()
+
+    /** Representación textual de cada violación, derivada de la lista tipada. */
+    val brokenRulesList: List<String>
+        get() = brokenRules.map { formatBrokenRule(it) }
 
     fun addBrokenRule(brokenRule: BrokenRule) {
         isCorrect = false
-        val ruleAsString = formatBrokenRule(brokenRule)
-        brokenRulesList.add(ruleAsString)
+        brokenRules.add(brokenRule)
     }
 
     private fun formatBrokenRule(brokenRule: BrokenRule): String {
@@ -17,14 +20,10 @@ class LinterOutput {
         return "Broken rule: ${brokenRule.ruleDescription} at ${position.row}:${position.column}"
     }
 
-    // new function for CLI, it basically generates the error message
-    fun getBrokenRules(): List<BrokenRule> =
-        brokenRulesList.map { brokenRule ->
-            val parts = brokenRule.split(" at ")
-            val ruleDescription = parts[0].removePrefix("Broken rule: ")
-            val positionParts = parts[1].split(":")
-            val row = positionParts[0].toInt()
-            val column = positionParts[1].toInt()
-            BrokenRule(ruleDescription, TokenPosition(row, column))
-        }
+    /**
+     * Las violaciones se conservan tipadas: antes se formateaban a String y se volvían a
+     * parsear partiendo por " at " y ":", lo que corrompía la posición si la descripción
+     * contenía esas subcadenas.
+     */
+    fun getBrokenRules(): List<BrokenRule> = brokenRules.toList()
 }

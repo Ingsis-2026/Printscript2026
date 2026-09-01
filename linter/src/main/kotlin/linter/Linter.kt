@@ -17,18 +17,15 @@ class Linter(
     private val fileManager = OutputFileManager()
 
     fun readJson(jsonContent: String) {
-        val jsonRules = jsonReader.getRulesFromJson(jsonContent)
-        rules = ruleFactory.createRules(jsonRules, version)
+        val ruleNames = jsonReader.getRuleNamesFromJson(jsonContent)
+        rules = ruleFactory.createRules(ruleNames, version)
     }
 
     fun check(trees: List<ASTNode>): LinterOutput {
         val tokens = tokenizer.parseToTokens(trees)
-        val brokenRules = validator.checkRule(rules, tokens)
         val linterOutput = LinterOutput()
-        if (brokenRules.isNotEmpty()) {
-            for (brokenRule in brokenRules) {
-                linterOutput.addBrokenRule(brokenRule)
-            }
+        for (brokenRule in validator.checkRule(rules, tokens)) {
+            linterOutput.addBrokenRule(brokenRule)
         }
         return linterOutput
     }

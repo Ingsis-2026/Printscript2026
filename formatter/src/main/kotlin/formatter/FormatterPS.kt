@@ -1,6 +1,7 @@
 package formatter
 
 import ast.ASTNode
+import ast.ConditionalNode
 import formatoperations.FormattingOperation
 import formatoperations.commons.LineBreakHandler
 import formatoperations.commons.SemicolonHandler
@@ -22,61 +23,49 @@ class FormatterPS(
 
     override fun format(input: String): String {
         val tokens: List<Token> = lexer.execute(input)
+        if (tokens.isEmpty()) return ""
+
         val tokensWithSemicolon: List<Token> = addSemicolonForEachStatement(tokens)
         val astNodes: List<ASTNode> = parser.execute(tokensWithSemicolon)
 
-        val formatedNodes: List<String> = astNodes.map { node -> formatNode(node) }
-
-        val formatedNodesWithSemicolon =
-            formatedNodes.map { line ->
-                if (!line.contains("if")) semicolonHandler.handleSemicolon(line) else line
+        val formatedNodes: List<String> =
+            astNodes.map { node ->
+                val formatted = formatNode(node)
+                // Un condicional ya cierra con "}"; el resto de las sentencias termina en ";".
+                if (node is ConditionalNode) formatted else semicolonHandler.handleSemicolon(formatted)
             }
 
-        val result = lineBreakHandler.handleLineBreak(formatedNodesWithSemicolon, 1)
-
-        return result
+        return lineBreakHandler.handleLineBreak(formatedNodes, 1)
     }
 
     override fun format(astNode: ASTNode): String = formatNode(astNode)
 
     private fun formatNode(node: ASTNode): String {
-        val formatter = formattingOperations.find { it.canHandle(node) }
-        return formatter?.format(node, this) ?: ""
+        val formatter =
+            formattingOperations.find { it.canHandle(node) }
+                ?: error("No FormattingOperation registered for ${node::class.simpleName}")
+        return formatter.format(node, this)
     }
 
-    override fun getRules(): Map<String, Any> = rulesReader.readFile(rulesPath)
+    /** Las reglas se leen y validan una sola vez: el archivo no cambia durante el formateo. */
+    private val cachedRules: Map<String, Any> by lazy { rulesReader.readFile(rulesPath) }
 
+    override fun getRules(): Map<String, Any> = cachedRules
+
+    /**
+     * El Lexer descarta los saltos de línea, así que la última sentencia puede quedar sin
+     * terminador. Se agrega un ";" al final sólo si la entrada no cierra ya con ";" o "}".
+     */
     private fun addSemicolonForEachStatement(tokens: List<Token>): List<Token> {
-        val result: MutableList<Token> = mutableListOf()
-        for (token in tokens) {
-            if (token.value == "\n") {
-                if (result.last().value != ";" &&
-                    result.last().value != "}" &&
-                    result.last().value != "{"
-                ) {
-                    result.add(
-                        Token(
-                            TokenType.PUNCTUATOR,
-                            ";",
-                            token.getPosition(),
-                            token.getPosition(),
-                        ),
-                    )
-                }
-            } else {
-                result.add(token)
-            }
-        }
-        if (result.last().value != "}" || result.last().value != ";") {
-            result.add(
-                Token(
-                    TokenType.PUNCTUATOR,
-                    ";",
-                    result.last().getPosition(),
-                    result.last().getPosition(),
-                ),
+        val lastToken = tokens.lastOrNull() ?: return tokens
+        if (lastToken.value == ";" || lastToken.value == "}") return tokens
+
+        return tokens +
+            Token(
+                TokenType.PUNCTUATOR,
+                ";",
+                lastToken.getPosition(),
+                lastToken.getPosition(),
             )
-        }
-        return result.toList()
     }
 }

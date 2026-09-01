@@ -2,6 +2,7 @@ package formatoperations
 
 import ast.ASTNode
 import ast.DeclarationNode
+import ast.NilNode
 import formatoperations.commons.SpaceHandler
 import formatter.Formatter
 
@@ -32,12 +33,6 @@ class DeclarationFormatter(
             }
         val id = declarationNode.id
 
-        val formatOperationsList = listOf(LiteralFormatter(), BinaryFormatter())
-        val exprValue =
-            formatOperationsList
-                .find { it.canHandle(declarationNode.expr) }
-                ?.format(declarationNode.expr, formatter)
-
         val dataType =
             if (allowedDataType(declarationNode.dataTypeValue)) {
                 declarationNode.dataTypeValue
@@ -54,6 +49,12 @@ class DeclarationFormatter(
         val equal = spaceHandler.handleSpace("=", spaceAroundEquals, spaceAroundEquals)
         val colon = spaceHandler.handleSpace(":", spaceBeforeColon, spaceAfterColon)
 
+        // Una declaración sin inicializador ("let x : number;") no lleva "= expresión".
+        if (declarationNode.expr is NilNode) return "$declKeywordValue $id$colon$dataType"
+
+        // Se delega en el Formatter para cubrir toda expresión registrada, no solo literales
+        // y operaciones binarias.
+        val exprValue = formatter.format(declarationNode.expr)
         return "$declKeywordValue $id$colon$dataType$equal$exprValue"
     }
 

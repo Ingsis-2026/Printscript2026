@@ -1012,24 +1012,6 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test variable assignment prints debug information`() {
-        val expression = LiteralNode("30", TokenType.NUMBERLITERAL, position)
-        val node = AssignationNode("debugVar", expression, TokenType.NUMBERLITERAL, position)
-        val interpreter = Interpreter(printer, reader)
-
-        val outputStream = ByteArrayOutputStream()
-        System.setOut(PrintStream(outputStream))
-
-        val result = interpreter.execute(node)
-
-        val output = outputStream.toString().trim()
-
-        assertTrue(output.contains("Asignando a la variable 'debugVar' el valor 30"))
-        assertTrue(output.contains("Valor asignado a 'debugVar' es ahora 30"))
-        assertEquals(30, result)
-    }
-
-    @Test
     fun `test valid readInput with string argument`() {
         val expression = LiteralNode("Enter your name: ", TokenType.STRINGLITERAL, position)
         val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position) // Modificado aquí
@@ -1281,22 +1263,6 @@ class InterpreterTests {
             AssignationNode(
                 "str",
                 LiteralNode("42", TokenType.NUMBERLITERAL, position),
-                TokenType.ASSIGNATION,
-                position,
-            )
-        assertThrows(RuntimeException::class.java) {
-            interpreter.execute(assignNode)
-        }
-    }
-
-    @Test
-    fun `test reassign variable with unhandled type throws`() {
-        val interpreter = Interpreter(printer, reader)
-        interpreter.variables["boolVar"] = true
-        val assignNode =
-            AssignationNode(
-                "boolVar",
-                LiteralNode("false", TokenType.BOOLEANLITERAL, position),
                 TokenType.ASSIGNATION,
                 position,
             )

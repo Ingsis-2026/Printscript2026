@@ -22,7 +22,8 @@ class FunctionEvaluator : NodeEvaluator {
                     "readEnv" -> handleReadEnv(functionNode, interpreter)
                     else -> {
                         val value = interpreter.execute(functionNode.expression)
-                        println(value)
+                        // La salida va por el Printer inyectado, no por stdout.
+                        interpreter.printer.print(value.toString())
                         value
                     }
                 }

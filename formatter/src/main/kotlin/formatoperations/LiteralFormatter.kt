@@ -17,7 +17,7 @@ class LiteralFormatter : FormattingOperation {
         return if (literalNode.type == TokenType.STRINGLITERAL) {
             "\"${literalNode.value}\""
         } else {
-            literalNode.value.toString()
+            literalNode.value
         }
     }
 }

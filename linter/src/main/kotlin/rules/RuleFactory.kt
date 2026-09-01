@@ -4,42 +4,29 @@ import linter.LinterVersion
 
 class RuleFactory {
     fun createRules(
-        jsonRules: List<Rule>,
+        ruleNames: List<String>,
         version: LinterVersion,
-    ): List<Rule> =
-        when (version) {
-            LinterVersion.VERSION_1_0 -> createVersion10(jsonRules)
-            LinterVersion.VERSION_1_1 -> createVersion11(jsonRules)
+    ): List<Rule> = ruleNames.map { createRule(it, version) }
+
+    private fun createRule(
+        ruleName: String,
+        version: LinterVersion,
+    ): Rule =
+        when (ruleName.lowercase()) {
+            "camelcase" -> CamelCaseRule()
+            "snakecase" -> SnakeCaseRule()
+            "printonly" -> PrintOnlyRule()
+            "inputonly" -> requireVersion11(version) { InputOnlyRule() }
+            else -> throw IllegalArgumentException("Rule not available for this version")
         }
 
-    private fun createVersion10(jsonRules: List<Rule>): List<Rule> {
-        val rules = mutableListOf<Rule>()
-        for (rule in jsonRules) {
-            when (rule.getRuleName().lowercase()) {
-                "camelcase" -> rules.add(CamelCaseRule())
-                "snakecase" -> rules.add(SnakeCaseRule())
-                "printonly" -> rules.add(PrintOnlyRule())
-                else -> {
-                    throw IllegalArgumentException("Rule not available for this version")
-                }
-            }
+    private fun requireVersion11(
+        version: LinterVersion,
+        rule: () -> Rule,
+    ): Rule {
+        if (version != LinterVersion.VERSION_1_1) {
+            throw IllegalArgumentException("Rule not available for this version")
         }
-        return rules
-    }
-
-    private fun createVersion11(jsonRules: List<Rule>): List<Rule> {
-        val rules = mutableListOf<Rule>()
-        for (rule in jsonRules) {
-            when (rule.getRuleName().lowercase()) {
-                "camelcase" -> rules.add(CamelCaseRule())
-                "snakecase" -> rules.add(SnakeCaseRule())
-                "printonly" -> rules.add(PrintOnlyRule())
-                "inputonly" -> rules.add(InputOnlyRule())
-                else -> {
-                    throw IllegalArgumentException("Rule not available for this version")
-                }
-            }
-        }
-        return rules
+        return rule()
     }
 }

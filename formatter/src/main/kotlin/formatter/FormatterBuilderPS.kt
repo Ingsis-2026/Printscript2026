@@ -6,6 +6,7 @@ import formatoperations.BlockFormatter
 import formatoperations.ConditionalFormatter
 import formatoperations.DeclarationFormatter
 import formatoperations.FormattingOperation
+import formatoperations.FunctionFormatter
 import formatoperations.LiteralFormatter
 import formatoperations.PrintFormatter
 import lexer.Lexer
@@ -36,6 +37,7 @@ open class FormatterBuilderPS : FormatterBuilder {
                     getAllowedDeclarationKeywords("1.0"),
                     getAllowedDataTypes("1.0"),
                 ),
+                FunctionFormatter(),
             )
         val rulesReader =
             RulesReader(
@@ -64,6 +66,7 @@ open class FormatterBuilderPS : FormatterBuilder {
                     getAllowedDataTypes("1.1"),
                 ),
                 ConditionalFormatter(),
+                FunctionFormatter(),
             )
         val rulesReader =
             RulesReader(
