@@ -26,7 +26,12 @@ class DeclarationFactory : ASTFactory {
         val expressionNode: ASTNode = if (expressionTokens == null) NilNode else findExpressionNode(expressionTokens)
         val dataTypeValue = dataTypeToken.value
 
-        if (expressionTokens != null) checkConsistencyOfExpressionWithDataType(dataTypeValue, expressionTokens)
+        // Una llamada a readInput/readEnv no se puede chequear acá: sus tokens son los del
+        // argumento —un string— y no dicen nada del tipo que devuelve, que se resuelve contra
+        // el tipo declarado recién al ejecutar. Chequearla rechazaba "let b: boolean = readInput(...)".
+        if (expressionTokens != null && !isFunctionCall(expressionTokens)) {
+            checkConsistencyOfExpressionWithDataType(dataTypeValue, expressionTokens)
+        }
 
         return DeclarationNode(
             declType = keywordToken.getType(),
@@ -99,13 +104,15 @@ class DeclarationFactory : ASTFactory {
         }
     }
 
+    private fun isFunctionCall(expressionTokens: List<Token>): Boolean = FunctionFactory().canHandle(expressionTokens)
+
     private fun findExpressionNode(expressionTokens: List<Token>): ASTNode =
         if (expressionTokens.size == 1) {
             createLiteralNode(
                 expressionTokens[0],
             )
         } else {
-            if (FunctionFactory().canHandle(expressionTokens)) {
+            if (isFunctionCall(expressionTokens)) {
                 FunctionFactory().createAST(expressionTokens)
             } else {
                 OperationFactory().createAST(expressionTokens)

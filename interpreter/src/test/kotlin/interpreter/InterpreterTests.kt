@@ -549,32 +549,27 @@ class InterpreterTests {
         }
     }
 
+    // El tipo de un valor leído de afuera lo fija su destino, no el texto que llegó: "5"
+    // asignado a una variable "string" es el string "5", no el número 5.
+
     @Test
-    fun `test convertInput with boolean true`() {
-        val interpreter = Interpreter(printer, reader)
-        val result = interpreter.convertInput("true")
-        assertEquals(true, result)
+    fun `an external input is read as the type its destination declares`() {
+        assertEquals("5", ExternalInput("5", "readInput").asType("string"))
+        assertEquals(5, ExternalInput("5", "readInput").asType("number"))
+        assertEquals(123.45, ExternalInput("123.45", "readInput").asType("number"))
+        assertEquals(true, ExternalInput("true", "readInput").asType("boolean"))
+        assertEquals("true", ExternalInput("true", "readInput").asType("string"))
     }
 
     @Test
-    fun `test convertInput with integer`() {
-        val interpreter = Interpreter(printer, reader)
-        val result = interpreter.convertInput("123")
-        assertEquals(123, result)
-    }
+    fun `an external input that does not match the expected type fails`() {
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                ExternalInput("Hola", "readInput").asType("boolean")
+            }
 
-    @Test
-    fun `test convertInput with double`() {
-        val interpreter = Interpreter(printer, reader)
-        val result = interpreter.convertInput("123.45")
-        assertEquals(123.45, result)
-    }
-
-    @Test
-    fun `test convertInput with string`() {
-        val interpreter = Interpreter(printer, reader)
-        val result = interpreter.convertInput("hello")
-        assertEquals("hello", result)
+        assertEquals("readInput devolvió \"Hola\", que no puede interpretarse como boolean", exception.message)
+        assertThrows(RuntimeException::class.java) { ExternalInput("Hola", "readEnv").asType("number") }
     }
 
     @Test
@@ -998,7 +993,7 @@ class InterpreterTests {
 
         // Asignación inicial de una constante
         interpreter.variables["constVar"] = "FixedValue"
-        interpreter.tiposDeVariables["constVar"] = "const"
+        interpreter.declarationKeywords["constVar"] = "const"
 
         // Intento de reasignar una constante
         val newExpression = LiteralNode("New Value", TokenType.STRINGLITERAL, position)
@@ -1027,7 +1022,8 @@ class InterpreterTests {
 
         val result = interpreter.execute(node)
 
-        assertEquals("John Doe", result) // Verifica que la entrada del usuario sea retornada correctamente
+        // La llamada devuelve el texto crudo: recién su destino decide de qué tipo es.
+        assertEquals(ExternalInput("John Doe", "readInput"), result)
     }
 
     @Test
@@ -1167,8 +1163,11 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, testReader)
         val arg = LiteralNode("Enter number: ", TokenType.STRINGLITERAL, position)
         val node = FunctionNode(TokenType.FUNCTION, "readInput", arg, position)
-        val result = interpreter.execute(node)
-        assertEquals(100, result)
+        val result = interpreter.execute(node) as ExternalInput
+
+        // Un "100" tipeado no es un número por sí solo: lo es si su destino lo declara así.
+        assertEquals(100, result.asType("number"))
+        assertEquals("100", result.asType("string"))
     }
 
     @Test
@@ -1226,7 +1225,7 @@ class InterpreterTests {
     fun `test reassign const variable throws`() {
         val interpreter = Interpreter(printer, reader)
         interpreter.variables["c"] = 10
-        interpreter.tiposDeVariables["c"] = "const"
+        interpreter.declarationKeywords["c"] = "const"
         val assignNode =
             AssignationNode(
                 "c",

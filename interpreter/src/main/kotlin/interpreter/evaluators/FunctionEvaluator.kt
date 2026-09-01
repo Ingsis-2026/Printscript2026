@@ -3,6 +3,7 @@ package interpreter.evaluators
 import ast.ASTNode
 import ast.FunctionNode
 import ast.LiteralNode
+import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 import token.TokenType
@@ -32,40 +33,40 @@ class FunctionEvaluator : NodeEvaluator {
         }
     }
 
+    /**
+     * Devuelve el texto leído sin interpretar: el tipo lo fija el destino de la llamada.
+     * Ver [ExternalInput].
+     */
     private fun handleReadInput(
         node: FunctionNode,
         interpreter: Interpreter,
-    ): Any? {
-        val argument: LiteralNode =
-            if (node.expression is LiteralNode) {
-                node.expression as LiteralNode
-            } else {
-                throw InterpreterException("readInput necesita solo un argumento")
-            }
-        val message =
-            interpreter.execute(argument) as? String
-                ?: throw InterpreterException("El argumento de readInput debe ser String")
+    ): ExternalInput {
+        val message = stringArgumentOf(node, interpreter, "readInput")
 
-        interpreter.printer.print(argument.value)
-        val userInput = interpreter.reader.input(message)
-        return interpreter.convertInput(userInput)
+        // El argumento es el mensaje que se imprime antes de pedir el valor.
+        interpreter.printer.print(message)
+        return ExternalInput(interpreter.reader.input(message), "readInput")
     }
 
     private fun handleReadEnv(
         node: FunctionNode,
         interpreter: Interpreter,
-    ): Any? {
-        val argument: LiteralNode =
-            if (node.expression is LiteralNode) {
-                node.expression as LiteralNode
-            } else {
-                throw InterpreterException("readEnv necesita solo un argumento")
-            }
-        val varName =
-            interpreter.execute(argument) as? String
-                ?: throw InterpreterException("El argumento de readEnv debe ser String")
+    ): ExternalInput {
+        val varName = stringArgumentOf(node, interpreter, "readEnv")
+        val value = System.getenv(varName) ?: undefinedEnvironmentVariable(varName)
+        return ExternalInput(value, "readEnv")
+    }
 
-        return System.getenv(varName) ?: undefinedEnvironmentVariable(varName)
+    private fun stringArgumentOf(
+        node: FunctionNode,
+        interpreter: Interpreter,
+        functionName: String,
+    ): String {
+        val argument: LiteralNode =
+            node.expression as? LiteralNode
+                ?: throw InterpreterException("$functionName necesita solo un argumento")
+        return interpreter.execute(argument) as? String
+            ?: throw InterpreterException("El argumento de $functionName debe ser String")
     }
 
     private fun undefinedEnvironmentVariable(varName: String): Nothing =

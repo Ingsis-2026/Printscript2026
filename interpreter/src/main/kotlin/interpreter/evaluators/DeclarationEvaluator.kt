@@ -3,6 +3,7 @@ package interpreter.evaluators
 import ast.ASTNode
 import ast.DeclarationNode
 import ast.NilNode
+import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
@@ -25,11 +26,19 @@ class DeclarationEvaluator : NodeEvaluator {
                 interpreter.execute(declaration.expr) ?: throw InterpreterException("Expresión inválida en la declaración")
             }
 
-        if (value != Unit) {
-            interpreter.variables[declaration.id] = value
-            interpreter.tiposDeVariables[declaration.id] = declaration.declValue
+        // El tipo y el keyword se recuerdan aunque la declaración no tenga valor: una
+        // asignación posterior los necesita para resolver un readInput y para rechazar la
+        // reasignación de un const.
+        interpreter.declaredTypes[declaration.id] = declaration.dataTypeValue
+        interpreter.declarationKeywords[declaration.id] = declaration.declValue
+
+        // El tipo de un valor leído de afuera lo fija la variable que lo recibe.
+        val resolved = if (value is ExternalInput) value.asType(declaration.dataTypeValue) else value
+
+        if (resolved != Unit) {
+            interpreter.variables[declaration.id] = resolved
         }
 
-        return value
+        return resolved
     }
 }

@@ -2,6 +2,7 @@ package interpreter.evaluators
 
 import ast.ASTNode
 import ast.AssignationNode
+import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 import token.TokenType
@@ -18,12 +19,27 @@ class AssignmentEvaluator : NodeEvaluator {
             interpreter.execute(assignation.expression)
                 ?: throw InterpreterException("Invalid assignment in Assignment")
 
+        val resolved = resolveExternalInput(value, assignation.id, interpreter)
+
         if (interpreter.variables.containsKey(assignation.id)) {
-            checkReassignable(assignation.id, value, interpreter)
+            checkReassignable(assignation.id, resolved, interpreter)
         }
 
-        interpreter.variables[assignation.id] = value
-        return value
+        interpreter.variables[assignation.id] = resolved
+        return resolved
+    }
+
+    /** El tipo de un valor leído de afuera lo fija el tipo declarado de la variable destino. */
+    private fun resolveExternalInput(
+        value: Any,
+        id: String,
+        interpreter: Interpreter,
+    ): Any {
+        if (value !is ExternalInput) return value
+        val declaredType =
+            interpreter.declaredTypes[id]
+                ?: throw InterpreterException("No se puede asignar ${value.origin} a '$id': la variable no fue declarada")
+        return value.asType(declaredType)
     }
 
     private fun checkReassignable(
@@ -31,7 +47,7 @@ class AssignmentEvaluator : NodeEvaluator {
         value: Any,
         interpreter: Interpreter,
     ) {
-        val declarationKeyword = interpreter.tiposDeVariables[id]
+        val declarationKeyword = interpreter.declarationKeywords[id]
         if (declarationKeyword == "const") {
             throw InterpreterException("No es posible reasignar una variable de tipo $declarationKeyword")
         }
