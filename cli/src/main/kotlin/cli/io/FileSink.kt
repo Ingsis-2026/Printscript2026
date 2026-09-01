@@ -17,7 +17,7 @@ class FileSink(
         file.bufferedWriter().use { writer ->
             statements.forEach { statement ->
                 writer.write(statement)
-                writer.newLine()
+                writer.write("\n")
             }
         }
     }
