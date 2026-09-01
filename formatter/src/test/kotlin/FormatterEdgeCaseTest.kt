@@ -22,7 +22,7 @@ class FormatterEdgeCaseTest {
     }
 
     @Test
-    fun `declaration initialised from readInput keeps the call instead of rendering null`() {
+    fun `declaration initialised from readInput renders the call`() {
         val formatted = formatter11.format("let x:string=readInput(\"name\")")
 
         assertFalse(formatted.contains("null"), "La expresión no debe formatearse como \"null\": $formatted")

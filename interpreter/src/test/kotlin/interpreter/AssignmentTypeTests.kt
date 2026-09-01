@@ -9,11 +9,8 @@ import token.TokenPosition
 import token.TokenType
 
 /**
- * Reasignación de variables cuyo tipo no es Int ni String.
- *
- * El chequeo anterior mapeaba el valor almacenado a un TokenType y lanzaba
- * "Unknown type for variable" para todo lo demás, por lo que reasignar un booleano
- * o un decimal era imposible.
+ * Reasignación de variables de todo tipo soportado, no sólo Int y String: un booleano y un
+ * decimal deben poder reasignarse, y el chequeo de tipos debe seguir rechazando la mezcla.
  */
 class AssignmentTypeTests {
     private val position = TokenPosition(0, 0)

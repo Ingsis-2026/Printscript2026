@@ -20,10 +20,6 @@ class LinterOutput {
         return "Broken rule: ${brokenRule.ruleDescription} at ${position.row}:${position.column}"
     }
 
-    /**
-     * Las violaciones se conservan tipadas: antes se formateaban a String y se volvían a
-     * parsear partiendo por " at " y ":", lo que corrompía la posición si la descripción
-     * contenía esas subcadenas.
-     */
+    /** Las violaciones se conservan tipadas; [brokenRulesList] deriva su texto de acá. */
     fun getBrokenRules(): List<BrokenRule> = brokenRules.toList()
 }

@@ -20,8 +20,8 @@ class FormattingRules {
 /**
  * Lee la configuración del linter y la traduce a nombres de regla.
  *
- * Devuelve nombres —no instancias— porque el único constructor de reglas es [rules.RuleFactory],
- * que además aplica el filtro por versión. Antes se instanciaban aquí y se descartaban allá.
+ * Devuelve nombres —no instancias— porque el único constructor de reglas es
+ * [rules.RuleFactory], que además aplica el filtro por versión.
  */
 class RuleJsonReader {
     fun getRuleNamesFromFile(path: String): List<String> = getRuleNamesFromJson(File(path).readText())

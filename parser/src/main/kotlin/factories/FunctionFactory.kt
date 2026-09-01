@@ -11,8 +11,8 @@ class FunctionFactory : ASTFactory {
         val functionToken = tokens.get(indexFunctionToken)
         val expressionToken = tokens.subList(indexFunctionToken + 2, tokens.size - 1)
 
-        // El argumento se delega a OperationFactory: quedarse con el primer token descartaba
-        // en silencio el resto de la expresión (readInput("a" + "b") se reducía a "a").
+        // El argumento puede ser una expresión completa, no un único token:
+        // en readInput("a" + "b") el nodo resultante es el BinaryNode de la concatenación.
         val expressionNode = OperationFactory().createAST(expressionToken)
 
         return FunctionNode(

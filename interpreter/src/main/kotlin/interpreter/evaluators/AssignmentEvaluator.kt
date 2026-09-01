@@ -36,9 +36,7 @@ class AssignmentEvaluator : NodeEvaluator {
             throw InterpreterException("No es posible reasignar una variable de tipo $declarationKeyword")
         }
 
-        // Se comparan las clases en runtime: el mapeo anterior sólo cubría Int y String, y
-        // lanzaba "Unknown type" para cualquier otro tipo, impidiendo reasignar booleanos
-        // y decimales.
+        // Una variable sólo admite valores del mismo tipo con el que fue inicializada.
         val existing = interpreter.variables[id] ?: return
         if (existing::class != value::class) {
             throw InterpreterException("Invalid expression for type ${literalTypeNameOf(existing)}")

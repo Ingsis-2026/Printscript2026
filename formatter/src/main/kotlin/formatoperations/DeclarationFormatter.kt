@@ -40,8 +40,8 @@ class DeclarationFormatter(
         // Sin inicializador la declaración termina acá.
         if (declarationNode.expr is NilNode) return declaration
 
-        // Se delega en el Formatter para cubrir toda expresión registrada, no sólo literales
-        // y operaciones binarias.
+        // Se delega en el Formatter, que despacha sobre todas las operaciones registradas:
+        // el inicializador puede ser un literal, una operación o una llamada a función.
         val initializer = formatter.format(declarationNode.expr)
 
         // let x : number = 5

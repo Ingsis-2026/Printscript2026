@@ -17,8 +17,8 @@ import kotlin.test.assertTrue
 /**
  * Reglas ejercitadas de punta a punta: código fuente -> Lexer -> Parser -> Tokenizer -> Rule.
  *
- * Los tests de [RulesTests] construyen los tokens a mano, por lo que no detectan
- * desalineaciones entre lo que emite el Tokenizer y lo que buscan las reglas.
+ * Al partir del fuente y no de tokens construidos a mano, cualquier desalineación entre lo
+ * que emite el Tokenizer y lo que buscan las reglas queda a la vista.
  */
 class LinterEndToEndTests {
     private val lexer = Lexer(TokenMapper("1.1"))
