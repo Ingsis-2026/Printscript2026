@@ -3,6 +3,7 @@ package interpreter.evaluators
 import ast.ASTNode
 import ast.LiteralNode
 import interpreter.Interpreter
+import interpreter.InterpreterException
 import token.TokenType
 
 class LiteralEvaluator : NodeEvaluator {
@@ -16,20 +17,20 @@ class LiteralEvaluator : NodeEvaluator {
         return when (literal.type) {
             TokenType.NUMBERLITERAL -> {
                 literal.value.toIntOrNull() ?: literal.value.toDoubleOrNull()
-                    ?: throw RuntimeException("Invalid number literal: ${literal.value}")
+                    ?: throw InterpreterException("Invalid number literal: ${literal.value}")
             }
             TokenType.STRINGLITERAL -> literal.value
             TokenType.BOOLEANLITERAL ->
                 when (literal.value) {
                     "true" -> true
                     "false" -> false
-                    else -> throw RuntimeException("Invalid boolean value: ${literal.value}")
+                    else -> throw InterpreterException("Invalid boolean value: ${literal.value}")
                 }
             TokenType.DATA_TYPE -> literal.value
             TokenType.IDENTIFIER ->
                 interpreter.variables[literal.value]
-                    ?: throw RuntimeException("Undefined variable: ${literal.value}")
-            else -> throw RuntimeException("Unsupported literal type: ${literal.type}")
+                    ?: throw InterpreterException("Undefined variable: ${literal.value}")
+            else -> throw InterpreterException("Unsupported literal type: ${literal.type}")
         }
     }
 }

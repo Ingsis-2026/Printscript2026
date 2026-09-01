@@ -3,6 +3,7 @@ package interpreter.evaluators
 import ast.ASTNode
 import ast.BinaryNode
 import interpreter.Interpreter
+import interpreter.InterpreterException
 
 class BinaryEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is BinaryNode
@@ -12,130 +13,98 @@ class BinaryEvaluator : NodeEvaluator {
         interpreter: Interpreter,
     ): Any? {
         val binary = node as BinaryNode
-        val leftValue = interpreter.execute(binary.left) ?: throw RuntimeException("Invalid left operand")
-        val rightValue = interpreter.execute(binary.right) ?: throw RuntimeException("Invalid right operand")
+        val leftValue = interpreter.execute(binary.left) ?: throw InterpreterException("Invalid left operand")
+        val rightValue = interpreter.execute(binary.right) ?: throw InterpreterException("Invalid right operand")
         val operator = binary.operator.value
 
         return when (operator) {
             "+" -> handleAddition(leftValue, rightValue)
-            "-" -> handleSubtraction(leftValue, rightValue)
+            "-" -> ArithmeticOperations.compute(leftValue, rightValue, operator, SUBTRACTION)
             "*" -> handleMultiplication(leftValue, rightValue)
             "/" -> handleDivision(leftValue, rightValue)
-            ">" -> handleGreaterThan(leftValue, rightValue)
-            "<" -> handleLessThan(leftValue, rightValue)
-            else -> throw RuntimeException("Unsupported operator: $operator")
+            ">" -> handleComparison(leftValue, rightValue, operator) { a, b -> a > b }
+            "<" -> handleComparison(leftValue, rightValue, operator) { a, b -> a < b }
+            else -> throw InterpreterException("Unsupported operator: $operator")
         }
     }
 
     private fun handleAddition(
         leftValue: Any,
         rightValue: Any,
-    ): Any? =
-        when {
-            leftValue is Int && rightValue is Int -> leftValue + rightValue
-            leftValue is String && rightValue is String -> leftValue + rightValue
-            leftValue is Int && rightValue is String -> leftValue.toString() + rightValue
-            leftValue is String && rightValue is Int -> leftValue + rightValue.toString()
-            leftValue is Float && rightValue is Float -> leftValue + rightValue
-            leftValue is Double && rightValue is Double -> leftValue + rightValue
-            leftValue is Int && rightValue is Float -> leftValue.toFloat() + rightValue
-            leftValue is Float && rightValue is Int -> leftValue + rightValue.toFloat()
-            leftValue is Int && rightValue is Double -> leftValue.toDouble() + rightValue
-            leftValue is Double && rightValue is Int -> leftValue + rightValue.toDouble()
-            else -> throw RuntimeException("Unsupported operands for +")
-        }
-
-    private fun handleSubtraction(
-        leftValue: Any,
-        rightValue: Any,
-    ): Any? =
-        when {
-            leftValue is Int && rightValue is Int -> leftValue - rightValue
-            leftValue is Float && rightValue is Float -> leftValue - rightValue
-            leftValue is Double && rightValue is Double -> leftValue - rightValue
-            leftValue is Int && rightValue is Float -> leftValue.toFloat() - rightValue
-            leftValue is Float && rightValue is Int -> leftValue - rightValue.toFloat()
-            leftValue is Int && rightValue is Double -> leftValue.toDouble() - rightValue
-            leftValue is Double && rightValue is Int -> leftValue - rightValue.toDouble()
-            else -> throw RuntimeException("Unsupported operands for -")
-        }
+    ): Any =
+        concatenate(leftValue, rightValue)
+            ?: ArithmeticOperations.compute(leftValue, rightValue, "+", ADDITION)
 
     private fun handleMultiplication(
         leftValue: Any,
         rightValue: Any,
-    ): Any? {
+    ): Any {
         if (leftValue is String || rightValue is String) {
-            throw RuntimeException("Invalid operation: cannot multiply a string by a number")
+            throw InterpreterException("Invalid operation: cannot multiply a string by a number")
         }
-        return when {
-            leftValue is Int && rightValue is Int -> leftValue * rightValue
-            leftValue is Float && rightValue is Float -> leftValue * rightValue
-            leftValue is Double && rightValue is Double -> leftValue * rightValue
-            leftValue is Int && rightValue is Float -> leftValue.toFloat() * rightValue
-            leftValue is Float && rightValue is Int -> leftValue * rightValue.toFloat()
-            leftValue is Int && rightValue is Double -> leftValue.toDouble() * rightValue
-            leftValue is Double && rightValue is Int -> leftValue * rightValue.toDouble()
-            else -> throw RuntimeException("Unsupported operands for *")
-        }
+        return ArithmeticOperations.compute(leftValue, rightValue, "*", MULTIPLICATION)
     }
 
     private fun handleDivision(
         leftValue: Any,
         rightValue: Any,
-    ): Any? {
+    ): Any {
         if (leftValue is String || rightValue is String) {
-            throw RuntimeException("Invalid operation: cannot divide a string by a number")
+            throw InterpreterException("Invalid operation: cannot divide a string by a number")
         }
-        return when {
-            leftValue is Int && rightValue is Int -> {
-                if (rightValue == 0) throw RuntimeException("Division by zero")
-                leftValue / rightValue
-            }
-            leftValue is Float && rightValue is Float -> {
-                if (rightValue == 0f) throw RuntimeException("Division by zero")
-                leftValue / rightValue
-            }
-            leftValue is Double && rightValue is Double -> {
-                if (rightValue == 0.0) throw RuntimeException("Division by zero")
-                leftValue / rightValue
-            }
-            leftValue is Int && rightValue is Float -> {
-                if (rightValue == 0f) throw RuntimeException("Division by zero")
-                leftValue.toFloat() / rightValue
-            }
-            leftValue is Float && rightValue is Int -> {
-                if (rightValue == 0) throw RuntimeException("Division by zero")
-                leftValue / rightValue.toFloat()
-            }
-            leftValue is Int && rightValue is Double -> {
-                if (rightValue == 0.0) throw RuntimeException("Division by zero")
-                leftValue.toDouble() / rightValue
-            }
-            leftValue is Double && rightValue is Int -> {
-                if (rightValue == 0) throw RuntimeException("Division by zero")
-                leftValue / rightValue.toDouble()
-            }
-            else -> throw RuntimeException("Unsupported operands for /")
-        }
+        val division =
+            NumericOperation(
+                onInt = { a, b ->
+                    checkDivisorNotZero(b)
+                    a / b
+                },
+                onFloat = { a, b ->
+                    checkDivisorNotZero(b)
+                    a / b
+                },
+                onDouble = { a, b ->
+                    checkDivisorNotZero(b)
+                    a / b
+                },
+            )
+        return ArithmeticOperations.compute(leftValue, rightValue, "/", division)
     }
 
-    private fun handleGreaterThan(
+    private fun handleComparison(
         leftValue: Any,
         rightValue: Any,
-    ): Any? =
+        operator: String,
+        compare: (Int, Int) -> Boolean,
+    ): Boolean =
         if (leftValue is Int && rightValue is Int) {
-            leftValue > rightValue
+            compare(leftValue, rightValue)
         } else {
-            throw RuntimeException("Unsupported operands for >")
+            throw InterpreterException("Unsupported operands for $operator")
         }
 
-    private fun handleLessThan(
+    /**
+     * Concatenación textual admitida por `+`: String+String, Int+String y String+Int.
+     * Devuelve `null` cuando el par de operandos no es una concatenación, para que
+     * [handleAddition] continúe con la aritmética numérica.
+     */
+    private fun concatenate(
         leftValue: Any,
         rightValue: Any,
-    ): Any? =
-        if (leftValue is Int && rightValue is Int) {
-            leftValue < rightValue
-        } else {
-            throw RuntimeException("Unsupported operands for <")
+    ): String? =
+        when {
+            leftValue is String && rightValue is String -> leftValue + rightValue
+            leftValue is Int && rightValue is String -> leftValue.toString() + rightValue
+            leftValue is String && rightValue is Int -> leftValue + rightValue.toString()
+            else -> null
         }
+
+    private fun checkDivisorNotZero(divisor: Number) {
+        if (divisor.toDouble() == 0.0) throw InterpreterException("Division by zero")
+    }
+
+    private companion object {
+        val ADDITION = NumericOperation({ a, b -> a + b }, { a, b -> a + b }, { a, b -> a + b })
+        val SUBTRACTION = NumericOperation({ a, b -> a - b }, { a, b -> a - b }, { a, b -> a - b })
+        val MULTIPLICATION = NumericOperation({ a, b -> a * b }, { a, b -> a * b }, { a, b -> a * b })
+    }
 }
