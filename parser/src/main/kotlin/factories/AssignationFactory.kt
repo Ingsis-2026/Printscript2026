@@ -12,7 +12,7 @@ class AssignationFactory : ASTFactory {
     override fun createAST(tokens: List<Token>): ASTNode {
         val assignationToken =
             tokens.find { it.getType() == TokenType.ASSIGNATION }
-                ?: throw ParserException("Assignation token not found")
+                ?: throw error(tokens, "Assignation token not found")
 
         val leftTokens = getLeftTokens(tokens)
         val rightTokens = getRightTokens(tokens, leftTokens)
@@ -21,7 +21,7 @@ class AssignationFactory : ASTFactory {
             when {
                 leftTokens.size > 1 -> variableDeclaration(leftTokens)
                 leftTokens.isNotEmpty() -> createLiteralNode(leftTokens[0])
-                else -> throw ParserException("Invalid left side of assignment")
+                else -> throw error(tokens, "Invalid left side of assignment")
             }
 
         val rightNode =
@@ -35,7 +35,7 @@ class AssignationFactory : ASTFactory {
             if (leftNode is LiteralNode) {
                 leftNode.value
             } else {
-                throw ParserException("Left side of assignment must be a literal or identifier")
+                throw error(tokens, "Left side of assignment must be a literal or identifier")
             }
 
         return AssignationNode(
@@ -68,6 +68,16 @@ class AssignationFactory : ASTFactory {
         }
 
     private fun variableDeclaration(tokens: List<Token>): ASTNode = DeclarationFactory().createAST(tokens)
+
+    /** Error de parseo ubicado en el tramo de tokens que lo provocó. */
+    private fun error(
+        tokens: List<Token>,
+        message: String,
+    ) = ParserException(
+        message,
+        tokens.firstOrNull()?.getPosition(),
+        tokens.lastOrNull()?.getFinalPosition(),
+    )
 
     override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.ASSIGNATION }
 }

@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":commons"))
+    api(project(":commons"))
     testImplementation(project(":lexer"))
 }

@@ -49,22 +49,54 @@ class Lexer(
     ): List<Token> {
         val lineTokens = mutableListOf<Token>()
         val matcher = pattern.matcher(lineContent)
+        var scanned = 0
 
         while (matcher.find()) {
+            rejectSkippedText(lineContent, row, scanned, matcher.start())
+
             val rawValue = matcher.group()
             val tokenType = classifier.classify(rawValue)
+            val startPos = TokenPosition(row, matcher.start())
+            val endPos = TokenPosition(row, matcher.end())
 
-            require(tokenType != TokenType.UNKNOWN) {
-                "Carácter inválido encontrado: '$rawValue'"
+            if (tokenType == TokenType.UNKNOWN) {
+                throw LexerException("Carácter inválido encontrado: '$rawValue'", startPos, endPos)
             }
 
             val actualValue = extractTokenValue(tokenType, rawValue)
-            val startPos = TokenPosition(row, matcher.start())
-            val endPos = TokenPosition(row, matcher.end())
             lineTokens.add(Token(tokenType, actualValue, startPos, endPos))
+            scanned = matcher.end()
         }
+        rejectSkippedText(lineContent, row, scanned, lineContent.length)
 
         return lineTokens
+    }
+
+    /**
+     * Rechaza el texto que el patrón no reconoció.
+     *
+     * `Matcher.find` no falla ante un lexema inválido: simplemente lo saltea y sigue con el
+     * match siguiente. Para detectarlo hay que mirar los huecos que deja entre matches —y la
+     * cola de la línea—, donde cualquier cosa que no sea espacio en blanco es un error.
+     */
+    private fun rejectSkippedText(
+        lineContent: String,
+        row: Int,
+        from: Int,
+        to: Int,
+    ) {
+        if (from >= to) return
+        val skipped = lineContent.substring(from, to)
+        if (skipped.isBlank()) return
+
+        val leadingBlanks = skipped.indexOfFirst { !it.isWhitespace() }
+        val invalid = skipped.trim()
+        val startColumn = from + leadingBlanks
+        throw LexerException(
+            "Carácter inválido encontrado: '$invalid'",
+            TokenPosition(row, startColumn),
+            TokenPosition(row, startColumn + invalid.length),
+        )
     }
 
     private fun extractTokenValue(

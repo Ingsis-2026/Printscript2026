@@ -3,92 +3,94 @@ package parser
 import token.Token
 
 /**
- * Agrupa la lista plana de tokens en sentencias (una lista de tokens por sentencia).
+ * Agrupa un flujo de tokens en sentencias (una lista de tokens por sentencia).
  *
- * Es una máquina de estados sobre el flujo de tokens: lleva la cuenta de las llaves
- * abiertas para no cortar dentro de un bloque, y recuerda si un `}` puede continuar
- * con un `else`. Cada tipo de token se resuelve en su propio método para mantener
- * acotada la complejidad.
+ * Trabaja de forma perezosa: consume el [Sequence] de entrada a medida que el consumidor
+ * pide sentencias y emite cada una en cuanto está completa, sin retener las anteriores.
+ * Sólo se mantiene en memoria la sentencia en curso, que es la unidad mínima que el parser
+ * necesita ver completa.
+ *
+ * Es una máquina de estados sobre el flujo: lleva la cuenta de las llaves abiertas para no
+ * cortar dentro de un bloque, y retiene la sentencia cuando un `}` de cierre podría
+ * continuar con un `else`.
  */
 internal class StatementSplitter {
-    private val rows = mutableListOf<List<Token>>()
-    private var singleRow = mutableListOf<Token>()
-    private var openBraces = 0
-    private var expectingElse = false
+    fun split(tokens: Sequence<Token>): Sequence<List<Token>> =
+        sequence {
+            val current = mutableListOf<Token>()
+            var openBraces = 0
+            var expectingElse = false
+            var blockJustClosed = false
+            var emittedAny = false
 
-    fun split(tokenList: List<Token>): List<List<Token>> {
-        for (index in tokenList.indices) {
-            handleToken(tokenList, index)
+            for (token in tokens) {
+                // Un "}" que cerró el bloque puede continuar con "else": la sentencia quedó
+                // retenida hasta poder mirar este token.
+                if (blockJustClosed) {
+                    blockJustClosed = false
+                    if (token.value == "else") {
+                        current.add(token)
+                        expectingElse = false
+                        continue
+                    }
+                    yield(current.toList())
+                    emittedAny = true
+                    current.clear()
+                    expectingElse = false
+                }
+
+                when (token.value) {
+                    "{" -> {
+                        openBraces++
+                        current.add(token)
+                    }
+
+                    "}" -> {
+                        openBraces--
+                        current.add(token)
+                        if (openBraces == 0) blockJustClosed = true
+                    }
+
+                    "if" -> {
+                        // Una sentencia pendiente antes de un "if" quedó sin terminador.
+                        if (current.isNotEmpty()) throw unterminatedStatement(current)
+                        current.add(token)
+                        expectingElse = true
+                    }
+
+                    "else" ->
+                        if (expectingElse) {
+                            current.add(token)
+                            expectingElse = false
+                        }
+
+                    ";" ->
+                        if (openBraces == 0 && current.isNotEmpty()) {
+                            yield(current.toList())
+                            emittedAny = true
+                            current.clear()
+                        }
+
+                    else -> current.add(token)
+                }
+            }
+
+            if (current.isNotEmpty()) {
+                val last = current.last()
+                if (last.value != ";" && last.value != "}" && last.value != "{") {
+                    throw unterminatedStatement(current)
+                }
+                yield(current.toList())
+                emittedAny = true
+            }
+
+            if (!emittedAny) throw ParserException("Error: No valid code.")
         }
 
-        if (singleRow.isNotEmpty()) addRow(singleRow.last())
-        if (rows.isEmpty()) throw ParserException("Error: No valid code.")
-
-        return rows
-    }
-
-    private fun handleToken(
-        tokenList: List<Token>,
-        index: Int,
-    ) {
-        val token = tokenList[index]
-        when (token.value) {
-            "{" -> openBrace(token)
-            "}" -> closeBrace(tokenList, index, token)
-            "if" -> startConditional(token)
-            "else" -> continueConditional(token)
-            ";" -> endStatement(token)
-            else -> singleRow.add(token)
-        }
-    }
-
-    private fun openBrace(token: Token) {
-        openBraces++
-        singleRow.add(token)
-    }
-
-    private fun closeBrace(
-        tokenList: List<Token>,
-        index: Int,
-        token: Token,
-    ) {
-        openBraces--
-        singleRow.add(token)
-        if (openBraces != 0) return
-
-        if (index + 1 < tokenList.size && tokenList[index + 1].value == "else") {
-            expectingElse = true
-        } else {
-            addRow(token)
-            singleRow = mutableListOf()
-            expectingElse = false
-        }
-    }
-
-    private fun startConditional(token: Token) {
-        if (singleRow.isNotEmpty()) addRow(token)
-        singleRow.add(token)
-        expectingElse = true
-    }
-
-    private fun continueConditional(token: Token) {
-        if (!expectingElse) return
-        singleRow.add(token)
-        expectingElse = false
-    }
-
-    private fun endStatement(token: Token) {
-        if (openBraces != 0 || singleRow.isEmpty()) return
-        addRow(token)
-        singleRow = mutableListOf()
-    }
-
-    private fun addRow(lastToken: Token) {
-        if (lastToken.value != ";" && lastToken.value != "}" && lastToken.value != "{") {
-            throw ParserException(
-                "las sentencias deben finalizar con \";\", \"}\" o \"{\"",
-            )
-        }
-        rows.add(singleRow)
-    }
+    private fun unterminatedStatement(statement: List<Token>): ParserException =
+        ParserException(
+            "las sentencias deben finalizar con \";\", \"}\" o \"{\"",
+            statement.first().getPosition(),
+            statement.last().getFinalPosition(),
+        )
 }

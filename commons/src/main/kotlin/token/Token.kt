@@ -14,6 +14,12 @@ data class Token(
 
     fun getPosition(): TokenPosition = initialPosition
 
+    /**
+     * Posición donde termina el token. Junto con [getPosition] cubre el tramo completo, que
+     * es lo que la consigna pide informar al ubicar un error: fila y columna de inicio y fin.
+     */
+    fun getFinalPosition(): TokenPosition = finalPosition
+
     override fun toString(): String =
         "Token(type = '$type', value = '$value', " +
             "start = '$initialPosition', end = '$finalPosition')"

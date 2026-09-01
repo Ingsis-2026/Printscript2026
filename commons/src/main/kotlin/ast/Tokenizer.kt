@@ -5,13 +5,10 @@ import token.TokenPosition
 import token.TokenType
 
 class Tokenizer {
-    fun parseToTokens(astNodes: List<ASTNode>): List<List<Token>> {
-        val tokens = mutableListOf<List<Token>>()
-        for (node in astNodes) {
-            tokens.add(extractTokensFromAST(node))
-        }
-        return tokens
-    }
+    /** Variante perezosa: re-tokeniza cada nodo a medida que se lo pide. */
+    fun parseToTokens(astNodes: Sequence<ASTNode>): Sequence<List<Token>> = astNodes.map { extractTokensFromAST(it) }
+
+    fun parseToTokens(astNodes: List<ASTNode>): List<List<Token>> = parseToTokens(astNodes.asSequence()).toList()
 
     private fun extractTokensFromAST(node: ASTNode): List<Token> {
         val tokens = mutableListOf<Token>()
