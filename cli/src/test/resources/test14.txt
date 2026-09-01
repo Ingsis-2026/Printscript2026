@@ -1,0 +1,3 @@
+let x: string = readEnv(JOAFAC);
+let y : string = " Y GAY";
+println(x + y);

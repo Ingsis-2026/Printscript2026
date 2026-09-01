@@ -1,0 +1,3 @@
+let x : number = 11;
+let y: number = 2;
+println(x/y);
