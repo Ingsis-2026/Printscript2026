@@ -14,57 +14,65 @@ class DeclarationFormatter(
 
     override fun canHandle(astNode: ASTNode): Boolean = astNode is DeclarationNode
 
+    /**
+     * Arma una declaración con la forma `let x : number = 5`, o `let x : number` cuando no
+     * tiene inicializador. El `;` final lo agrega quien invoca al formatter.
+     *
+     * Ojo con los separadores: [SpaceHandler] los devuelve **con los espacios ya
+     * incorporados** según las reglas configuradas, así que `colonSeparator(...)` puede valer
+     * `" : "`, `": "`, `" :"` o `":"`. Por eso las plantillas de abajo no llevan espacios
+     * propios alrededor de ellos; el único espacio literal es el que separa la palabra clave
+     * del identificador, que no es configurable.
+     */
     override fun format(
         node: ASTNode,
         formatter: Formatter,
     ): String {
         if (!canHandle(node)) error("Node isn't a DeclarationNode")
         val declarationNode = node as DeclarationNode
-        val declKeywordValue =
-            if (allowedDeclarationKeyword(
-                    declarationNode.declValue,
-                )
-            ) {
-                declarationNode.declValue
-            } else {
-                throw UnsupportedOperationException(
-                    "Unsupported declaration type ${declarationNode.declValue}",
-                )
-            }
-        val id = declarationNode.id
 
-        val dataType =
-            if (allowedDataType(declarationNode.dataTypeValue)) {
-                declarationNode.dataTypeValue
-            } else {
-                throw UnsupportedOperationException(
-                    "Unsupported data type ${declarationNode.dataTypeValue}",
-                )
-            }
+        val keyword = declarationKeywordOrFail(declarationNode.declValue)
+        val dataType = dataTypeOrFail(declarationNode.dataTypeValue)
 
-        val spaceBeforeColon = formatter.getRules()["spaceBeforeColon"] as Boolean
-        val spaceAfterColon = formatter.getRules()["spaceAfterColon"] as Boolean
-        val spaceAroundEquals = formatter.getRules()["spaceAroundEquals"] as Boolean
+        // let x : number
+        val declaration = "$keyword ${declarationNode.id}${colonSeparator(formatter)}$dataType"
 
-        val equal = spaceHandler.handleSpace("=", spaceAroundEquals, spaceAroundEquals)
-        val colon = spaceHandler.handleSpace(":", spaceBeforeColon, spaceAfterColon)
+        // Sin inicializador la declaración termina acá.
+        if (declarationNode.expr is NilNode) return declaration
 
-        // Una declaración sin inicializador ("let x : number;") no lleva "= expresión".
-        if (declarationNode.expr is NilNode) return "$declKeywordValue $id$colon$dataType"
-
-        // Se delega en el Formatter para cubrir toda expresión registrada, no solo literales
+        // Se delega en el Formatter para cubrir toda expresión registrada, no sólo literales
         // y operaciones binarias.
-        val exprValue = formatter.format(declarationNode.expr)
-        return "$declKeywordValue $id$colon$dataType$equal$exprValue"
+        val initializer = formatter.format(declarationNode.expr)
+
+        // let x : number = 5
+        return "$declaration${equalsSeparator(formatter)}$initializer"
     }
 
-    private fun allowedDeclarationKeyword(declKeyword: String): Boolean =
-        allowedDeclarationKeywords.contains(
-            declKeyword,
+    /** `:` con los espacios que indiquen `spaceBeforeColon` y `spaceAfterColon`. */
+    private fun colonSeparator(formatter: Formatter): String =
+        spaceHandler.handleSpace(
+            ":",
+            formatter.getRules()["spaceBeforeColon"] as Boolean,
+            formatter.getRules()["spaceAfterColon"] as Boolean,
         )
 
-    private fun allowedDataType(dataType: String): Boolean =
-        allowedDataTypes.contains(
-            dataType,
-        )
+    /** `=` con los espacios que indique `spaceAroundEquals`, a ambos lados. */
+    private fun equalsSeparator(formatter: Formatter): String {
+        val spaceAroundEquals = formatter.getRules()["spaceAroundEquals"] as Boolean
+        return spaceHandler.handleSpace("=", spaceAroundEquals, spaceAroundEquals)
+    }
+
+    private fun declarationKeywordOrFail(declKeyword: String): String {
+        if (declKeyword !in allowedDeclarationKeywords) {
+            throw UnsupportedOperationException("Unsupported declaration type $declKeyword")
+        }
+        return declKeyword
+    }
+
+    private fun dataTypeOrFail(dataType: String): String {
+        if (dataType !in allowedDataTypes) {
+            throw UnsupportedOperationException("Unsupported data type $dataType")
+        }
+        return dataType
+    }
 }
