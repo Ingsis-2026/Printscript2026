@@ -12,8 +12,16 @@ class TokenMapper(
         disallowedKeywords = getDisallowedForVersion(version),
     )
 
+    /**
+     * Motivo por el que la versión no admite este lexema, o `null` si lo admite.
+     *
+     * Se consulta en lugar de fallar dentro de [classify] porque quien conoce la ubicación del
+     * lexema es el [Lexer]: así el rechazo puede informarse como un error ubicado en el fuente
+     * y no como un error genérico sin fila ni columna.
+     */
+    fun disallowedReason(input: String): String? = disallowedKeywords[input]
+
     fun classify(input: String): TokenType {
-        disallowedKeywords[input]?.let { throw IllegalArgumentException(it) }
         if (input.isBlank()) return TokenType.UNKNOWN
 
         return reservedKeywords[input]

@@ -27,7 +27,7 @@ class FormatterPS(
      * Es el punto de entrada para archivos grandes: el consumidor puede escribir cada
      * sentencia formateada a medida que la recibe, sin armar el resultado completo en memoria.
      */
-    fun formatStatements(lines: Sequence<String>): Sequence<String> =
+    override fun formatStatements(lines: Sequence<String>): Sequence<String> =
         parser
             .execute(withTrailingSemicolon(lexer.convertToTokens(lines)))
             .map { node ->

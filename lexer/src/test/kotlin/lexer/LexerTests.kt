@@ -1,4 +1,5 @@
 import lexer.Lexer
+import lexer.LexerException
 import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Test
@@ -6,6 +7,7 @@ import token.Token
 import token.TokenPosition
 import token.TokenType
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class LexerTests {
     private val tkClassifier = TokenMapper("1.0")
@@ -120,5 +122,17 @@ class LexerTests {
         assertEquals(";", tokens[6].value)
         assertEquals("println", tokens[7].value)
         assertEquals("x", tokens[9].value)
+    }
+
+    @Test
+    fun `test a keyword from a later version is rejected with its position`() {
+        val exception =
+            assertFailsWith<LexerException> {
+                lexer.execute("const x : number = 8;")
+            }
+
+        assertEquals("Const declarations are not allowed in version 1.0", exception.message)
+        assertEquals(TokenPosition(0, 0), exception.startPosition)
+        assertEquals(TokenPosition(0, 5), exception.endPosition)
     }
 }

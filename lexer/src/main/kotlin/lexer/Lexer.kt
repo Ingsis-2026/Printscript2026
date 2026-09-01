@@ -55,10 +55,13 @@ class Lexer(
             rejectSkippedText(lineContent, row, scanned, matcher.start())
 
             val rawValue = matcher.group()
-            val tokenType = classifier.classify(rawValue)
             val startPos = TokenPosition(row, matcher.start())
             val endPos = TokenPosition(row, matcher.end())
 
+            // Palabra válida del lenguaje pero no de esta versión (por ejemplo "const" en 1.0).
+            classifier.disallowedReason(rawValue)?.let { reason -> throw LexerException(reason, startPos, endPos) }
+
+            val tokenType = classifier.classify(rawValue)
             if (tokenType == TokenType.UNKNOWN) {
                 throw LexerException("Carácter inválido encontrado: '$rawValue'", startPos, endPos)
             }
