@@ -52,7 +52,14 @@ class DeclarationFactory : ASTFactory {
                     expressionTokens.any {
                         it.getType() == TokenType.BOOLEANLITERAL || it.getType() == TokenType.STRINGLITERAL
                     }
-                "string" -> !expressionTokens.any { it.getType() == TokenType.STRINGLITERAL }
+                // Un "string" admite concatenar variables (sin literales a la vista) y también
+                // mezclar con "number", porque el resultado sigue siendo "string". Sólo es
+                // inconsistente si no hay ningún literal de texto y sí hay literales de otro tipo.
+                "string" ->
+                    expressionTokens.none { it.getType() == TokenType.STRINGLITERAL } &&
+                        expressionTokens.any {
+                            it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.BOOLEANLITERAL
+                        }
                 "boolean" ->
                     expressionTokens.any {
                         it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.STRINGLITERAL

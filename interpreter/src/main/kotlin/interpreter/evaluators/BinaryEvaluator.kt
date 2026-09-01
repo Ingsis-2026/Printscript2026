@@ -83,7 +83,9 @@ class BinaryEvaluator : NodeEvaluator {
         }
 
     /**
-     * Concatenación textual admitida por `+`: String+String, Int+String y String+Int.
+     * Concatenación textual admitida por `+`: si la expresión incluye un "string" y un
+     * "number" el resultado es "string". Cubre todo Number (enteros y decimales), no sólo Int.
+     *
      * Devuelve `null` cuando el par de operandos no es una concatenación, para que
      * [handleAddition] continúe con la aritmética numérica.
      */
@@ -93,8 +95,8 @@ class BinaryEvaluator : NodeEvaluator {
     ): String? =
         when {
             leftValue is String && rightValue is String -> leftValue + rightValue
-            leftValue is Int && rightValue is String -> leftValue.toString() + rightValue
-            leftValue is String && rightValue is Int -> leftValue + rightValue.toString()
+            leftValue is Number && rightValue is String -> leftValue.toString() + rightValue
+            leftValue is String && rightValue is Number -> leftValue + rightValue.toString()
             else -> null
         }
 
