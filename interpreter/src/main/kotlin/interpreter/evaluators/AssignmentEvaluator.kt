@@ -36,19 +36,23 @@ class AssignmentEvaluator : NodeEvaluator {
             throw InterpreterException("No es posible reasignar una variable de tipo $declarationKeyword")
         }
 
-        // Una variable sólo admite valores del mismo tipo con el que fue inicializada.
+        // Una variable sólo admite valores de su mismo tipo de PrintScript, y "number"
+        // abarca enteros y decimales: reasignar 5 con 2.5 es válido.
         val existing = interpreter.variables[id] ?: return
-        if (existing::class != value::class) {
+        if (printScriptTypeOf(existing) != printScriptTypeOf(value)) {
             throw InterpreterException("Invalid expression for type ${literalTypeNameOf(existing)}")
         }
     }
 
-    /** Nombre del TokenType literal asociado al valor, sólo para los mensajes de error. */
-    private fun literalTypeNameOf(value: Any): String =
+    /** Tipo de PrintScript del valor: number (enteros y decimales), string o boolean. */
+    private fun printScriptTypeOf(value: Any): TokenType =
         when (value) {
-            is Int, is Double, is Float -> TokenType.NUMBERLITERAL
+            is Number -> TokenType.NUMBERLITERAL
             is String -> TokenType.STRINGLITERAL
             is Boolean -> TokenType.BOOLEANLITERAL
             else -> TokenType.UNKNOWN
-        }.name.lowercase()
+        }
+
+    /** Nombre del TokenType literal asociado al valor, sólo para los mensajes de error. */
+    private fun literalTypeNameOf(value: Any): String = printScriptTypeOf(value).name.lowercase()
 }
