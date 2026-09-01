@@ -73,9 +73,11 @@ class Lexer(
     }
 
     /**
-     * `Matcher.find` salta todo lo que el patrón no reconoce, así que un carácter inválido
-     * pasaba inadvertido en lugar de reportarse. Se inspeccionan los huecos entre matches
-     * (y la cola de la línea) y se rechaza cualquier texto que no sea espacio en blanco.
+     * Rechaza el texto que el patrón no reconoció.
+     *
+     * `Matcher.find` no falla ante un lexema inválido: simplemente lo saltea y sigue con el
+     * match siguiente. Para detectarlo hay que mirar los huecos que deja entre matches —y la
+     * cola de la línea—, donde cualquier cosa que no sea espacio en blanco es un error.
      */
     private fun rejectSkippedText(
         lineContent: String,
