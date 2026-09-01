@@ -3,6 +3,7 @@ package interpreter.evaluators
 import ast.ASTNode
 import ast.ConditionalNode
 import interpreter.Interpreter
+import interpreter.InterpreterException
 
 class ConditionalEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is ConditionalNode
@@ -15,7 +16,7 @@ class ConditionalEvaluator : NodeEvaluator {
         val condition = interpreter.execute(conditional.condition)
 
         if (condition !is Boolean) {
-            throw RuntimeException("Condition must evaluate to a boolean")
+            throw InterpreterException("Condition must evaluate to a boolean")
         }
 
         if (condition) {

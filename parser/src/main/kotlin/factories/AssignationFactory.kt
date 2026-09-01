@@ -4,6 +4,7 @@ import ast.ASTNode
 import ast.AssignationNode
 import ast.LiteralNode
 import ast.NilNode
+import parser.ParserException
 import token.Token
 import token.TokenType
 
@@ -11,7 +12,7 @@ class AssignationFactory : ASTFactory {
     override fun createAST(tokens: List<Token>): ASTNode {
         val assignationToken =
             tokens.find { it.getType() == TokenType.ASSIGNATION }
-                ?: throw Exception("Assignation token not found")
+                ?: throw ParserException("Assignation token not found")
 
         val leftTokens = getLeftTokens(tokens)
         val rightTokens = getRightTokens(tokens, leftTokens)
@@ -20,7 +21,7 @@ class AssignationFactory : ASTFactory {
             when {
                 leftTokens.size > 1 -> variableDeclaration(leftTokens)
                 leftTokens.isNotEmpty() -> createLiteralNode(leftTokens[0])
-                else -> throw Exception("Invalid left side of assignment")
+                else -> throw ParserException("Invalid left side of assignment")
             }
 
         val rightNode =
@@ -34,7 +35,7 @@ class AssignationFactory : ASTFactory {
             if (leftNode is LiteralNode) {
                 leftNode.value
             } else {
-                throw Exception("Left side of assignment must be a literal or identifier")
+                throw ParserException("Left side of assignment must be a literal or identifier")
             }
 
         return AssignationNode(

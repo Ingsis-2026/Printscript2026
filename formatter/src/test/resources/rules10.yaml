@@ -1,0 +1,5 @@
+# Ejemplo de archivo de configuración del formatter en YAML
+spaceBeforeColon: true # antes de :
+spaceAfterColon: true # después de :
+spaceAroundEquals: true # alrededor de =
+lineBreakPrintln: 2 # salto de línea println /n

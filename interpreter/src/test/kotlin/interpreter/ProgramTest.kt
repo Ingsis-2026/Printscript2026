@@ -9,12 +9,6 @@ import parser.Parser
 import java.util.Scanner
 
 class ProgramTest {
-    private val printer: Printer =
-        object : Printer {
-            override fun print(message: String) {
-                println(message)
-            }
-        }
     private val reader: Reader =
         object : Reader {
             override fun input(message: String): String {

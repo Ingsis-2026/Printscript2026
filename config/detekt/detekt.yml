@@ -1,8 +1,20 @@
+complexity:
+  # Las métricas de complejidad sobre clases de test son ruido: una clase de
+  # test crece con la cantidad de casos, que es justamente lo que queremos.
+  LargeClass:
+    excludes: ['**/test/**']
+
 potential-bugs:
   UnsafeCallOnNullableType:
     active: true
 
 style:
+  # Alineado con max_line_length de .editorconfig (y por lo tanto con Ktlint).
+  # El default de Detekt es 120, lo que hacía que ambas herramientas se
+  # contradijeran: ktlintFormat unía líneas que luego Detekt rechazaba.
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
   MagicNumber:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/*.Test.kt', '**/*Test.kt', '**/*Tests.kt']

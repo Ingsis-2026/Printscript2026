@@ -4,6 +4,7 @@ import ast.ASTNode
 import ast.FunctionNode
 import ast.LiteralNode
 import interpreter.Interpreter
+import interpreter.InterpreterException
 import token.TokenType
 
 class FunctionEvaluator : NodeEvaluator {
@@ -26,7 +27,7 @@ class FunctionEvaluator : NodeEvaluator {
                     }
                 }
             }
-            else -> throw RuntimeException("Unsupported function: ${functionNode.type}")
+            else -> throw InterpreterException("Unsupported function: ${functionNode.type}")
         }
     }
 
@@ -38,11 +39,11 @@ class FunctionEvaluator : NodeEvaluator {
             if (node.expression is LiteralNode) {
                 node.expression as LiteralNode
             } else {
-                throw RuntimeException("readInput necesita solo un argumento")
+                throw InterpreterException("readInput necesita solo un argumento")
             }
         val message =
             interpreter.execute(argument) as? String
-                ?: throw RuntimeException("El argumento de readInput debe ser String")
+                ?: throw InterpreterException("El argumento de readInput debe ser String")
 
         interpreter.printer.print(argument.value)
         val userInput = interpreter.reader.input(message)
@@ -57,12 +58,15 @@ class FunctionEvaluator : NodeEvaluator {
             if (node.expression is LiteralNode) {
                 node.expression as LiteralNode
             } else {
-                throw RuntimeException("readEnv necesita solo un argumento")
+                throw InterpreterException("readEnv necesita solo un argumento")
             }
         val varName =
             interpreter.execute(argument) as? String
-                ?: throw RuntimeException("El argumento de readEnv debe ser String")
+                ?: throw InterpreterException("El argumento de readEnv debe ser String")
 
-        return System.getenv(varName) ?: throw RuntimeException("La variable de entorno '$varName' no está definida")
+        return System.getenv(varName) ?: undefinedEnvironmentVariable(varName)
     }
+
+    private fun undefinedEnvironmentVariable(varName: String): Nothing =
+        throw InterpreterException("La variable de entorno '$varName' no está definida")
 }
