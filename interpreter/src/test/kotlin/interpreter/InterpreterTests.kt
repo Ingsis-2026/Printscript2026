@@ -1,5 +1,6 @@
 package interpreter
 
+import ast.ASTNode
 import ast.AssignationNode
 import ast.BinaryNode
 import ast.BlockNode
@@ -9,6 +10,7 @@ import ast.FunctionNode
 import ast.LiteralNode
 import ast.NilNode
 import ast.PrintNode
+import interpreter.evaluators.NodeEvaluator
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -995,7 +997,6 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader)
 
         // Asignación inicial de una constante
-        val initialExpression = LiteralNode("FixedValue", TokenType.STRINGLITERAL, position)
         interpreter.variables["constVar"] = "FixedValue"
         interpreter.tiposDeVariables["constVar"] = "const"
 
@@ -1133,11 +1134,11 @@ class InterpreterTests {
     @Test
     fun `test custom node evaluator plugin`() {
         val customEvaluator =
-            object : interpreter.evaluators.NodeEvaluator {
-                override fun canEvaluate(node: ast.ASTNode): Boolean = node is ast.NilNode
+            object : NodeEvaluator {
+                override fun canEvaluate(node: ASTNode): Boolean = node is NilNode
 
                 override fun evaluate(
-                    node: ast.ASTNode,
+                    node: ASTNode,
                     interpreter: Interpreter,
                 ): Any = "Custom Nil Evaluated!"
             }
@@ -1145,5 +1146,182 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader, listOf(customEvaluator))
         val result = interpreter.execute(NilNode)
         assertEquals("Custom Nil Evaluated!", result)
+    }
+
+    @Test
+    fun `test interpreter factory versions`() {
+        val i10 = InterpreterFactory.forVersion("1.0", printer, reader)
+        val i11 = InterpreterFactory.forVersion("1.1", printer, reader)
+        assertEquals(true, i10.variables.isEmpty())
+        assertEquals(true, i11.variables.isEmpty())
+        assertThrows(IllegalArgumentException::class.java) {
+            InterpreterFactory.forVersion("9.9", printer, reader)
+        }
+    }
+
+    @Test
+    fun `test declaration with nil node`() {
+        val interpreter = Interpreter(printer, reader)
+        val node =
+            DeclarationNode(
+                TokenType.KEYWORD,
+                "let",
+                "uninit",
+                TokenType.DATA_TYPE,
+                "number",
+                NilNode,
+                position,
+            )
+        interpreter.execute(node)
+        assertEquals(false, interpreter.variables.containsKey("uninit"))
+    }
+
+    @Test
+    fun `test handle readInput function`() {
+        val testReader =
+            object : Reader {
+                override fun input(message: String): String = "100"
+            }
+        val interpreter = Interpreter(printer, testReader)
+        val arg = LiteralNode("Enter number: ", TokenType.STRINGLITERAL, position)
+        val node = FunctionNode(TokenType.FUNCTION, "readInput", arg, position)
+        val result = interpreter.execute(node)
+        assertEquals(100, result)
+    }
+
+    @Test
+    fun `test readInput with invalid argument throws`() {
+        val interpreter = Interpreter(printer, reader)
+        val arg = NilNode
+        val node = FunctionNode(TokenType.FUNCTION, "readInput", arg, position)
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(node)
+        }
+    }
+
+    @Test
+    fun `test readEnv with invalid argument throws`() {
+        val interpreter = Interpreter(printer, reader)
+        val arg = NilNode
+        val node = FunctionNode(TokenType.FUNCTION, "readEnv", arg, position)
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(node)
+        }
+    }
+
+    @Test
+    fun `test unsupported node type throws`() {
+        val interpreter = Interpreter(printer, reader, emptyList())
+        val node = LiteralNode("test", TokenType.STRINGLITERAL, position)
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(node)
+        }
+    }
+
+    @Test
+    fun `test conditional false without else block returns null`() {
+        val interpreter = Interpreter(printer, reader)
+        val condition = LiteralNode("false", TokenType.BOOLEANLITERAL, position)
+        val thenBlock = PrintNode(LiteralNode("should not run", TokenType.STRINGLITERAL, position), position)
+        val node = ConditionalNode(condition, thenBlock, null, position)
+        val result = interpreter.execute(node)
+        assertEquals(Unit, result)
+    }
+
+    @Test
+    fun `test already declared variable throws`() {
+        val interpreter = Interpreter(printer, reader)
+        val expr = LiteralNode("1", TokenType.NUMBERLITERAL, position)
+        val node1 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", TokenType.DATA_TYPE, "number", expr, position)
+        val node2 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", TokenType.DATA_TYPE, "number", expr, position)
+        interpreter.execute(node1)
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(node2)
+        }
+    }
+
+    @Test
+    fun `test reassign const variable throws`() {
+        val interpreter = Interpreter(printer, reader)
+        interpreter.variables["c"] = 10
+        interpreter.tiposDeVariables["c"] = "const"
+        val assignNode =
+            AssignationNode(
+                "c",
+                LiteralNode("20", TokenType.NUMBERLITERAL, position),
+                TokenType.ASSIGNATION,
+                position,
+            )
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(assignNode)
+        }
+    }
+
+    @Test
+    fun `test reassign variable wrong type throws`() {
+        val interpreter = Interpreter(printer, reader)
+        interpreter.variables["x"] = 10
+        val assignNode =
+            AssignationNode(
+                "x",
+                LiteralNode("hello", TokenType.STRINGLITERAL, position),
+                TokenType.ASSIGNATION,
+                position,
+            )
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(assignNode)
+        }
+    }
+
+    @Test
+    fun `test reassign string variable with number throws`() {
+        val interpreter = Interpreter(printer, reader)
+        interpreter.variables["str"] = "hello"
+        val assignNode =
+            AssignationNode(
+                "str",
+                LiteralNode("42", TokenType.NUMBERLITERAL, position),
+                TokenType.ASSIGNATION,
+                position,
+            )
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(assignNode)
+        }
+    }
+
+    @Test
+    fun `test reassign variable with unhandled type throws`() {
+        val interpreter = Interpreter(printer, reader)
+        interpreter.variables["boolVar"] = true
+        val assignNode =
+            AssignationNode(
+                "boolVar",
+                LiteralNode("false", TokenType.BOOLEANLITERAL, position),
+                TokenType.ASSIGNATION,
+                position,
+            )
+        assertThrows(RuntimeException::class.java) {
+            interpreter.execute(assignNode)
+        }
+    }
+
+    @Test
+    fun `test binary operations with unsupported operands`() {
+        val interpreter = Interpreter(printer, reader)
+        val left = LiteralNode("true", TokenType.BOOLEANLITERAL, position)
+        val right = LiteralNode("false", TokenType.BOOLEANLITERAL, position)
+        val addNode = BinaryNode(left, right, Token(TokenType.OPERATOR, "+", position, position), position)
+        val subNode = BinaryNode(left, right, Token(TokenType.OPERATOR, "-", position, position), position)
+        assertThrows(RuntimeException::class.java) { interpreter.execute(addNode) }
+        assertThrows(RuntimeException::class.java) { interpreter.execute(subNode) }
+    }
+
+    @Test
+    fun `test custom function in function evaluator`() {
+        val interpreter = Interpreter(printer, reader)
+        val expr = LiteralNode("hello", TokenType.STRINGLITERAL, position)
+        val funcNode = FunctionNode(TokenType.FUNCTION, "myCustomFunction", expr, position)
+        val result = interpreter.execute(funcNode)
+        assertEquals("hello", result)
     }
 }

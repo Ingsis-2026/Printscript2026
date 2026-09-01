@@ -6,8 +6,12 @@ import token.Token
 import token.TokenType
 
 class PrintlnFactory : ASTFactory {
+    companion object {
+        private const val MIN_TOKENS = 4
+    }
+
     override fun createAST(tokens: List<Token>): ASTNode {
-        if (tokens.size < 4) {
+        if (tokens.size < MIN_TOKENS) {
             throw IllegalArgumentException("Invalid token structure for println: Too few tokens")
         }
 

@@ -5,6 +5,7 @@ potential-bugs:
 style:
   MagicNumber:
     active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/*.Test.kt', '**/*Test.kt', '**/*Tests.kt']
     ignoreNumbers:
       - '-1'
       - '0'

@@ -1,5 +1,12 @@
-package ast
-
+import ast.AssignationNode
+import ast.BinaryNode
+import ast.BlockNode
+import ast.ConditionalNode
+import ast.DeclarationNode
+import ast.FunctionNode
+import ast.LiteralNode
+import ast.NilNode
+import ast.PrintNode
 import org.junit.jupiter.api.Test
 import token.Token
 import token.TokenPosition

@@ -13,28 +13,12 @@ class TokenMapper(
     )
 
     fun classify(input: String): TokenType {
-        if (disallowedKeywords.containsKey(input)) {
-            throw IllegalArgumentException(disallowedKeywords[input])
-        }
-        if (input.isBlank()) {
-            return TokenType.UNKNOWN
-        }
+        disallowedKeywords[input]?.let { throw IllegalArgumentException(it) }
+        if (input.isBlank()) return TokenType.UNKNOWN
 
-        if (reservedKeywords.containsKey(input)) {
-            return reservedKeywords[input] ?: TokenType.UNKNOWN
-        }
-
-        for ((type, strategy) in strategyMap) {
-            if (strategy.classify(input)) {
-                return type
-            }
-        }
-
-        if (input == "numberResult" || input == "stringResult") {
-            return TokenType.IDENTIFIER
-        }
-
-        return TokenType.UNKNOWN
+        return reservedKeywords[input]
+            ?: strategyMap.entries.firstOrNull { it.value.classify(input) }?.key
+            ?: if (input == "numberResult" || input == "stringResult") TokenType.IDENTIFIER else TokenType.UNKNOWN
     }
 
     fun getStrategyMap(): Map<TokenType, TokenClassifierStrategy> = strategyMap
@@ -55,11 +39,11 @@ class TokenMapper(
             mapOf(
                 TokenType.KEYWORD to RegexTokenClassifier("""\blet\b""".toRegex()),
                 TokenType.FUNCTION to RegexTokenClassifier("""\bprintln\b""".toRegex()),
-                TokenType.PARENTHESIS to RegexTokenClassifier("""\(|\)""".toRegex()),
+                TokenType.PARENTHESIS to RegexTokenClassifier("""[()]""".toRegex()),
                 TokenType.DECLARATOR to RegexTokenClassifier(""":""".toRegex()),
                 TokenType.ASSIGNATION to RegexTokenClassifier("""=""".toRegex()),
                 TokenType.DATA_TYPE to RegexTokenClassifier("""\bstring\b|\bnumber\b""".toRegex()),
-                TokenType.OPERATOR to RegexTokenClassifier("""[\+\-\*/%=><!&|^~]+""".toRegex()),
+                TokenType.OPERATOR to RegexTokenClassifier("""[-+*/%=><!&|^~]+""".toRegex()),
                 TokenType.IDENTIFIER to RegexTokenClassifier("""\b[a-zA-Z_][a-zA-Z0-9_]*\b""".toRegex()),
                 TokenType.STRINGLITERAL to RegexTokenClassifier("\'[^\']*\'|\"[^\"]*\"".toRegex()),
                 TokenType.NUMBERLITERAL to RegexTokenClassifier("[0-9]+(\\.[0-9]+)?".toRegex()),

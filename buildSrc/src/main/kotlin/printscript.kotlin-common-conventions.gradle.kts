@@ -30,7 +30,7 @@ ktlint {
 }
 
 detekt {
-    buildUponDefaultConfig = true
+    buildUponDefaultConfig = false
     allRules = false
     config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
 }

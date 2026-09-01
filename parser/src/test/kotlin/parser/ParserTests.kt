@@ -1,4 +1,5 @@
-package org.example
+package parser
+
 import ast.AssignationNode
 import ast.BinaryNode
 import ast.DeclarationNode
@@ -10,7 +11,6 @@ import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import parser.Parser
 import token.Token
 import token.TokenPosition
 import token.TokenType

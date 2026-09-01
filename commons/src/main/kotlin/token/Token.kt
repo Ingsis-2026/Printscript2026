@@ -28,5 +28,7 @@ class Token(
         return result
     }
 
-    override fun toString(): String = "Token(type = '$type', value = '$value', start = '$initialPosition', end = '$finalPosition')"
+    override fun toString(): String =
+        "Token(type = '$type', value = '$value', " +
+            "start = '$initialPosition', end = '$finalPosition')"
 }

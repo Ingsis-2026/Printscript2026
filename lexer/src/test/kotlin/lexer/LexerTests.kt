@@ -106,5 +106,19 @@ class LexerTests {
         assertEquals(result, lexer.execute(input))
     }
 
-    // test changes
+    @Test
+    fun `test convertToTokens with input stream streaming`() {
+        val input = "let x : number = 10;\nprintln(x);"
+        val stream = input.byteInputStream()
+        val tokens = lexer.convertToTokens(stream).toList()
+
+        assertEquals(12, tokens.size)
+        assertEquals("let", tokens[0].value)
+        assertEquals(TokenType.KEYWORD, tokens[0].getType())
+        assertEquals("x", tokens[1].value)
+        assertEquals(TokenType.IDENTIFIER, tokens[1].getType())
+        assertEquals(";", tokens[6].value)
+        assertEquals("println", tokens[7].value)
+        assertEquals("x", tokens[9].value)
+    }
 }

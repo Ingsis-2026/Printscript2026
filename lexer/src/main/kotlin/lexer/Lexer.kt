@@ -3,64 +3,76 @@ package lexer
 import token.Token
 import token.TokenPosition
 import token.TokenType
-import java.util.regex.Matcher
+import java.io.BufferedReader
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.util.regex.Pattern
 
 class Lexer(
     private val classifier: TokenMapper,
 ) {
-    private val patternMatcher = PatternMatcher(classifier.getStrategyMap())
+    private val pattern: Pattern = PatternMatcher(classifier.getStrategyMap()).createPattern()
 
-    fun execute(input: String): List<Token> {
+    fun execute(input: String): List<Token> = convertToTokens(input)
+
+    fun convertToTokens(input: String): List<Token> {
         val tokens = mutableListOf<Token>()
         var row = 0
-        input.lines().forEach { lineContent ->
-            processLine(lineContent, row, tokens)
+        input.lineSequence().forEach { lineContent ->
+            val lineTokens = convertLineToTokens(lineContent, row)
+            tokens.addAll(lineTokens)
             row++
         }
         return tokens
     }
 
-    private fun processLine(
-        lineContent: String,
-        row: Int,
-        tokens: MutableList<Token>,
-    ) {
-        val matcher = createMatcher(lineContent)
-        while (matcher.find()) {
-            val tokenValue = matcher.group()
-            val tokenType = classifier.classify(tokenValue)
-
-            if (tokenType == TokenType.LITERAL) {
-                val actualValue = extractTokenValue(tokenType, matcher)
-                val startPos = TokenPosition(row, matcher.start() + 1)
-                val endPos = TokenPosition(row, matcher.end() - 1)
-                tokens.add(Token(tokenType, actualValue, startPos, endPos))
-            }
-
-            if (tokenType != TokenType.UNKNOWN) {
-                val actualValue = extractTokenValue(tokenType, matcher)
-                val startPos = TokenPosition(row, matcher.start())
-                val endPos = TokenPosition(row, matcher.end())
-                tokens.add(Token(tokenType, actualValue, startPos, endPos))
-            } else {
-                throw IllegalArgumentException("Carácter inválido encontrado: '$tokenValue'")
+    fun convertToTokens(lines: Sequence<String>): Sequence<Token> =
+        sequence {
+            var row = 0
+            for (lineContent in lines) {
+                val lineTokens = convertLineToTokens(lineContent, row)
+                for (token in lineTokens) {
+                    yield(token)
+                }
+                row++
             }
         }
+
+    fun convertToTokens(inputStream: InputStream): Sequence<Token> {
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        return convertToTokens(reader.lineSequence())
     }
 
-    private fun createMatcher(lineContent: String): Matcher {
-        val pattern = patternMatcher.createPattern()
-        return pattern.matcher(lineContent)
+    private fun convertLineToTokens(
+        lineContent: String,
+        row: Int,
+    ): List<Token> {
+        val lineTokens = mutableListOf<Token>()
+        val matcher = pattern.matcher(lineContent)
+
+        while (matcher.find()) {
+            val rawValue = matcher.group()
+            val tokenType = classifier.classify(rawValue)
+
+            require(tokenType != TokenType.UNKNOWN) {
+                "Carácter inválido encontrado: '$rawValue'"
+            }
+
+            val actualValue = extractTokenValue(tokenType, rawValue)
+            val startPos = TokenPosition(row, matcher.start())
+            val endPos = TokenPosition(row, matcher.end())
+            lineTokens.add(Token(tokenType, actualValue, startPos, endPos))
+        }
+
+        return lineTokens
     }
 
     private fun extractTokenValue(
         tokenType: TokenType,
-        matcher: Matcher,
+        rawValue: String,
     ): String =
         when (tokenType) {
-            TokenType.STRINGLITERAL -> {
-                matcher.group().substring(1, matcher.group().length - 1)
-            }
-            else -> matcher.group()
+            TokenType.STRINGLITERAL -> rawValue.removeSurrounding("\"", "\"").removeSurrounding("'", "'")
+            else -> rawValue
         }
 }

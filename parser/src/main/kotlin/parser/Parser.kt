@@ -2,49 +2,13 @@ package parser
 
 import ast.ASTNode
 import factories.ASTFactory
-import factories.AssignationFactory
-import factories.ConditionalFactory
-import factories.DeclarationFactory
-import factories.FunctionFactory
-import factories.PrintlnFactory
 import token.Token
 
 class Parser(
-    private val factories: List<ASTFactory> = defaultFactories(),
+    private val factories: List<ASTFactory> = ParserFactory.defaultFactories(),
 ) {
     companion object {
-        fun defaultFactories(): List<ASTFactory> =
-            listOf(
-                ConditionalFactory(),
-                PrintlnFactory(),
-                DeclarationFactory(),
-                AssignationFactory(),
-                FunctionFactory(),
-            )
-
-        fun forVersion(version: String): Parser =
-            when (version) {
-                "1.0" ->
-                    Parser(
-                        listOf(
-                            PrintlnFactory(),
-                            DeclarationFactory(),
-                            AssignationFactory(),
-                            FunctionFactory(),
-                        ),
-                    )
-                "1.1" ->
-                    Parser(
-                        listOf(
-                            ConditionalFactory(),
-                            PrintlnFactory(),
-                            DeclarationFactory(),
-                            AssignationFactory(),
-                            FunctionFactory(),
-                        ),
-                    )
-                else -> throw IllegalArgumentException("Unsupported version: $version")
-            }
+        fun forVersion(version: String): Parser = ParserFactory.forVersion(version)
     }
 
     fun execute(tokens: List<Token>): List<ASTNode> {
