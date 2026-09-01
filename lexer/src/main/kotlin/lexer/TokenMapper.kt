@@ -18,7 +18,7 @@ class TokenMapper(
 
         return reservedKeywords[input]
             ?: strategyMap.entries.firstOrNull { it.value.classify(input) }?.key
-            ?: if (input == "numberResult" || input == "stringResult") TokenType.IDENTIFIER else TokenType.UNKNOWN
+            ?: TokenType.UNKNOWN
     }
 
     fun getStrategyMap(): Map<TokenType, TokenClassifierStrategy> = strategyMap

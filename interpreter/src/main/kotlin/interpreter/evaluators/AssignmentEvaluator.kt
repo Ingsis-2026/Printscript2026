@@ -14,38 +14,41 @@ class AssignmentEvaluator : NodeEvaluator {
         interpreter: Interpreter,
     ): Any? {
         val assignation = node as AssignationNode
-        val value = interpreter.execute(assignation.expression) ?: throw InterpreterException("Invalid assignment in Assignment")
-
-        println("Asignando a la variable '${assignation.id}' el valor $value")
+        val value =
+            interpreter.execute(assignation.expression)
+                ?: throw InterpreterException("Invalid assignment in Assignment")
 
         if (interpreter.variables.containsKey(assignation.id)) {
-            if (interpreter.tiposDeVariables[assignation.id] == "const") {
-                throw InterpreterException("No es posible reasignar una variable de tipo ${interpreter.tiposDeVariables[assignation.id]}")
-            }
-            val expectedType =
-                when (interpreter.variables[assignation.id]) {
-                    is Int -> TokenType.NUMBERLITERAL
-                    is String -> TokenType.STRINGLITERAL
-                    else -> throw InterpreterException("Unknown type for variable ${assignation.id}")
-                }
-
-            if (isTypeMismatch(expectedType, value)) {
-                throw InterpreterException("Invalid expression for type ${expectedType.name.lowercase()}")
-            }
+            checkReassignable(assignation.id, value, interpreter)
         }
 
         interpreter.variables[assignation.id] = value
-        println("Valor asignado a '${assignation.id}' es ahora ${interpreter.variables[assignation.id]}")
         return value
     }
 
-    private fun isTypeMismatch(
-        expectedType: TokenType,
-        value: Any?,
-    ): Boolean =
-        when (expectedType) {
-            TokenType.NUMBERLITERAL -> value !is Int
-            TokenType.STRINGLITERAL -> value !is String
-            else -> false
+    private fun checkReassignable(
+        id: String,
+        value: Any,
+        interpreter: Interpreter,
+    ) {
+        val declarationKeyword = interpreter.tiposDeVariables[id]
+        if (declarationKeyword == "const") {
+            throw InterpreterException("No es posible reasignar una variable de tipo $declarationKeyword")
         }
+
+        // Una variable sólo admite valores del mismo tipo con el que fue inicializada.
+        val existing = interpreter.variables[id] ?: return
+        if (existing::class != value::class) {
+            throw InterpreterException("Invalid expression for type ${literalTypeNameOf(existing)}")
+        }
+    }
+
+    /** Nombre del TokenType literal asociado al valor, sólo para los mensajes de error. */
+    private fun literalTypeNameOf(value: Any): String =
+        when (value) {
+            is Int, is Double, is Float -> TokenType.NUMBERLITERAL
+            is String -> TokenType.STRINGLITERAL
+            is Boolean -> TokenType.BOOLEANLITERAL
+            else -> TokenType.UNKNOWN
+        }.name.lowercase()
 }

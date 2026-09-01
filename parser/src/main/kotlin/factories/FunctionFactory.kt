@@ -2,7 +2,6 @@ package factories
 
 import ast.ASTNode
 import ast.FunctionNode
-import ast.LiteralNode
 import token.Token
 import token.TokenType
 
@@ -12,12 +11,9 @@ class FunctionFactory : ASTFactory {
         val functionToken = tokens.get(indexFunctionToken)
         val expressionToken = tokens.subList(indexFunctionToken + 2, tokens.size - 1)
 
-        val expressionNode =
-            LiteralNode(
-                value = expressionToken.first().value,
-                type = expressionToken.first().getType(),
-                position = expressionToken.first().getPosition(),
-            )
+        // El argumento puede ser una expresión completa, no un único token:
+        // en readInput("a" + "b") el nodo resultante es el BinaryNode de la concatenación.
+        val expressionNode = OperationFactory().createAST(expressionToken)
 
         return FunctionNode(
             type = functionToken.getType(),

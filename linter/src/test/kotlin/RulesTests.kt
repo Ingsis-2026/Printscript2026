@@ -152,17 +152,17 @@ class RulesTests {
     }
 
     @Test
-    fun `containsReadInput should return true when 'inputonly' function token is present`() {
+    fun `containsReadInput should return true when readInput function token is present`() {
         val rule = InputOnlyRule()
-        val tokens = listOf(Token(TokenType.FUNCTION, "inputonly", TokenPosition(0, 0), TokenPosition(0, 9)))
-        assertTrue(rule.containsReadInput(tokens), "Expected to find 'inputonly' function token")
+        val tokens = listOf(Token(TokenType.FUNCTION, "readInput", TokenPosition(0, 0), TokenPosition(0, 9)))
+        assertTrue(rule.containsReadInput(tokens), "Expected to find readInput function token")
     }
 
     @Test
-    fun `containsReadInput should return false when 'inputonly' function token is absent`() {
+    fun `containsReadInput should return false when readInput function token is absent`() {
         val rule = InputOnlyRule()
         val tokens = listOf(Token(TokenType.FUNCTION, "otherFunction", TokenPosition(0, 0), TokenPosition(0, 12)))
-        assertFalse(rule.containsReadInput(tokens), "Expected not to find 'inputonly' function token")
+        assertFalse(rule.containsReadInput(tokens), "Expected not to find readInput function token")
     }
 
     @Test
@@ -185,12 +185,12 @@ class RulesTests {
     }
 
     @Test
-    fun `applyRule should return no broken rules when 'inputonly' is not followed by expression`() {
+    fun `applyRule should return no broken rules when readInput is not followed by expression`() {
         val rule = InputOnlyRule()
         val tokens =
             listOf(
                 listOf(
-                    Token(TokenType.FUNCTION, "inputonly", TokenPosition(3, 1), TokenPosition(3, 10)),
+                    Token(TokenType.FUNCTION, "readInput", TokenPosition(3, 1), TokenPosition(3, 10)),
                     Token(TokenType.IDENTIFIER, "variable", TokenPosition(3, 11), TokenPosition(3, 19)),
                 ),
             )

@@ -11,7 +11,8 @@ class FunctionFormatter : FormattingOperation {
         node: ASTNode,
         formatter: Formatter,
     ): String {
-        if (!canHandle(node)) error("Node isn't a FunctionNode") else node as FunctionNode
-        return formatter.format(node.expression)
+        if (!canHandle(node)) error("Node isn't a FunctionNode")
+        val functionNode = node as FunctionNode
+        return "${functionNode.functionName}(${formatter.format(functionNode.expression)})"
     }
 }

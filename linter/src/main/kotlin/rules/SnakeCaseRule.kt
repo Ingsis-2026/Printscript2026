@@ -7,24 +7,17 @@ import token.TokenType
 class SnakeCaseRule(
     private var errorMessage: String = "The following identifier must be in snake case: ",
 ) : Rule {
-    private val brokenRules = mutableListOf<BrokenRule>()
-
-    override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> {
-        tokens.flatten().forEach { token ->
-            if (isIdentifierType(token) && !isSnakeCase(token.value)) {
-                brokenRules.add(BrokenRule(errorMessage + token.value, token.getPosition()))
-                println("Violation Found: ${token.value} at ${token.getPosition()}")
-            }
-        }
-        return brokenRules
-    }
+    override fun applyRule(tokens: List<List<Token>>): List<BrokenRule> =
+        tokens
+            .flatten()
+            .filter { isIdentifierType(it) && !isSnakeCase(it.value) }
+            .map { BrokenRule(errorMessage + it.value, it.getPosition()) }
 
     private fun isSnakeCase(identifier: String): Boolean =
         identifier.isNotEmpty() &&
             identifier[0].isLowerCase() &&
-            // Should start with lowercase
-            !identifier.contains("__") &&
             // Should not have consecutive underscores
+            !identifier.contains("__") &&
             identifier.all { it.isLowerCase() || it == '_' }
 
     private fun isIdentifierType(token: Token) = token.getType() == TokenType.IDENTIFIER

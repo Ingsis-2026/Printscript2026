@@ -8,9 +8,7 @@ class Tokenizer {
     fun parseToTokens(astNodes: List<ASTNode>): List<List<Token>> {
         val tokens = mutableListOf<List<Token>>()
         for (node in astNodes) {
-            val extractedTokens = extractTokensFromAST(node)
-            println("Tokens from AST Node: $extractedTokens")
-            tokens.add(extractedTokens)
+            tokens.add(extractTokensFromAST(node))
         }
         return tokens
     }
@@ -54,7 +52,8 @@ class Tokenizer {
         node: PrintNode,
         tokens: MutableList<Token>,
     ) {
-        tokens.add(Token(TokenType.FUNCTION, "print", node.position, node.position))
+        // "println" es la palabra real del lenguaje; no existe un "print" en PrintScript.
+        tokens.add(Token(TokenType.FUNCTION, "println", node.position, node.position))
         traverseAST(node.expression, tokens)
     }
 

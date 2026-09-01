@@ -1,6 +1,6 @@
 package token
 
 data class TokenPosition(
-    var row: Int,
-    var column: Int,
+    val row: Int,
+    val column: Int,
 )
