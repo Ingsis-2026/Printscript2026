@@ -52,7 +52,11 @@ class ConditionalFactory(
         val endBlock = tokens.indexOfFirst { it.getType() == TokenType.PUNCTUATOR && it.value == "}" }
 
         if (startBlock < 0 || endBlock < 0 || endBlock <= startBlock) {
-            throw ParserException("Error parsing block: missing or unbalanced braces")
+            throw ParserException(
+                "Error parsing block: missing or unbalanced braces",
+                tokens.firstOrNull()?.getPosition(),
+                tokens.lastOrNull()?.getFinalPosition(),
+            )
         }
 
         return BlockNode(

@@ -12,13 +12,13 @@ class DeclarationFactory : ASTFactory {
     override fun createAST(tokens: List<Token>): ASTNode {
         val keywordToken =
             tokens.find { it.getType() == TokenType.KEYWORD }
-                ?: throw IllegalArgumentException("Expected a KEYWORD token but found none.")
+                ?: throw error(tokens, "Expected a KEYWORD token but found none.")
         val identifierToken =
             tokens.find { it.getType() == TokenType.IDENTIFIER }
-                ?: throw IllegalArgumentException("Expected an IDENTIFIER token but found none.")
+                ?: throw error(tokens, "Expected an IDENTIFIER token but found none.")
         val dataTypeToken =
             tokens.find { it.getType() == TokenType.DATA_TYPE }
-                ?: throw IllegalArgumentException("Expected a DATA_TYPE or DATA_TYPE token but found none.")
+                ?: throw error(tokens, "Expected a DATA_TYPE or DATA_TYPE token but found none.")
 
         val initialPositionExpression = tokens.indexOfFirst { it.value == "=" } + 1
         val expressionTokens: List<Token>? = findExpressionTokens(initialPositionExpression, tokens)
@@ -41,6 +41,16 @@ class DeclarationFactory : ASTFactory {
     }
 
     override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.KEYWORD }
+
+    /** Error de parseo ubicado en el tramo de tokens que lo provocó. */
+    private fun error(
+        tokens: List<Token>,
+        message: String,
+    ) = ParserException(
+        message,
+        tokens.firstOrNull()?.getPosition(),
+        tokens.lastOrNull()?.getFinalPosition(),
+    )
 
     private fun checkConsistencyOfExpressionWithDataType(
         dataTypeValue: String,
@@ -67,7 +77,10 @@ class DeclarationFactory : ASTFactory {
                 else -> false
             }
         if (isInconsistent) {
-            throw ParserException("declared data type $dataTypeValue is inconsistent with the expression")
+            throw error(
+                expressionTokens,
+                "declared data type $dataTypeValue is inconsistent with the expression",
+            )
         }
     }
 

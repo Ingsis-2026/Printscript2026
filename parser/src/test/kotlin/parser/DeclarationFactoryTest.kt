@@ -114,7 +114,7 @@ class DeclarationFactoryTest {
             )
 
         val exception =
-            assertThrows<IllegalArgumentException> {
+            assertThrows<ParserException> {
                 declarationFactory.createAST(tokens)
             }
         assertEquals("Expected an IDENTIFIER token but found none.", exception.message)
@@ -131,7 +131,7 @@ class DeclarationFactoryTest {
             )
 
         val exception =
-            assertThrows<IllegalArgumentException> {
+            assertThrows<ParserException> {
                 declarationFactory.createAST(tokens)
             }
         assertEquals("Expected a DATA_TYPE or DATA_TYPE token but found none.", exception.message)

@@ -21,21 +21,25 @@ class FormatterPS(
     private val semicolonHandler = SemicolonHandler()
     private val lineBreakHandler = LineBreakHandler()
 
-    override fun format(input: String): String {
-        val tokens: List<Token> = lexer.execute(input)
-        if (tokens.isEmpty()) return ""
-
-        val tokensWithSemicolon: List<Token> = addSemicolonForEachStatement(tokens)
-        val astNodes: List<ASTNode> = parser.execute(tokensWithSemicolon)
-
-        val formatedNodes: List<String> =
-            astNodes.map { node ->
+    /**
+     * Formatea un fuente sentencia por sentencia, de forma perezosa.
+     *
+     * Es el punto de entrada para archivos grandes: el consumidor puede escribir cada
+     * sentencia formateada a medida que la recibe, sin armar el resultado completo en memoria.
+     */
+    fun formatStatements(lines: Sequence<String>): Sequence<String> =
+        parser
+            .execute(withTrailingSemicolon(lexer.convertToTokens(lines)))
+            .map { node ->
                 val formatted = formatNode(node)
                 // Un condicional ya cierra con "}"; el resto de las sentencias termina en ";".
                 if (node is ConditionalNode) formatted else semicolonHandler.handleSemicolon(formatted)
             }
 
-        return lineBreakHandler.handleLineBreak(formatedNodes, 1)
+    override fun format(input: String): String {
+        if (input.isBlank()) return ""
+        val formatted = formatStatements(input.lineSequence()).toList()
+        return lineBreakHandler.handleLineBreak(formatted, 1)
     }
 
     override fun format(astNode: ASTNode): String = formatNode(astNode)
@@ -55,17 +59,28 @@ class FormatterPS(
     /**
      * El Lexer descarta los saltos de línea, así que la última sentencia puede quedar sin
      * terminador. Se agrega un ";" al final sólo si la entrada no cierra ya con ";" o "}".
+     *
+     * Retiene un único token (el anterior), así que sigue sirviendo para un flujo que no
+     * cabe en memoria.
      */
-    private fun addSemicolonForEachStatement(tokens: List<Token>): List<Token> {
-        val lastToken = tokens.lastOrNull() ?: return tokens
-        if (lastToken.value == ";" || lastToken.value == "}") return tokens
+    private fun withTrailingSemicolon(tokens: Sequence<Token>): Sequence<Token> =
+        sequence {
+            var lastToken: Token? = null
+            for (token in tokens) {
+                yield(token)
+                lastToken = token
+            }
 
-        return tokens +
-            Token(
-                TokenType.PUNCTUATOR,
-                ";",
-                lastToken.getPosition(),
-                lastToken.getPosition(),
-            )
-    }
+            val previous = lastToken ?: return@sequence
+            if (previous.value != ";" && previous.value != "}") {
+                yield(
+                    Token(
+                        TokenType.PUNCTUATOR,
+                        ";",
+                        previous.getFinalPosition(),
+                        previous.getFinalPosition(),
+                    ),
+                )
+            }
+        }
 }

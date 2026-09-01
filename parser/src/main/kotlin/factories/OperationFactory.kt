@@ -21,7 +21,11 @@ class OperationFactory {
             }
         return splitOnOperator(tokens, ::isAdditionOrSubtraction)
             ?: splitOnOperator(tokens, ::isMultiplicationOrDivision)
-            ?: throw ParserException("Error in operation")
+            ?: throw ParserException(
+                "Error in operation",
+                tokens.firstOrNull()?.getPosition(),
+                tokens.lastOrNull()?.getFinalPosition(),
+            )
     }
 
     /**

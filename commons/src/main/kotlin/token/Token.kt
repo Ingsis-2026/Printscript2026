@@ -14,6 +14,12 @@ data class Token(
 
     fun getPosition(): TokenPosition = initialPosition
 
+    /**
+     * Posición donde termina el token. La consigna pide informar inicio y fin de cada
+     * problema, y hasta ahora este dato se guardaba sin forma de leerlo.
+     */
+    fun getFinalPosition(): TokenPosition = finalPosition
+
     override fun toString(): String =
         "Token(type = '$type', value = '$value', " +
             "start = '$initialPosition', end = '$finalPosition')"

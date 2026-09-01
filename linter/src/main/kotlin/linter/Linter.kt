@@ -21,14 +21,24 @@ class Linter(
         rules = ruleFactory.createRules(ruleNames, version)
     }
 
-    fun check(trees: List<ASTNode>): LinterOutput {
-        val tokens = tokenizer.parseToTokens(trees)
+    /**
+     * Analiza el programa consumiendo el flujo de nodos sentencia por sentencia.
+     *
+     * Las reglas actuales evalúan cada sentencia de forma independiente, así que alcanza con
+     * re-tokenizar una a la vez: nunca se retiene el AST completo. Lo único que crece es el
+     * reporte, acotado por la cantidad de violaciones y no por el tamaño del fuente.
+     */
+    fun check(trees: Sequence<ASTNode>): LinterOutput {
         val linterOutput = LinterOutput()
-        for (brokenRule in validator.checkRule(rules, tokens)) {
-            linterOutput.addBrokenRule(brokenRule)
+        for (statementTokens in tokenizer.parseToTokens(trees)) {
+            for (brokenRule in validator.checkRule(rules, listOf(statementTokens))) {
+                linterOutput.addBrokenRule(brokenRule)
+            }
         }
         return linterOutput
     }
+
+    fun check(trees: List<ASTNode>): LinterOutput = check(trees.asSequence())
 
     fun writeToFile(
         content: String,

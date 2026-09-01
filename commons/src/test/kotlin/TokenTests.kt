@@ -19,6 +19,14 @@ class TokenTests {
     }
 
     @Test
+    fun `test start and end positions are both readable`() {
+        val token = Token(TokenType.NUMBERLITERAL, "42", TokenPosition(2, 4), TokenPosition(2, 6))
+
+        assertEquals(TokenPosition(2, 4), token.getPosition())
+        assertEquals(TokenPosition(2, 6), token.getFinalPosition())
+    }
+
+    @Test
     fun `test equals and hashCode`() {
         val initialPosition = TokenPosition(1, 5)
         val finalPosition = TokenPosition(1, 10)

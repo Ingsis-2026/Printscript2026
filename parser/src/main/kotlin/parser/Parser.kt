@@ -11,18 +11,30 @@ class Parser(
         fun forVersion(version: String): Parser = ParserFactory.forVersion(version)
     }
 
-    fun execute(tokens: List<Token>): List<ASTNode> {
-        val result = mutableListOf<ASTNode>()
-        val sameLineTokens = StatementSplitter().split(tokens)
-        for (tokenList in sameLineTokens) {
-            val astFactory = determineFactory(tokenList)
-            if (astFactory != null) {
-                result.add(astFactory.createAST(tokenList))
-            } else {
-                throw ParserException("Can't handle this sentence")
-            }
-        }
-        return result
+    /**
+     * Convierte un flujo de tokens en un flujo de nodos del AST, de forma perezosa.
+     *
+     * Cada sentencia se parsea recién cuando el consumidor pide el nodo siguiente, así que
+     * un fuente que no cabe en memoria puede recorrerse de punta a punta: en ningún momento
+     * se retienen ni todos los tokens ni todos los nodos.
+     */
+    fun execute(tokens: Sequence<Token>): Sequence<ASTNode> =
+        StatementSplitter()
+            .split(tokens)
+            .map { statement -> createNode(statement) }
+
+    /** Variante que materializa el resultado, para los usos que ya tienen todo en memoria. */
+    fun execute(tokens: List<Token>): List<ASTNode> = execute(tokens.asSequence()).toList()
+
+    private fun createNode(statement: List<Token>): ASTNode {
+        val astFactory =
+            determineFactory(statement)
+                ?: throw ParserException(
+                    "Can't handle this sentence",
+                    statement.firstOrNull()?.getPosition(),
+                    statement.lastOrNull()?.getFinalPosition(),
+                )
+        return astFactory.createAST(statement)
     }
 
     private fun determineFactory(tokens: List<Token>): ASTFactory? = factories.find { it.canHandle(tokens) }
