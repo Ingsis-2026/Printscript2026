@@ -1,0 +1,4 @@
+# Le falta la regla lineBreakPrintln, que el RulesReader exige
+spaceBeforeColon: true
+spaceAfterColon: true
+spaceAroundEquals: true

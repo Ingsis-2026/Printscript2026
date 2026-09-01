@@ -1,0 +1,5 @@
+spaceBeforeColon: false
+spaceAfterColon: true
+spaceAroundEquals: true
+lineBreakPrintln: 1
+conditionalIndentation: 4

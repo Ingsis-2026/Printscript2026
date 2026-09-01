@@ -1,0 +1,6 @@
+const Value: boolean = false;
+if (Value) {
+    println("if statement is not working correctly"             );
+} else {
+    println("if statement is working correctly");
+}

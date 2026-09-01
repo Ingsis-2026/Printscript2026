@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import token.TokenType
+import kotlin.test.assertNull
 
 class TokenMapperTest {
     @Test
@@ -78,13 +79,23 @@ class TokenMapperTest {
     }
 
     @Test
-    fun `test classify const in version 1,0 throws exception`() {
+    fun `test const is disallowed in version 1,0`() {
         val tokenMapper = TokenMapper("1.0")
-        val exception =
-            assertThrows<IllegalArgumentException> {
-                tokenMapper.classify("const")
-            }
-        assertEquals("Const declarations are not allowed in version 1.0", exception.message)
+
+        assertEquals(
+            "Const declarations are not allowed in version 1.0",
+            tokenMapper.disallowedReason("const"),
+        )
+    }
+
+    @Test
+    fun `test version 1,1 allows const`() {
+        assertNull(TokenMapper("1.1").disallowedReason("const"))
+    }
+
+    @Test
+    fun `test a valid lexeme has no disallowed reason`() {
+        assertNull(TokenMapper("1.0").disallowedReason("let"))
     }
 
     @Test

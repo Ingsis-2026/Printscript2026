@@ -1,0 +1,8 @@
+let
+      variable
+        :
+                number
+                 =
+                        10
+                        ;
+println(variable);
