@@ -10,10 +10,10 @@ class FormattingRules {
     @JsonProperty("identifier_format")
     var identifier: String? = null
 
-    @JsonProperty("enable_print_only")
+    @JsonProperty("mandatory-variable-or-literal-in-println")
     var isEnablePrintOnly: Boolean = false
 
-    @JsonProperty("enable_input_only")
+    @JsonProperty("mandatory-variable-or-literal-in-readInput")
     var isEnableInputOnly: Boolean = false
 }
 
