@@ -76,12 +76,14 @@ Reglas del `linter` (JSON):
 ```json
 {
   "identifier_format": "camelcase",
-  "enable_print_only": true,
-  "enable_input_only": true
+  "mandatory-variable-or-literal-in-println": true,
+  "mandatory-variable-or-literal-in-readInput": true
 }
 ```
 
-`enable_input_only` sólo está disponible en la versión 1.1, porque `readInput` no existe en 1.0.
+`mandatory-variable-or-literal-in-readInput` sólo está disponible en la versión 1.1, porque
+`readInput` no existe en 1.0. `identifier_format` admite `camelcase`/`snakecase`, con o sin espacio
+(`"camel case"`).
 
 ## Verificación
 

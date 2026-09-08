@@ -1,7 +1,5 @@
 {
   "identifier_format": "snakecase",
-  "enablePrintOnly": true,
-  "enableInputOnly": true,
-  "enable_print_only": true,
-  "enable_input_only": true
+  "mandatory-variable-or-literal-in-println": true,
+  "mandatory-variable-or-literal-in-readInput": true
 }
