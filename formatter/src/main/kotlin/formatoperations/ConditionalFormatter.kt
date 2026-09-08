@@ -33,19 +33,27 @@ class ConditionalFormatter : FormattingOperation {
         list: List<ASTNode>,
         formatter: Formatter,
     ): String {
-        val indentationConditional = formatter.getRules()["conditionalIndentation"] as Int
-        val formattedNodes = list.map { formatter.format(it) }
-        val result = formattedNodes.joinToString("\n")
-
-        var resultWithIndentation = ""
-        for (line in result.lines()) {
-            resultWithIndentation +=
-                if (line.isNotBlank()) {
-                    " ".repeat(indentationConditional) + line + ";\n"
-                } else {
-                    line + "\n"
-                }
-        }
-        return resultWithIndentation.trimEnd() // elimina salto de línea extra al final
+        val indentation = formatter.getRules()["conditionalIndentation"] as Int
+        return list.joinToString("\n") { node -> indent(terminate(formatter.format(node), node), indentation) }
     }
+
+    /** Un `if` anidado ya cierra con `}`: el `;` sólo termina las sentencias simples. */
+    private fun terminate(
+        formatted: String,
+        node: ASTNode,
+    ): String = if (node is ConditionalNode) formatted else "$formatted;"
+
+    /**
+     * Corre cada línea [indentation] espacios.
+     *
+     * Se indenta el texto ya formateado, línea por línea, para que un bloque anidado —que
+     * ocupa varias líneas— quede corrido entero y no sólo en su primera línea.
+     */
+    private fun indent(
+        formatted: String,
+        indentation: Int,
+    ): String =
+        formatted
+            .lines()
+            .joinToString("\n") { line -> if (line.isBlank()) line else " ".repeat(indentation) + line }
 }

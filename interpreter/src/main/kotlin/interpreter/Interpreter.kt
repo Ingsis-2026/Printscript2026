@@ -9,7 +9,17 @@ class Interpreter(
     private val evaluators: List<NodeEvaluator> = InterpreterFactory.defaultEvaluators(),
 ) {
     val variables: MutableMap<String, Any?> = mutableMapOf()
-    val tiposDeVariables: MutableMap<String, String> = mutableMapOf()
+
+    /** Keyword con el que se declaró cada variable (`let` o `const`). */
+    val declarationKeywords: MutableMap<String, String> = mutableMapOf()
+
+    /**
+     * Tipo declarado de cada variable (`string`, `number` o `boolean`).
+     *
+     * Se guarda para poder resolver un [ExternalInput] asignado más tarde, cuando el nodo de
+     * la declaración ya no está a mano.
+     */
+    val declaredTypes: MutableMap<String, String> = mutableMapOf()
 
     /**
      * Evalúa un nodo y garantiza que todo error salga con su ubicación.
@@ -30,15 +40,6 @@ class Interpreter(
             throw InterpreterException(exception.message ?: "", node.position)
         }
     }
-
-    fun convertInput(input: String): Any =
-        when {
-            input.equals("true", ignoreCase = true) -> true
-            input.equals("false", ignoreCase = true) -> false
-            input.toIntOrNull() != null -> input.toInt()
-            input.toDoubleOrNull() != null -> input.toDouble()
-            else -> input // Devuelve la entrada como cadena si no se convierte
-        }
 
     companion object {
         fun forVersion(

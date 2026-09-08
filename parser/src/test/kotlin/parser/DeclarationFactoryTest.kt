@@ -1,6 +1,7 @@
 package parser
 
 import ast.DeclarationNode
+import ast.FunctionNode
 import ast.LiteralNode
 import ast.NilNode
 import factories.DeclarationFactory
@@ -150,5 +151,48 @@ class DeclarationFactoryTest {
         assert(result is DeclarationNode)
         assertEquals("y", (result as DeclarationNode).id)
         assert(result.expr is NilNode)
+    }
+
+    // El argumento de readInput/readEnv es un string y no dice nada del tipo que la llamada
+    // devuelve: chequearlo contra el tipo declarado rechazaba declaraciones válidas.
+
+    @Test
+    fun `a boolean declaration initialised with readInput is accepted`() {
+        val tokens =
+            listOf(
+                Token(TokenType.KEYWORD, "let", startPos, endPos),
+                Token(TokenType.IDENTIFIER, "flag", startPos, endPos),
+                Token(TokenType.DATA_TYPE, "boolean", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
+                Token(TokenType.FUNCTION, "readInput", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
+                Token(TokenType.STRINGLITERAL, "Flag: ", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
+            )
+
+        val result = declarationFactory.createAST(tokens) as DeclarationNode
+
+        assertEquals("boolean", result.dataTypeValue)
+        assertEquals("readInput", (result.expr as FunctionNode).functionName)
+    }
+
+    @Test
+    fun `a number declaration initialised with readEnv is accepted`() {
+        val tokens =
+            listOf(
+                Token(TokenType.KEYWORD, "let", startPos, endPos),
+                Token(TokenType.IDENTIFIER, "port", startPos, endPos),
+                Token(TokenType.DATA_TYPE, "number", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
+                Token(TokenType.FUNCTION, "readEnv", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
+                Token(TokenType.STRINGLITERAL, "PORT", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
+            )
+
+        val result = declarationFactory.createAST(tokens) as DeclarationNode
+
+        assertEquals("number", result.dataTypeValue)
+        assertEquals("readEnv", (result.expr as FunctionNode).functionName)
     }
 }

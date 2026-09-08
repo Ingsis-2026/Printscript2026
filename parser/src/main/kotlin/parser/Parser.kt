@@ -18,13 +18,22 @@ class Parser(
      * un fuente que no cabe en memoria puede recorrerse de punta a punta: en ningún momento
      * se retienen ni todos los tokens ni todos los nodos.
      */
-    fun execute(tokens: Sequence<Token>): Sequence<ASTNode> =
-        StatementSplitter()
-            .split(tokens)
-            .map { statement -> createNode(statement) }
+    fun execute(tokens: Sequence<Token>): Sequence<ASTNode> = nodesOf(StatementSplitter().split(tokens))
 
     /** Variante que materializa el resultado, para los usos que ya tienen todo en memoria. */
     fun execute(tokens: List<Token>): List<ASTNode> = execute(tokens.asSequence()).toList()
+
+    /**
+     * Parsea el cuerpo de un bloque, que llega con el `}` que lo cierra.
+     *
+     * Se distingue de [execute] porque en el nivel superior un `}` sin bloque abierto es un
+     * error, mientras que acá es el cierre del bloque que envuelve al cuerpo: termina la
+     * última sentencia, que por eso puede omitir el `;`.
+     */
+    fun executeBlockBody(tokens: List<Token>): List<ASTNode> =
+        nodesOf(StatementSplitter(insideBlock = true).split(tokens.asSequence())).toList()
+
+    private fun nodesOf(statements: Sequence<List<Token>>): Sequence<ASTNode> = statements.map { createNode(it) }
 
     private fun createNode(statement: List<Token>): ASTNode {
         val astFactory =

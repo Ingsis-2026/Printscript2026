@@ -36,4 +36,34 @@ class FormatterTest11 {
             formatted,
         )
     }
+
+    @Test
+    fun `test formatter keeps every statement of a block`() {
+        val input = "if (x) { let a : boolean = true; let b : boolean = false; }"
+        val formatted = formatter.format(input)
+        assertEquals(
+            """if (x) {
+        |   let a : boolean = true;
+        |   let b : boolean = false;
+        |}
+            """.trimMargin(),
+            formatted,
+        )
+    }
+
+    @Test
+    fun `test formatter indents a nested conditional as a whole`() {
+        val input = "if (x) { let a : boolean = true; if (y) { let b : boolean = false; } }"
+        val formatted = formatter.format(input)
+        assertEquals(
+            """if (x) {
+        |   let a : boolean = true;
+        |   if (y) {
+        |      let b : boolean = false;
+        |   }
+        |}
+            """.trimMargin(),
+            formatted,
+        )
+    }
 }
