@@ -1,39 +1,36 @@
 package rules
+
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.error.YAMLException
 import java.io.File
-import kotlin.reflect.KClass
+import java.io.InputStream
 
-class RulesReader(
-    private val requiredRules: Map<String, KClass<*>>,
-) {
-    fun readFile(path: String): Map<String, Any> {
-        val yaml: String = File(path).readText()
-        val rulesMap: Map<String, Any> = Yaml().load(yaml)
+/**
+ * Lee la configuración del formatter.
+ *
+ * Acepta YAML y JSON con el mismo parser porque JSON es un subconjunto de YAML, y no exige
+ * ninguna clave: cada archivo de configuración habilita una sola regla y espera que el resto
+ * quede sin tocar, así que una clave ausente es una regla apagada y no un error.
+ */
+class RulesReader {
+    fun read(content: String): FormattingRules {
+        if (content.isBlank()) return FormattingRules()
 
-        checkRules(rulesMap, requiredRules)
+        val parsed =
+            try {
+                Yaml().load<Any?>(content)
+            } catch (exception: YAMLException) {
+                throw IllegalArgumentException("el archivo de reglas no es YAML ni JSON válido: ${exception.message}")
+            } ?: return FormattingRules()
 
-        return rulesMap
+        val values =
+            parsed as? Map<*, *>
+                ?: throw IllegalArgumentException("el archivo de reglas debe ser un objeto con una regla por clave")
+
+        return FormattingRules.from(values.entries.associate { (key, value) -> key.toString() to value })
     }
 
-    private fun checkRules(
-        rulesMap: Map<String, Any>,
-        requiredRules: Map<String, KClass<*>>,
-    ) {
-        for ((keyRequired, valueRequired) in requiredRules) {
-            if (!rulesMap.containsKey(keyRequired)) {
-                error("No se encuentra la regla $keyRequired en el archivo")
-            }
-            if (rulesMap[keyRequired] == null || !valueRequired.isInstance(rulesMap[keyRequired])) {
-                error(
-                    "El valor de la regla $keyRequired no es del tipo esperado",
-                )
-            }
-            if (keyRequired == "lineBreakPrintln") {
-                val value = rulesMap[keyRequired] as Int
-                if (value < 0 || value > 2) {
-                    error("El valor de la regla $keyRequired debe estar entre 0 y 2")
-                }
-            }
-        }
-    }
+    fun read(stream: InputStream): FormattingRules = read(stream.readBytes().decodeToString())
+
+    fun readFile(path: String): FormattingRules = read(File(path).readText())
 }

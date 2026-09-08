@@ -1,8 +1,7 @@
 {
-"spaceBeforeColon": true,
-"spaceAfterColon": true,
-"spaceAroundEquals": true,
-"lineBreak": 1,
-  "lineBreakPrintln": 1,
-  "conditionalIndentation": 4
+  "enforce-spacing-after-colon-in-declaration": true,
+  "enforce-spacing-around-equals": true,
+  "mandatory-line-break-after-statement": true,
+  "line-breaks-after-println": 1,
+  "indent-inside-if": 4
 }

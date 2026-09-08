@@ -1,5 +1,4 @@
-spaceBeforeColon: false
-spaceAfterColon: true
-spaceAroundEquals: true
-lineBreakPrintln: 1
-conditionalIndentation: 4
+enforce-spacing-after-colon-in-declaration: true
+enforce-spacing-around-equals: true
+mandatory-line-break-after-statement: true
+line-breaks-after-println: 1

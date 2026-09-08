@@ -9,7 +9,7 @@ import formatter.Formatter
  * Formatea el fuente según el archivo de reglas y lo entrega al destino indicado.
  *
  * El [Formatter] ya viene armado con sus reglas: acá sólo se conecta el fuente con el destino,
- * y el flujo perezoso de sentencias se escribe a medida que se resuelve.
+ * y el flujo perezoso de líneas se escribe a medida que se resuelve.
  */
 class FormattingCommand(
     private val source: Source,
@@ -18,7 +18,7 @@ class FormattingCommand(
     private val output: Output,
 ) : Command {
     override fun execute(): CommandStatus {
-        source.useLines { lines -> sink.write(formatter.formatStatements(lines)) }
+        source.useLines { lines -> sink.write(formatter.formatLines(lines)) }
         output.info("Formateo finalizado.")
         return CommandStatus.SUCCESS
     }
