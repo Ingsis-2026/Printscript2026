@@ -1,5 +1,6 @@
-# Ejemplo de archivo de configuración del formatter en YAML
-spaceBeforeColon: true # antes de :
-spaceAfterColon: true # después de :
-spaceAroundEquals: true # alrededor de =
-lineBreakPrintln: 2 # salto de línea println /n
+# Ejemplo de configuración del formatter en YAML.
+# Cada regla ausente se deja como está en el fuente.
+enforce-spacing-after-colon-in-declaration: true
+enforce-spacing-around-equals: true
+mandatory-line-break-after-statement: true
+line-breaks-after-println: 1

@@ -1,43 +1,50 @@
 import formatter.FormatterBuilderPS
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import rules.FormattingRules
 
-/**
- * Casos límite del formatter: entrada vacía, expresiones que no son literales ni
- * operaciones binarias, e identificadores que contienen "if" como subcadena.
- */
+/** Casos límite: entrada vacía, literales de texto, y versiones no soportadas. */
 class FormatterEdgeCaseTest {
-    private val formatter10 = FormatterBuilderPS().build("src/test/resources/rules10.yaml", "1.0")
-    private val formatter11 = FormatterBuilderPS().build("src/test/resources/rules11.yaml", "1.1")
+    private val builder = FormatterBuilderPS()
 
     @Test
     fun `formatting empty input returns empty string`() {
-        assertEquals("", formatter10.format(""))
+        assertEquals("", builder.build(FormattingRules(), "1.0").format(""))
     }
 
     @Test
     fun `formatting blank input returns empty string`() {
-        assertEquals("", formatter10.format("\n\n"))
+        assertEquals("", builder.build(FormattingRules(), "1.0").format("\n\n"))
     }
 
     @Test
-    fun `declaration initialised from readInput renders the call`() {
-        val formatted = formatter11.format("let x:string=readInput(\"name\")")
+    fun `string literals keep their quotes and their contents`() {
+        val source = "let x: string = \"hola:  mundo = 5;\";"
 
-        assertFalse(formatted.contains("null"), "La expresión no debe formatearse como \"null\": $formatted")
-        assertEquals("let x : string = readInput(\"name\");", formatted)
+        assertEquals(source, builder.build(FormattingRules(), "1.0").format(source))
     }
 
     @Test
-    fun `identifier containing if as a substring still gets its semicolon`() {
-        val formatted = formatter10.format("let ifCount:number=1")
+    fun `a call keeps its argument`() {
+        val source = "let x:string=readInput(\"name\");"
+        // Igual que en el TCK, la separación uniforme también separa los paréntesis de la llamada.
+        val expected = "let x : string = readInput ( \"name\" );"
 
-        assertEquals("let ifCount : number = 1;", formatted)
+        assertEquals(expected, builder.build(FormattingRules(singleSpaceSeparation = true), "1.1").format(source))
     }
 
     @Test
-    fun `input already ending in a semicolon is not double terminated`() {
-        assertEquals("let x : number = 2;", formatter10.format("let x:number=2;"))
+    fun `an identifier containing if is not treated as a conditional`() {
+        val source = "let ifCount:number=1;"
+
+        assertEquals(source, builder.build(FormattingRules(), "1.0").format(source))
+    }
+
+    @Test
+    fun `an unsupported version is rejected`() {
+        assertThrows<IllegalArgumentException> {
+            builder.build(FormattingRules(), "2.0")
+        }
     }
 }

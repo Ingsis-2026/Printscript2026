@@ -61,14 +61,30 @@ Error: las sentencias deben finalizar con ";", "}" o "{" (desde línea 1, column
 
 ### Configuración
 
-Reglas del `formatter` (YAML; el mismo contenido en JSON también se admite):
+Reglas del `formatter` (YAML o JSON). El formatter conserva el fuente tal como está y sólo
+reescribe lo que una regla activa gobierna, así que una regla ausente no cambia nada: dos
+declaraciones pueden quedar con distinto espaciado antes de los `:` si la regla activada es la
+del espacio *después*.
+
+| Regla | Efecto |
+| --- | --- |
+| `enforce-spacing-before-colon-in-declaration` | Un espacio antes del `:` de una declaración. |
+| `enforce-spacing-after-colon-in-declaration` | Un espacio después del `:`. |
+| `enforce-spacing-around-equals` | Un espacio a cada lado del `=`. |
+| `enforce-no-spacing-around-equals` | Ningún espacio alrededor del `=`. |
+| `mandatory-single-space-separation` | Un único espacio entre tokens. |
+| `mandatory-space-surrounding-operations` | Un espacio alrededor de los operadores. |
+| `mandatory-line-break-after-statement` | Cada sentencia en su propia línea. |
+| `line-breaks-after-println` | Líneas en blanco después de un `println`. |
+| `if-brace-same-line` | La llave que abre el bloque, en la línea del `if`. Sólo en 1.1. |
+| `if-brace-below-line` | La llave que abre el bloque, en la línea siguiente. Sólo en 1.1. |
+| `indent-inside-if` | Espacios de sangría por nivel de bloque. Sólo en 1.1. |
 
 ```yaml
-spaceBeforeColon: false
-spaceAfterColon: true
-spaceAroundEquals: true
-lineBreakPrintln: 1
-conditionalIndentation: 4   # sólo en 1.1
+enforce-spacing-after-colon-in-declaration: true
+enforce-spacing-around-equals: true
+line-breaks-after-println: 1
+indent-inside-if: 4
 ```
 
 Reglas del `linter` (JSON):

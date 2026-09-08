@@ -44,7 +44,7 @@ class StreamingTest {
 
         FormattingCommand(source, formatter, sink, CapturingOutput()).execute()
 
-        assertEquals(listOf("let x0: number = 0;", "let x1: number = 1;"), sink.statements)
+        assertEquals(listOf("let x0 : number = 0;", "let x1 : number = 1;"), sink.statements)
         assertTrue(source.linesRead <= 3, "se leyeron ${source.linesRead} líneas de $lineCount")
     }
 
