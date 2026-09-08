@@ -61,7 +61,7 @@ class PrintScriptCliTest {
         val exitCode = cli().run(listOf("formatting", "$resources/test01.txt", "--config", "$resources/formatterRules.yaml"))
 
         assertEquals(PrintScriptCli.EXIT_SUCCESS, exitCode)
-        assertEquals("let x: number = 8;", output.resultText())
+        assertEquals("let x : number = 8;", output.resultText())
     }
 
     @Test
@@ -146,7 +146,7 @@ class PrintScriptCliTest {
         val exitCode = cli().run(listOf("formatting", "$resources/test01.txt", "--config", "$resources/badFormatterRules.yaml"))
 
         assertEquals(PrintScriptCli.EXIT_USAGE, exitCode)
-        assertTrue(output.errorText().contains("lineBreakPrintln"))
+        assertTrue(output.errorText().contains("no es YAML ni JSON válido"))
     }
 
     @Test
