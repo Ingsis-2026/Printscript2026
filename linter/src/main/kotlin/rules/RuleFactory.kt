@@ -16,15 +16,16 @@ class RuleFactory {
             "camelcase" -> CamelCaseRule()
             "snakecase" -> SnakeCaseRule()
             "printonly" -> PrintOnlyRule()
-            "inputonly" -> requireVersion11(version) { InputOnlyRule() }
+            "inputonly" -> requireAtLeast(LinterVersion.VERSION_1_1, version) { InputOnlyRule() }
             else -> throw IllegalArgumentException("Rule not available for this version")
         }
 
-    private fun requireVersion11(
+    private fun requireAtLeast(
+        minimum: LinterVersion,
         version: LinterVersion,
         rule: () -> Rule,
     ): Rule {
-        if (version != LinterVersion.VERSION_1_1) {
+        if (version < minimum) {
             throw IllegalArgumentException("Rule not available for this version")
         }
         return rule()

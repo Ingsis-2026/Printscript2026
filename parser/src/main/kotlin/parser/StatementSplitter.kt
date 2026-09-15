@@ -9,13 +9,6 @@ import token.Token
  * pide sentencias y emite cada una en cuanto está completa, sin retener las anteriores.
  * Sólo se mantiene en memoria la sentencia en curso, que es la unidad mínima que el parser
  * necesita ver completa.
- *
- * Es una máquina de estados sobre el flujo: lleva la cuenta de las llaves abiertas para no
- * cortar dentro de un bloque, y retiene la sentencia cuando un `}` de cierre podría
- * continuar con un `else`.
- *
- * [insideBlock] distingue el flujo de nivel superior del cuerpo de un bloque, que llega con
- * el `}` que lo cierra: ahí ese `}` es el terminador de la última sentencia y no un error.
  */
 internal class StatementSplitter(
     private val insideBlock: Boolean = false,

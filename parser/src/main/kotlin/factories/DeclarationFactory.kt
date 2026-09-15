@@ -26,9 +26,6 @@ class DeclarationFactory : ASTFactory {
         val expressionNode: ASTNode = if (expressionTokens == null) NilNode else findExpressionNode(expressionTokens)
         val dataTypeValue = dataTypeToken.value
 
-        // Una llamada a readInput/readEnv no se puede chequear acá: sus tokens son los del
-        // argumento —un string— y no dicen nada del tipo que devuelve, que se resuelve contra
-        // el tipo declarado recién al ejecutar. Chequearla rechazaba "let b: boolean = readInput(...)".
         if (expressionTokens != null && !isFunctionCall(expressionTokens)) {
             checkConsistencyOfExpressionWithDataType(dataTypeValue, expressionTokens)
         }
@@ -41,7 +38,6 @@ class DeclarationFactory : ASTFactory {
             dataTypeValue = dataTypeValue,
             expr = expressionNode,
             position = identifierToken.getPosition(),
-            // Cambiado aquí  keywordToken.getPosition(),
         )
     }
 
@@ -67,9 +63,6 @@ class DeclarationFactory : ASTFactory {
                     expressionTokens.any {
                         it.getType() == TokenType.BOOLEANLITERAL || it.getType() == TokenType.STRINGLITERAL
                     }
-                // Un "string" admite concatenar variables (sin literales a la vista) y también
-                // mezclar con "number", porque el resultado sigue siendo "string". Sólo es
-                // inconsistente si no hay ningún literal de texto y sí hay literales de otro tipo.
                 "string" ->
                     expressionTokens.none { it.getType() == TokenType.STRINGLITERAL } &&
                         expressionTokens.any {

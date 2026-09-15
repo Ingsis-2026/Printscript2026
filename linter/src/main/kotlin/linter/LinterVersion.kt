@@ -1,5 +1,11 @@
 package linter
 
+/**
+ * Versiones del lenguaje que el linter reconoce.
+ *
+ * Se declaran de menor a mayor: [rules.RuleFactory] compara por ese orden para saber desde qué
+ * versión está disponible una regla, así que una versión nueva se agrega al final.
+ */
 enum class LinterVersion(
     val version: String,
 ) {

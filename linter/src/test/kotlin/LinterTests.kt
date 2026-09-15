@@ -56,6 +56,17 @@ class LinterTests {
     }
 
     @Test
+    fun `the newest version still accepts a rule introduced in 1_1`() {
+        // Sin versión mínima, una versión posterior a la que introdujo la regla la rechazaría.
+        val linter = Linter(LinterVersion.entries.last())
+        val filePath = "src/test/resources/linter_rules.json"
+
+        linter.readJson(File(filePath).readText())
+
+        assertEquals(3, linter.getRules().size)
+    }
+
+    @Test
     fun `test error when wrong version`() {
         val linter = Linter(LinterVersion.VERSION_1_0)
         val filePath = "src/test/resources/linter_rules.json"
