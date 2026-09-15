@@ -1,0 +1,559 @@
+<title>PrintScript interpreter Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:680px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .n{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+svg .n.ext{stroke-dasharray:5 4}
+svg .n.core{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+svg .t{fill:var(--ink);font-family:var(--mono);font-size:13px;font-weight:600}
+svg .m{fill:var(--muted);font-family:var(--mono);font-size:12px}
+svg .s{fill:var(--muted);font-family:var(--body);font-size:12px}
+svg .acc{fill:var(--accent)}
+svg .e{stroke:var(--ink);stroke-width:1.2;fill:none}
+svg .e.acc{stroke:var(--accent);stroke-width:1.6}
+svg .el{fill:var(--muted);font-family:var(--mono);font-size:11.5px}
+svg .el.acc{fill:var(--accent)}
+svg .ah{fill:var(--ink)} svg .ah.acc{fill:var(--accent)}
+.trace{font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:12px 16px;overflow-x:auto;white-space:pre;margin:8px 0 14px}
+.trace .r{color:var(--muted)}
+.trace .io{color:var(--med);font-weight:600}
+.trace .s{color:var(--accent);font-weight:600}
+.state{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 16px}
+.state div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 14px}
+.state b{display:block;font-family:var(--mono);font-size:12px;font-weight:600;margin-bottom:4px}
+.state code{background:none;padding:0;font-size:12.5px}
+.state p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+@media (max-width:640px){.state{grid-template-columns:minmax(0,1fr)}}
+.measure{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.measure div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.measure .big{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;color:var(--accent)}
+.measure p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:560px){.measure{grid-template-columns:minmax(0,1fr)}}
+td.mono{font-family:var(--mono);font-size:13px}
+td .c{color:var(--muted)}
+h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40px}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <a href="lexer.html">lexer</a>
+  <a href="parser.html">parser</a>
+  <span class="cur" aria-current="page">interpreter</span>
+  <a href="formatter.html">formatter</a><a href="linter.html">linter</a><a href="cli.html">cli</a>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 4 of 8</p>
+  <h1><code>interpreter</code></h1>
+  <p class="lede">Executes AST nodes one at a time against three small tables of state. Output and input go through two one-method interfaces, so the same code runs in the CLI and inside the TCK.</p>
+  <ul class="meta">
+    <li><b>17</b>files</li>
+    <li><b>665</b>lines</li>
+    <li><b>126</b>tests</li>
+    <li><b>1</b>dependency: commons</li>
+    <li><b>~30</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#core">The core loop</a></li>
+    <li><a href="#trace">Example 2, traced</a></li>
+    <li><a href="#values">Values</a></li>
+    <li><a href="#state">Variables &amp; const</a></li>
+    <li><a href="#input">readInput &amp; readEnv</a></li>
+    <li><a href="#control">if &amp; blocks</a></li>
+    <li><a href="#errors">Errors</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"The interpreter holds a <strong>list of evaluators</strong>, one per node type, and the version decides which are in the list. <code>execute(node)</code> finds the evaluator that can handle the node and runs it. Evaluators never call each other: to evaluate a child they go back through <code>interpreter.execute</code>. That single entry point is also where errors get their position, from the innermost node that failed. State is three maps: values, the <code>let</code>/<code>const</code> keyword, and each declared type. <code>println</code> and <code>readInput</code> go through injected <code>Printer</code> and <code>Reader</code> interfaces, which is how the TCK supplies its own input and collects the output."</p>
+  </div>
+</section>
+
+<section id="where">
+  <h2>Where it sits</h2>
+  <p class="sub">Two callers, both executing each node as soon as the parser produces it.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Caller</th><th>Builds it with</th><th>Printer</th><th>Reader</th></tr></thead>
+    <tbody>
+      <tr><td>CLI</td><td><span class="ref">ExecutionCommand.kt:25–26</span></td><td><code>OutputPrinter</code> → stdout</td><td><code>ConsoleReader</code> → stdin</td></tr>
+      <tr><td>TCK</td><td><span class="ref">InterpreterAdapter.java:53–59</span></td><td><code>emitter::print</code></td><td><code>provider::input</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>The interpreter imports neither the lexer nor the parser. It receives <code>ASTNode</code>s from <code>commons</code> and never learns where they came from.</p>
+</section>
+
+<section id="core">
+  <h2>The core loop</h2>
+  <p class="sub">One class holds the state, and a list of evaluators holds the behaviour.</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 860 360" role="img" aria-label="The CLI or TCK calls Interpreter.execute with one node. The Interpreter holds three maps and asks nine evaluators in order; the first whose canEvaluate matches runs evaluate(node, this). To evaluate children, the evaluator calls back into interpreter.execute, which is where missing positions are added to errors. Evaluators reach Printer and Reader through the interpreter.">
+      <defs>
+        <marker id="ia" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="ib" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah acc" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <rect class="n" x="20" y="150" width="150" height="60" rx="5"/>
+      <text class="t" x="95" y="176" text-anchor="middle">CLI / TCK</text>
+      <text class="s" x="95" y="196" text-anchor="middle">one node at a time</text>
+      <line class="e acc" x1="170" y1="180" x2="256" y2="180" marker-end="url(#ib)"/>
+      <text class="el acc" x="213" y="170" text-anchor="middle">execute</text>
+
+      <rect class="n core" x="260" y="100" width="220" height="160" rx="6"/>
+      <text class="t" x="370" y="126" text-anchor="middle">Interpreter</text>
+      <text class="m" x="280" y="160">variables</text>
+      <text class="m" x="280" y="180">declarationKeywords</text>
+      <text class="m" x="280" y="200">declaredTypes</text>
+      <text class="el acc" x="280" y="240">catch → add node.position</text>
+
+      <line class="e" x1="480" y1="150" x2="636" y2="150" marker-end="url(#ia)"/>
+      <text class="el" x="558" y="140" text-anchor="middle">evaluate(node, this)</text>
+      <line class="e" x1="636" y1="210" x2="484" y2="210" marker-end="url(#ia)"/>
+      <text class="el" x="558" y="228" text-anchor="middle">execute(child)</text>
+
+      <text class="el" x="740" y="12" text-anchor="middle">first canEvaluate wins</text>
+      <rect class="n" x="640" y="20" width="200" height="28" rx="4"/><text class="t" x="652" y="39">LiteralEvaluator</text>
+      <rect class="n" x="640" y="54" width="200" height="28" rx="4"/><text class="t" x="652" y="73">BinaryEvaluator</text>
+      <rect class="n" x="640" y="88" width="200" height="28" rx="4"/><text class="t" x="652" y="107">AssignmentEvaluator</text>
+      <rect class="n" x="640" y="122" width="200" height="28" rx="4"/><text class="t" x="652" y="141">DeclarationEvaluator</text>
+      <rect class="n" x="640" y="156" width="200" height="28" rx="4"/><text class="t" x="652" y="175">PrintEvaluator</text>
+      <rect class="n" x="640" y="190" width="200" height="28" rx="4"/><text class="t" x="652" y="209">BlockEvaluator</text>
+      <rect class="n ext" x="640" y="224" width="200" height="28" rx="4"/><text class="t" x="652" y="243">ConditionalEvaluator</text>
+      <rect class="n ext" x="640" y="258" width="200" height="28" rx="4"/><text class="t" x="652" y="277">FunctionEvaluator</text>
+      <rect class="n" x="640" y="292" width="200" height="28" rx="4"/><text class="t" x="652" y="311">NilEvaluator</text>
+
+      <line class="e" x1="315" y1="260" x2="315" y2="296" marker-end="url(#ia)"/>
+      <line class="e" x1="445" y1="260" x2="445" y2="296" marker-end="url(#ia)"/>
+      <rect class="n" x="260" y="300" width="110" height="50" rx="5"/>
+      <text class="t" x="315" y="321" text-anchor="middle">Printer</text>
+      <text class="s" x="315" y="339" text-anchor="middle">stdout · emitter</text>
+      <rect class="n" x="390" y="300" width="110" height="50" rx="5"/>
+      <text class="t" x="445" y="321" text-anchor="middle">Reader</text>
+      <text class="s" x="445" y="339" text-anchor="middle">stdin · provider</text>
+    </svg>
+    </div>
+    <figcaption>Dashed evaluators exist only in the 1.1 list. The two middle arrows are the whole recursion: the interpreter hands a node to an evaluator, and the evaluator hands each child back to the interpreter. Evaluators reach the printer and reader through <code>interpreter.printer</code> and <code>interpreter.reader</code>.</figcaption>
+  </figure>
+  <div class="code"><pre><span class="l"><i>6</i><span class="kw">class</span> Interpreter(</span><span class="l hl"><i>7</i>    <span class="kw">val</span> printer: Printer,</span><span class="l hl"><i>8</i>    <span class="kw">val</span> reader: Reader,</span><span class="l hl"><i>9</i>    <span class="kw">private</span> <span class="kw">val</span> evaluators: List&lt;NodeEvaluator&gt; = InterpreterFactory.defaultEvaluators(),</span><span class="l"><i>10</i>) {</span><span class="l hl"><i>11</i>    <span class="kw">val</span> variables: MutableMap&lt;String, Any?&gt; = mutableMapOf()</span><span class="l"><i>12</i></span><span class="l"><i>13</i><span class="cm">    /** Keyword con el que se declaró cada variable (`let` o `const`). */</span></span><span class="l hl"><i>14</i>    <span class="kw">val</span> declarationKeywords: MutableMap&lt;String, String&gt; = mutableMapOf()</span><span class="l"><i>15</i></span><span class="l"><i>16</i><span class="cm">    /**</span></span><span class="l"><i>17</i><span class="cm">     * Tipo declarado de cada variable (`string`, `number` o `boolean`).</span></span><span class="l"><i>18</i><span class="cm">     *</span></span><span class="l"><i>19</i><span class="cm">     * Se guarda para poder resolver un [ExternalInput] asignado más tarde, cuando el nodo de</span></span><span class="l"><i>20</i><span class="cm">     * la declaración ya no está a mano.</span></span><span class="l"><i>21</i><span class="cm">     */</span></span><span class="l hl"><i>22</i>    <span class="kw">val</span> declaredTypes: MutableMap&lt;String, String&gt; = mutableMapOf()</span><span class="l"><i>23</i></span><span class="l"><i>24</i><span class="cm">    /**</span></span><span class="l"><i>25</i><span class="cm">     * Evalúa un nodo y garantiza que todo error salga con su ubicación.</span></span><span class="l"><i>26</i><span class="cm">     *</span></span><span class="l"><i>27</i><span class="cm">     * Los evaluadores lanzan [InterpreterException] sin posición, porque el dato que tienen a</span></span><span class="l"><i>28</i><span class="cm">     * mano es el nodo. Al atraparla acá y completarla sólo cuando aún no tiene posición, el</span></span><span class="l"><i>29</i><span class="cm">     * error queda ubicado en el nodo *más interno* que falló: las llamadas recursivas la</span></span><span class="l"><i>30</i><span class="cm">     * completan primero y las externas la vuelven a lanzar sin tocarla.</span></span><span class="l"><i>31</i><span class="cm">     */</span></span><span class="l hl"><i>32</i>    <span class="kw">fun</span> execute(node: ASTNode): Any? {</span><span class="l hl"><i>33</i>        <span class="kw">val</span> evaluator =</span><span class="l hl"><i>34</i>            evaluators.find { it.canEvaluate(node) }</span><span class="l hl"><i>35</i>                ?: throw InterpreterException(<span class="st">&quot;Unsupported node type: ${node::class.simpleName}&quot;</span>, node.position)</span><span class="l hl"><i>36</i>        <span class="kw">return</span> try {</span><span class="l hl"><i>37</i>            evaluator.evaluate(node, this)</span><span class="l hl"><i>38</i>        } catch (exception: InterpreterException) {</span><span class="l hl"><i>39</i>            <span class="kw">if</span> (exception.startPosition != <span class="kw">null</span>) throw exception</span><span class="l hl"><i>40</i>            throw InterpreterException(exception.message ?: <span class="st">&quot;&quot;</span>, node.position)</span><span class="l hl"><i>41</i>        }</span><span class="l"><i>42</i>    }</span><span class="l"><i>43</i></span><span class="l"><i>44</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l"><i>45</i>        <span class="kw">fun</span> forVersion(</span><span class="l"><i>46</i>            version: String,</span><span class="l"><i>47</i>            printer: Printer,</span><span class="l"><i>48</i>            reader: Reader,</span><span class="l"><i>49</i>        ): Interpreter = InterpreterFactory.forVersion(version, printer, reader)</span><span class="l"><i>50</i>    }</span><span class="l"><i>51</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Constructor injection</strong> (:7–9): the printer, the reader and the evaluator list are all passed in. The default list comes from <code>InterpreterFactory</code>.</li>
+    <li><strong>Dispatch</strong> (:33–35) asks each evaluator <code>canEvaluate</code> and uses the first match; with no match, it's <em>"Unsupported node type"</em>.</li>
+    <li><strong>Positioning</strong> (:36–41): evaluators throw <code>InterpreterException</code> with no position. The <code>catch</code> adds <code>node.position</code> only if the exception has none yet. Nested calls finish first, so the innermost failing node sets the position, and outer calls rethrow it untouched.</li>
+    <li><strong>Return type <code>Any?</code></strong>: expressions return their value, statements return <code>Unit</code>, and <code>null</code> means "no value" (<code>NilNode</code>).</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>6</i>interface NodeEvaluator {</span><span class="l hl"><i>7</i>    <span class="kw">fun</span> canEvaluate(node: ASTNode): Boolean</span><span class="l"><i>8</i></span><span class="l hl"><i>9</i>    <span class="kw">fun</span> evaluate(</span><span class="l hl"><i>10</i>        node: ASTNode,</span><span class="l hl"><i>11</i>        interpreter: Interpreter,</span><span class="l hl"><i>12</i>    ): Any?</span><span class="l"><i>13</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>14</i><span class="kw">object</span> InterpreterFactory {</span><span class="l hl"><i>15</i>    <span class="kw">fun</span> defaultEvaluators(): List&lt;NodeEvaluator&gt; =</span><span class="l hl"><i>16</i>        listOf(</span><span class="l hl"><i>17</i>            LiteralEvaluator(),</span><span class="l hl"><i>18</i>            BinaryEvaluator(),</span><span class="l hl"><i>19</i>            AssignmentEvaluator(),</span><span class="l hl"><i>20</i>            DeclarationEvaluator(),</span><span class="l hl"><i>21</i>            PrintEvaluator(),</span><span class="l hl"><i>22</i>            BlockEvaluator(),</span><span class="l hl"><i>23</i>            ConditionalEvaluator(),</span><span class="l hl"><i>24</i>            FunctionEvaluator(),</span><span class="l hl"><i>25</i>            NilEvaluator(),</span><span class="l hl"><i>26</i>        )</span><span class="l"><i>27</i></span><span class="l"><i>28</i>    <span class="kw">fun</span> forVersion(</span><span class="l"><i>29</i>        version: String,</span><span class="l"><i>30</i>        printer: Printer,</span><span class="l"><i>31</i>        reader: Reader,</span><span class="l"><i>32</i>    ): Interpreter =</span><span class="l"><i>33</i>        <span class="kw">when</span> (version) {</span><span class="l hl"><i>34</i>            <span class="st">&quot;1.0&quot;</span> -&gt;</span><span class="l hl"><i>35</i>                Interpreter(</span><span class="l hl"><i>36</i>                    printer = printer,</span><span class="l hl"><i>37</i>                    reader = reader,</span><span class="l hl"><i>38</i>                    evaluators =</span><span class="l hl"><i>39</i>                        listOf(</span><span class="l hl"><i>40</i>                            LiteralEvaluator(),</span><span class="l hl"><i>41</i>                            BinaryEvaluator(),</span><span class="l hl"><i>42</i>                            AssignmentEvaluator(),</span><span class="l hl"><i>43</i>                            DeclarationEvaluator(),</span><span class="l hl"><i>44</i>                            PrintEvaluator(),</span><span class="l hl"><i>45</i>                            BlockEvaluator(),</span><span class="l hl"><i>46</i>                            NilEvaluator(),</span><span class="l hl"><i>47</i>                        ),</span><span class="l hl"><i>48</i>                )</span><span class="l"><i>49</i>            <span class="st">&quot;1.1&quot;</span> -&gt;</span><span class="l"><i>50</i>                Interpreter(</span><span class="l"><i>51</i>                    printer = printer,</span><span class="l"><i>52</i>                    reader = reader,</span><span class="l"><i>53</i>                    evaluators = defaultEvaluators(),</span><span class="l"><i>54</i>                )</span><span class="l"><i>55</i>            <span class="kw">else</span> -&gt; throw IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l"><i>56</i>        }</span></pre></div>
+  <p>The version is the list: 1.0 simply leaves out <code>ConditionalEvaluator</code> and <code>FunctionEvaluator</code>. Hand a 1.1 <code>if</code> node to the 1.0 interpreter and you get <em>"Unsupported node type: ConditionalNode (línea 1, columna 5)"</em>. In practice the lexer and parser stop it earlier, but the interpreter doesn't depend on that.</p>
+</section>
+
+<section id="trace">
+  <h2>Example 2, traced</h2>
+  <p class="sub">Every evaluator call, captured by wrapping each evaluator in a logger and running the real 1.0 interpreter. Indentation is call depth; <code>=</code> is the value returned.</p>
+<pre class="trace"><span class="s">let a: number = 12;</span>
+DeclarationEvaluator ← Declaration let a: number
+  LiteralEvaluator ← Literal NUMBERLITERAL '12'
+    <span class="r">= 12 (Integer)</span>
+  <span class="r">= 12 (Integer)</span>
+<span class="s">let b: number = 4;</span>                          <span class="r">(same shape)</span>
+<span class="s">let c: number = a / b;</span>
+DeclarationEvaluator ← Declaration let c: number
+  BinaryEvaluator ← Binary '/'
+    LiteralEvaluator ← Literal IDENTIFIER 'a'
+      <span class="r">= 12 (Integer)</span>                          <span class="r">looked up in variables</span>
+    LiteralEvaluator ← Literal IDENTIFIER 'b'
+      <span class="r">= 4 (Integer)</span>
+    <span class="r">= 3 (Integer)</span>
+  <span class="r">= 3 (Integer)</span>
+<span class="s">println("Result: " + c);</span>
+PrintEvaluator ← Print
+  BinaryEvaluator ← Binary '+'
+    LiteralEvaluator ← Literal STRINGLITERAL 'Result: '
+      <span class="r">= "Result: " (String)</span>
+    LiteralEvaluator ← Literal IDENTIFIER 'c'
+      <span class="r">= 3 (Integer)</span>
+    <span class="r">= "Result: 3" (String)</span>                   <span class="r">string + number concatenates</span>
+  <span class="io">&gt;&gt; Printer.print("Result: 3")</span>
+  <span class="r">= Unit</span></pre>
+  <div class="state">
+    <div><b>variables</b><code>{a=12, b=4, c=3}</code><p>the values</p></div>
+    <div><b>declarationKeywords</b><code>{a=let, b=let, c=let}</code><p>for const checks</p></div>
+    <div><b>declaredTypes</b><code>{a=number, b=number, c=number}</code><p>for typing input</p></div>
+  </div>
+  <p>The shape of the recursion matches the shape of the tree: each node is entered once, its children are evaluated left to right, and a value flows back up. <code>12 / 4</code> stays an <code>Integer</code>, so the output is <code>Result: 3</code> rather than <code>Result: 3.0</code>, exactly what the PDF expects.</p>
+</section>
+
+<section id="values">
+  <h2>Values</h2>
+  <p class="sub">PrintScript's three types are represented by plain Kotlin values.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>PrintScript</th><th>At run time</th><th>Created at</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">number</td><td><code>Int</code> when the literal is whole, otherwise <code>Double</code></td><td><span class="ref">LiteralEvaluator.kt:19</span></td></tr>
+      <tr><td class="mono">string</td><td><code>String</code>, without quotes</td><td><span class="ref">LiteralEvaluator.kt:22</span></td></tr>
+      <tr><td class="mono">boolean</td><td><code>Boolean</code></td><td><span class="ref">LiteralEvaluator.kt:23–28</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="code"><pre><span class="l"><i>16</i>        <span class="kw">val</span> literal = node as LiteralNode</span><span class="l"><i>17</i>        <span class="kw">return</span> <span class="kw">when</span> (literal.type) {</span><span class="l"><i>18</i>            TokenType.NUMBERLITERAL -&gt; {</span><span class="l hl"><i>19</i>                literal.value.toIntOrNull() ?: literal.value.toDoubleOrNull()</span><span class="l"><i>20</i>                    ?: throw InterpreterException(<span class="st">&quot;Invalid number literal: ${literal.value}&quot;</span>)</span><span class="l"><i>21</i>            }</span><span class="l hl"><i>22</i>            TokenType.STRINGLITERAL -&gt; literal.value</span><span class="l hl"><i>23</i>            TokenType.BOOLEANLITERAL -&gt;</span><span class="l hl"><i>24</i>                <span class="kw">when</span> (literal.value) {</span><span class="l hl"><i>25</i>                    <span class="st">&quot;true&quot;</span> -&gt; true</span><span class="l hl"><i>26</i>                    <span class="st">&quot;false&quot;</span> -&gt; false</span><span class="l hl"><i>27</i>                    <span class="kw">else</span> -&gt; throw InterpreterException(<span class="st">&quot;Invalid boolean value: ${literal.value}&quot;</span>)</span><span class="l hl"><i>28</i>                }</span><span class="l"><i>29</i>            TokenType.DATA_TYPE -&gt; literal.value</span><span class="l hl"><i>30</i>            TokenType.IDENTIFIER -&gt;</span><span class="l hl"><i>31</i>                interpreter.variables[literal.value]</span><span class="l hl"><i>32</i>                    ?: throw InterpreterException(<span class="st">&quot;Undefined variable: ${literal.value}&quot;</span>)</span><span class="l"><i>33</i>            <span class="kw">else</span> -&gt; throw InterpreterException(<span class="st">&quot;Unsupported literal type: ${literal.type}&quot;</span>)</span><span class="l"><i>34</i>        }</span></pre></div>
+
+  <h3>Binary operations</h3>
+  <div class="code"><pre><span class="l"><i>15</i>        <span class="kw">val</span> binary = node as BinaryNode</span><span class="l hl"><i>16</i>        <span class="kw">val</span> leftValue = interpreter.execute(binary.left) ?: throw InterpreterException(<span class="st">&quot;Invalid left operand&quot;</span>)</span><span class="l hl"><i>17</i>        <span class="kw">val</span> rightValue = interpreter.execute(binary.right) ?: throw InterpreterException(<span class="st">&quot;Invalid right operand&quot;</span>)</span><span class="l"><i>18</i>        <span class="kw">val</span> operator = binary.operator.value</span><span class="l"><i>19</i></span><span class="l hl"><i>20</i>        <span class="kw">return</span> <span class="kw">when</span> (operator) {</span><span class="l hl"><i>21</i>            <span class="st">&quot;+&quot;</span> -&gt; handleAddition(leftValue, rightValue)</span><span class="l hl"><i>22</i>            <span class="st">&quot;-&quot;</span> -&gt; ArithmeticOperations.compute(leftValue, rightValue, operator, SUBTRACTION)</span><span class="l hl"><i>23</i>            <span class="st">&quot;*&quot;</span> -&gt; handleMultiplication(leftValue, rightValue)</span><span class="l hl"><i>24</i>            <span class="st">&quot;/&quot;</span> -&gt; handleDivision(leftValue, rightValue)</span><span class="l hl"><i>25</i>            <span class="st">&quot;&gt;&quot;</span> -&gt; handleComparison(leftValue, rightValue, operator) { a, b -&gt; a &gt; b }</span><span class="l hl"><i>26</i>            <span class="st">&quot;&lt;&quot;</span> -&gt; handleComparison(leftValue, rightValue, operator) { a, b -&gt; a &lt; b }</span><span class="l hl"><i>27</i>            <span class="kw">else</span> -&gt; throw InterpreterException(<span class="st">&quot;Unsupported operator: $operator&quot;</span>)</span><span class="l"><i>28</i>        }</span><span class="l"><i>29</i>    }</span><span class="l"><i>30</i></span><span class="l hl"><i>31</i>    <span class="kw">private</span> <span class="kw">fun</span> handleAddition(</span><span class="l hl"><i>32</i>        leftValue: Any,</span><span class="l hl"><i>33</i>        rightValue: Any,</span><span class="l hl"><i>34</i>    ): Any =</span><span class="l hl"><i>35</i>        concatenate(leftValue, rightValue)</span><span class="l hl"><i>36</i>            ?: ArithmeticOperations.compute(leftValue, rightValue, <span class="st">&quot;+&quot;</span>, ADDITION)</span></pre></div>
+  <ul class="points">
+    <li><strong>Both operands first</strong> (:16–17), each through <code>interpreter.execute</code>.</li>
+    <li><strong><code>+</code> tries concatenation first</strong> (:31–36). If either side is a string, the result is a string. That's the spec's "string and number concatenation" rule.</li>
+    <li><strong>Everything else is numeric</strong>, and strings are explicitly rejected for <code>*</code> and <code>/</code> (:42–44, :52–54).</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>92</i>    <span class="kw">private</span> <span class="kw">fun</span> concatenate(</span><span class="l"><i>93</i>        leftValue: Any,</span><span class="l"><i>94</i>        rightValue: Any,</span><span class="l"><i>95</i>    ): String? =</span><span class="l"><i>96</i>        <span class="kw">when</span> {</span><span class="l hl"><i>97</i>            leftValue <span class="kw">is</span> String &amp;&amp; rightValue <span class="kw">is</span> String -&gt; leftValue + rightValue</span><span class="l hl"><i>98</i>            leftValue <span class="kw">is</span> Number &amp;&amp; rightValue <span class="kw">is</span> String -&gt; leftValue.toString() + rightValue</span><span class="l hl"><i>99</i>            leftValue <span class="kw">is</span> String &amp;&amp; rightValue <span class="kw">is</span> Number -&gt; leftValue + rightValue.toString()</span><span class="l"><i>100</i>            <span class="kw">else</span> -&gt; <span class="kw">null</span></span><span class="l"><i>101</i>        }</span><span class="l"><i>102</i></span><span class="l hl"><i>103</i>    <span class="kw">private</span> <span class="kw">fun</span> checkDivisorNotZero(divisor: Number) {</span><span class="l hl"><i>104</i>        <span class="kw">if</span> (divisor.toDouble() == 0.0) throw InterpreterException(<span class="st">&quot;Division by zero&quot;</span>)</span><span class="l"><i>105</i>    }</span></pre></div>
+  <div class="code"><pre><span class="l"><i>21</i><span class="kw">internal</span> <span class="kw">object</span> ArithmeticOperations {</span><span class="l"><i>22</i>    <span class="kw">fun</span> compute(</span><span class="l"><i>23</i>        leftValue: Any,</span><span class="l"><i>24</i>        rightValue: Any,</span><span class="l"><i>25</i>        operator: String,</span><span class="l"><i>26</i>        operation: NumericOperation,</span><span class="l"><i>27</i>    ): Any =</span><span class="l hl"><i>28</i>        sameType(leftValue, rightValue, operation)</span><span class="l hl"><i>29</i>            ?: mixedInt(leftValue, rightValue, operation)</span><span class="l hl"><i>30</i>            ?: throw InterpreterException(<span class="st">&quot;Unsupported operands for $operator&quot;</span>)</span><span class="l"><i>31</i></span><span class="l"><i>32</i>    <span class="kw">private</span> <span class="kw">fun</span> sameType(</span><span class="l"><i>33</i>        leftValue: Any,</span><span class="l"><i>34</i>        rightValue: Any,</span><span class="l"><i>35</i>        operation: NumericOperation,</span><span class="l"><i>36</i>    ): Any? =</span><span class="l"><i>37</i>        <span class="kw">when</span> {</span><span class="l hl"><i>38</i>            leftValue <span class="kw">is</span> Int &amp;&amp; rightValue <span class="kw">is</span> Int -&gt; operation.onInt(leftValue, rightValue)</span><span class="l hl"><i>39</i>            leftValue <span class="kw">is</span> Float &amp;&amp; rightValue <span class="kw">is</span> Float -&gt; operation.onFloat(leftValue, rightValue)</span><span class="l hl"><i>40</i>            leftValue <span class="kw">is</span> Double &amp;&amp; rightValue <span class="kw">is</span> Double -&gt; operation.onDouble(leftValue, rightValue)</span><span class="l"><i>41</i>            <span class="kw">else</span> -&gt; <span class="kw">null</span></span><span class="l"><i>42</i>        }</span><span class="l"><i>43</i></span><span class="l"><i>44</i>    <span class="kw">private</span> <span class="kw">fun</span> mixedInt(</span><span class="l"><i>45</i>        leftValue: Any,</span><span class="l"><i>46</i>        rightValue: Any,</span><span class="l"><i>47</i>        operation: NumericOperation,</span><span class="l"><i>48</i>    ): Any? =</span><span class="l"><i>49</i>        <span class="kw">when</span> {</span><span class="l hl"><i>50</i>            leftValue <span class="kw">is</span> Int &amp;&amp; rightValue <span class="kw">is</span> Float -&gt; operation.onFloat(leftValue.toFloat(), rightValue)</span><span class="l hl"><i>51</i>            leftValue <span class="kw">is</span> Float &amp;&amp; rightValue <span class="kw">is</span> Int -&gt; operation.onFloat(leftValue, rightValue.toFloat())</span><span class="l hl"><i>52</i>            leftValue <span class="kw">is</span> Int &amp;&amp; rightValue <span class="kw">is</span> Double -&gt; operation.onDouble(leftValue.toDouble(), rightValue)</span><span class="l hl"><i>53</i>            leftValue <span class="kw">is</span> Double &amp;&amp; rightValue <span class="kw">is</span> Int -&gt; operation.onDouble(leftValue, rightValue.toDouble())</span><span class="l"><i>54</i>            <span class="kw">else</span> -&gt; <span class="kw">null</span></span><span class="l"><i>55</i>        }</span><span class="l"><i>56</i>}</span></pre></div>
+  <p><code>NumericOperation</code> holds one lambda per numeric type, and <code>ArithmeticOperations</code> picks which one to use: same types directly (:38–40), and mixed Int/Double by promoting the Int (:50–53). Adding an operator means writing a <code>NumericOperation</code>; the promotion logic is shared.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Program</th><th>Result</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">let x: number = 12 / 4;</td><td class="mono">3 (Integer)</td><td>Int with Int stays Int</td></tr>
+      <tr><td class="mono">let x: number = 1.5 + 1;</td><td class="mono">2.5 (Double)</td><td>Int promoted to Double</td></tr>
+      <tr><td class="mono">let s: string = "Result: " + 3;</td><td class="mono">"Result: 3" (String)</td><td>concatenation wins for <code>+</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="state">
+  <h2>Variables, types and <code>const</code></h2>
+  <p class="sub">Declarations write to the three maps; assignments read them to enforce the rules.</p>
+  <div class="code"><pre><span class="l"><i>13</i>    <span class="kw">override</span> <span class="kw">fun</span> evaluate(</span><span class="l"><i>14</i>        node: ASTNode,</span><span class="l"><i>15</i>        interpreter: Interpreter,</span><span class="l"><i>16</i>    ): Any? {</span><span class="l"><i>17</i>        <span class="kw">val</span> declaration = node as DeclarationNode</span><span class="l hl"><i>18</i>        <span class="kw">if</span> (interpreter.variables.containsKey(declaration.id)) {</span><span class="l hl"><i>19</i>            throw InterpreterException(<span class="st">&quot;La variable &#x27;${declaration.id}&#x27; ya ha sido declarada&quot;</span>)</span><span class="l hl"><i>20</i>        }</span><span class="l"><i>21</i></span><span class="l hl"><i>22</i>        <span class="kw">val</span> value =</span><span class="l hl"><i>23</i>            <span class="kw">if</span> (declaration.expr <span class="kw">is</span> NilNode) {</span><span class="l hl"><i>24</i>                Unit</span><span class="l hl"><i>25</i>            } <span class="kw">else</span> {</span><span class="l hl"><i>26</i>                interpreter.execute(declaration.expr) ?: throw InterpreterException(<span class="st">&quot;Expresión inválida en la declaración&quot;</span>)</span><span class="l hl"><i>27</i>            }</span><span class="l"><i>28</i></span><span class="l"><i>29</i><span class="cm">        // El tipo y el keyword se recuerdan aunque la declaración no tenga valor: una</span></span><span class="l"><i>30</i><span class="cm">        // asignación posterior los necesita para resolver un readInput y para rechazar la</span></span><span class="l"><i>31</i><span class="cm">        // reasignación de un const.</span></span><span class="l hl"><i>32</i>        interpreter.declaredTypes[declaration.id] = declaration.dataTypeValue</span><span class="l hl"><i>33</i>        interpreter.declarationKeywords[declaration.id] = declaration.declValue</span><span class="l"><i>34</i></span><span class="l"><i>35</i><span class="cm">        // El tipo de un valor leído de afuera lo fija la variable que lo recibe.</span></span><span class="l hl"><i>36</i>        <span class="kw">val</span> resolved = <span class="kw">if</span> (value <span class="kw">is</span> ExternalInput) value.asType(declaration.dataTypeValue) <span class="kw">else</span> value</span><span class="l"><i>37</i></span><span class="l hl"><i>38</i>        <span class="kw">if</span> (resolved != Unit) {</span><span class="l hl"><i>39</i>            interpreter.variables[declaration.id] = resolved</span><span class="l hl"><i>40</i>        }</span><span class="l"><i>41</i></span><span class="l"><i>42</i>        <span class="kw">return</span> resolved</span><span class="l"><i>43</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>No redeclaration</strong> (:18–20): <em>"La variable 'x' ya ha sido declarada"</em>.</li>
+    <li><strong>No value, no entry</strong>: <code>let x: number;</code> evaluates its <code>NilNode</code> as <code>Unit</code> (:23–24) and doesn't write to <code>variables</code> (:38–40).</li>
+    <li><strong>Type and keyword are always recorded</strong> (:32–33), even without a value, so a later <code>x = readInput(…)</code> knows <code>x</code> is a number, and a later <code>c = 2</code> knows <code>c</code> is a <code>const</code>.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>13</i>    <span class="kw">override</span> <span class="kw">fun</span> evaluate(</span><span class="l"><i>14</i>        node: ASTNode,</span><span class="l"><i>15</i>        interpreter: Interpreter,</span><span class="l"><i>16</i>    ): Any? {</span><span class="l"><i>17</i>        <span class="kw">val</span> assignation = node as AssignationNode</span><span class="l hl"><i>18</i>        <span class="kw">val</span> value =</span><span class="l hl"><i>19</i>            interpreter.execute(assignation.expression)</span><span class="l hl"><i>20</i>                ?: throw InterpreterException(<span class="st">&quot;Invalid assignment in Assignment&quot;</span>)</span><span class="l"><i>21</i></span><span class="l hl"><i>22</i>        <span class="kw">val</span> resolved = resolveExternalInput(value, assignation.id, interpreter)</span><span class="l"><i>23</i></span><span class="l hl"><i>24</i>        <span class="kw">if</span> (interpreter.variables.containsKey(assignation.id)) {</span><span class="l hl"><i>25</i>            checkReassignable(assignation.id, resolved, interpreter)</span><span class="l hl"><i>26</i>        }</span><span class="l"><i>27</i></span><span class="l hl"><i>28</i>        interpreter.variables[assignation.id] = resolved</span><span class="l"><i>29</i>        <span class="kw">return</span> resolved</span><span class="l"><i>30</i>    }</span><span class="l"><i>31</i></span><span class="l"><i>32</i><span class="cm">    /** El tipo de un valor leído de afuera lo fija el tipo declarado de la variable destino. */</span></span><span class="l"><i>33</i>    <span class="kw">private</span> <span class="kw">fun</span> resolveExternalInput(</span><span class="l"><i>34</i>        value: Any,</span><span class="l"><i>35</i>        id: String,</span><span class="l"><i>36</i>        interpreter: Interpreter,</span><span class="l"><i>37</i>    ): Any {</span><span class="l"><i>38</i>        <span class="kw">if</span> (value !<span class="kw">is</span> ExternalInput) <span class="kw">return</span> value</span><span class="l"><i>39</i>        <span class="kw">val</span> declaredType =</span><span class="l"><i>40</i>            interpreter.declaredTypes[id]</span><span class="l"><i>41</i>                ?: throw InterpreterException(<span class="st">&quot;No se puede asignar ${value.origin} a &#x27;$id&#x27;: la variable no fue declarada&quot;</span>)</span><span class="l"><i>42</i>        <span class="kw">return</span> value.asType(declaredType)</span><span class="l"><i>43</i>    }</span><span class="l"><i>44</i></span><span class="l"><i>45</i>    <span class="kw">private</span> <span class="kw">fun</span> checkReassignable(</span><span class="l"><i>46</i>        id: String,</span><span class="l"><i>47</i>        value: Any,</span><span class="l"><i>48</i>        interpreter: Interpreter,</span><span class="l"><i>49</i>    ) {</span><span class="l hl"><i>50</i>        <span class="kw">val</span> declarationKeyword = interpreter.declarationKeywords[id]</span><span class="l hl"><i>51</i>        <span class="kw">if</span> (declarationKeyword == <span class="st">&quot;const&quot;</span>) {</span><span class="l hl"><i>52</i>            throw InterpreterException(<span class="st">&quot;No es posible reasignar una variable de tipo $declarationKeyword&quot;</span>)</span><span class="l hl"><i>53</i>        }</span><span class="l"><i>54</i></span><span class="l"><i>55</i><span class="cm">        // Una variable sólo admite valores de su mismo tipo de PrintScript, y &quot;number&quot;</span></span><span class="l"><i>56</i><span class="cm">        // abarca enteros y decimales: reasignar 5 con 2.5 es válido.</span></span><span class="l hl"><i>57</i>        <span class="kw">val</span> existing = interpreter.variables[id] ?: <span class="kw">return</span></span><span class="l hl"><i>58</i>        <span class="kw">if</span> (printScriptTypeOf(existing) != printScriptTypeOf(value)) {</span><span class="l hl"><i>59</i>            throw InterpreterException(<span class="st">&quot;Invalid expression for type ${literalTypeNameOf(existing)}&quot;</span>)</span><span class="l hl"><i>60</i>        }</span><span class="l"><i>61</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Evaluate the right side, then resolve any external input</strong> against the declared type (:18–22, :33–43).</li>
+    <li><strong><code>const</code> is enforced here</strong> (:50–53) by reading <code>declarationKeywords</code>.</li>
+    <li><strong>Same-type rule</strong> (:57–60): a reassignment must keep the PrintScript type. <code>number</code> covers both Int and Double (:64–70), so <code>5</code> can become <code>2.5</code>.</li>
+  </ul>
+</section>
+
+<section id="input">
+  <h2><code>readInput</code> and <code>readEnv</code></h2>
+  <p class="sub">The spec says the returned type depends on where the value goes. So the value travels untyped until its destination is known.</p>
+<pre class="trace"><span class="s">const ok: boolean = readInput("Continue?");</span>      <span class="r">(1.1, the reader returns "true")</span>
+DeclarationEvaluator ← Declaration const ok: boolean
+  FunctionEvaluator ← Function readInput
+    LiteralEvaluator ← Literal STRINGLITERAL 'Continue?'
+      <span class="r">= "Continue?" (String)</span>
+    <span class="io">&gt;&gt; Printer.print("Continue?")</span>
+    <span class="io">&gt;&gt; Reader.input("Continue?") returns "true"</span>
+    <span class="r">= ExternalInput(text=true, origin=readInput)</span>   <span class="r">still untyped</span>
+  <span class="r">= true (Boolean)</span>                                <span class="r">typed by the declaration</span>
+<span class="s">if (ok) { println("yes"); } else { println("no"); }</span>
+ConditionalEvaluator ← Conditional
+  LiteralEvaluator ← Literal IDENTIFIER 'ok'
+    <span class="r">= true (Boolean)</span>
+  BlockEvaluator ← Block
+    PrintEvaluator ← Print
+      …
+      <span class="io">&gt;&gt; Printer.print("yes")</span></pre>
+  <div class="code"><pre><span class="l"><i>40</i>    <span class="kw">private</span> <span class="kw">fun</span> handleReadInput(</span><span class="l"><i>41</i>        node: FunctionNode,</span><span class="l"><i>42</i>        interpreter: Interpreter,</span><span class="l"><i>43</i>    ): ExternalInput {</span><span class="l hl"><i>44</i>        <span class="kw">val</span> message = stringArgumentOf(node, interpreter, <span class="st">&quot;readInput&quot;</span>)</span><span class="l"><i>45</i></span><span class="l"><i>46</i><span class="cm">        // El argumento es el mensaje que se imprime antes de pedir el valor.</span></span><span class="l hl"><i>47</i>        interpreter.printer.print(message)</span><span class="l hl"><i>48</i>        <span class="kw">return</span> ExternalInput(interpreter.reader.input(message), <span class="st">&quot;readInput&quot;</span>)</span><span class="l"><i>49</i>    }</span><span class="l"><i>50</i></span><span class="l"><i>51</i>    <span class="kw">private</span> <span class="kw">fun</span> handleReadEnv(</span><span class="l"><i>52</i>        node: FunctionNode,</span><span class="l"><i>53</i>        interpreter: Interpreter,</span><span class="l"><i>54</i>    ): ExternalInput {</span><span class="l hl"><i>55</i>        <span class="kw">val</span> varName = stringArgumentOf(node, interpreter, <span class="st">&quot;readEnv&quot;</span>)</span><span class="l hl"><i>56</i>        <span class="kw">val</span> value = System.getenv(varName) ?: undefinedEnvironmentVariable(varName)</span><span class="l hl"><i>57</i>        <span class="kw">return</span> ExternalInput(value, <span class="st">&quot;readEnv&quot;</span>)</span><span class="l"><i>58</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>The prompt is printed first</strong> (:47) through the same <code>Printer</code> as <code>println</code>. The spec says the message is printed before the value is read, and this way the TCK sees it like any other output.</li>
+    <li><strong>Both return <code>ExternalInput</code></strong> (:48, :57): the raw text plus where it came from, for error messages.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>12</i><span class="kw">data</span> <span class="kw">class</span> ExternalInput(</span><span class="l"><i>13</i>    <span class="kw">val</span> text: String,</span><span class="l"><i>14</i>    <span class="kw">val</span> origin: String,</span><span class="l"><i>15</i>) {</span><span class="l hl"><i>16</i>    <span class="kw">fun</span> asType(dataType: String): Any =</span><span class="l hl"><i>17</i>        <span class="kw">when</span> (dataType) {</span><span class="l hl"><i>18</i>            <span class="st">&quot;string&quot;</span> -&gt; text</span><span class="l hl"><i>19</i>            <span class="st">&quot;number&quot;</span> -&gt; text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)</span><span class="l hl"><i>20</i>            <span class="st">&quot;boolean&quot;</span> -&gt;</span><span class="l hl"><i>21</i>                <span class="kw">when</span> (text) {</span><span class="l hl"><i>22</i>                    <span class="st">&quot;true&quot;</span> -&gt; true</span><span class="l hl"><i>23</i>                    <span class="st">&quot;false&quot;</span> -&gt; false</span><span class="l hl"><i>24</i>                    <span class="kw">else</span> -&gt; throw cannotInterpretAs(dataType)</span><span class="l hl"><i>25</i>                }</span><span class="l hl"><i>26</i>            <span class="kw">else</span> -&gt; throw InterpreterException(<span class="st">&quot;$origin no puede devolver un valor de tipo $dataType&quot;</span>)</span><span class="l hl"><i>27</i>        }</span><span class="l"><i>28</i></span><span class="l hl"><i>29</i>    <span class="kw">private</span> <span class="kw">fun</span> cannotInterpretAs(dataType: String) =</span><span class="l hl"><i>30</i>        InterpreterException(<span class="st">&quot;$origin devolvió \&quot;</span>$text\<span class="st">&quot;, que no puede interpretarse como $dataType&quot;</span>)</span><span class="l"><i>31</i>}</span></pre></div>
+  <p>Three places call <code>asType</code>: a declaration uses its declared type (<span class="ref">DeclarationEvaluator.kt:36</span>), an assignment uses the variable's recorded type (<span class="ref">AssignmentEvaluator.kt:42</span>), and <code>println</code> uses <code>"string"</code> (<span class="ref">PrintEvaluator.kt:20</span>).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Program (the reader always returns <code>"41"</code>)</th><th>Printed</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">let n: number = readInput("n?"); println(n + 1);</td><td class="mono">n?, 42</td></tr>
+      <tr><td class="mono">let s: string = readInput("s?"); println(s + 1);</td><td class="mono">s?, 411</td></tr>
+      <tr><td class="mono">let x: number; x = readInput("x?"); println(x);</td><td class="mono">x?, 41</td></tr>
+      <tr><td class="mono">let b: boolean = readInput("b?");</td><td>b?, then <em>readInput devolvió "41", que no puede interpretarse como boolean</em></td></tr>
+    </tbody>
+  </table></div>
+  <p>Same text, different results: <code>41</code> is a number in the first row and a string in the second, because the variable's declared type decides. The third row works because the type was recorded at declaration even though there was no value.</p>
+</section>
+
+<section id="control">
+  <h2><code>if</code> and blocks</h2>
+  <div class="code"><pre><span class="l"><i>11</i>    <span class="kw">override</span> <span class="kw">fun</span> evaluate(</span><span class="l"><i>12</i>        node: ASTNode,</span><span class="l"><i>13</i>        interpreter: Interpreter,</span><span class="l"><i>14</i>    ): Any? {</span><span class="l"><i>15</i>        <span class="kw">val</span> conditional = node as ConditionalNode</span><span class="l hl"><i>16</i>        <span class="kw">val</span> condition = interpreter.execute(conditional.condition)</span><span class="l"><i>17</i></span><span class="l hl"><i>18</i>        <span class="kw">if</span> (condition !<span class="kw">is</span> Boolean) {</span><span class="l hl"><i>19</i>            throw InterpreterException(<span class="st">&quot;Condition must evaluate to a boolean&quot;</span>)</span><span class="l hl"><i>20</i>        }</span><span class="l"><i>21</i></span><span class="l hl"><i>22</i>        <span class="kw">if</span> (condition) {</span><span class="l hl"><i>23</i>            interpreter.execute(conditional.thenBlock)</span><span class="l hl"><i>24</i>        } <span class="kw">else</span> {</span><span class="l hl"><i>25</i>            conditional.elseBlock?.let {</span><span class="l hl"><i>26</i>                interpreter.execute(it)</span><span class="l hl"><i>27</i>            }</span><span class="l hl"><i>28</i>        }</span><span class="l"><i>29</i>        <span class="kw">return</span> Unit</span><span class="l"><i>30</i>    }</span></pre></div>
+  <div class="code"><pre><span class="l"><i>10</i>    <span class="kw">override</span> <span class="kw">fun</span> evaluate(</span><span class="l"><i>11</i>        node: ASTNode,</span><span class="l"><i>12</i>        interpreter: Interpreter,</span><span class="l"><i>13</i>    ): Any? {</span><span class="l"><i>14</i>        <span class="kw">val</span> block = node as BlockNode</span><span class="l"><i>15</i>        <span class="kw">var</span> result: Any? = <span class="kw">null</span></span><span class="l hl"><i>16</i>        <span class="kw">for</span> (blockNode <span class="kw">in</span> block.nodes) {</span><span class="l hl"><i>17</i>            result = interpreter.execute(blockNode)</span><span class="l hl"><i>18</i>        }</span><span class="l"><i>19</i>        <span class="kw">return</span> result</span><span class="l"><i>20</i>    }</span></pre></div>
+  <p>The condition must be a real <code>Boolean</code> (:18–20). There's no "truthy" conversion, which matches the spec's "only boolean variables as argument". Only the chosen branch is evaluated. A missing <code>else</code> arrives as <code>NilNode</code> and evaluates to nothing. A block runs its statements in order.</p>
+  <div class="code"><pre><span class="l"><i>12</i>    <span class="kw">override</span> <span class="kw">fun</span> evaluate(</span><span class="l"><i>13</i>        node: ASTNode,</span><span class="l"><i>14</i>        interpreter: Interpreter,</span><span class="l"><i>15</i>    ): Any? {</span><span class="l"><i>16</i>        <span class="kw">val</span> printNode = node as PrintNode</span><span class="l hl"><i>17</i>        <span class="kw">val</span> value = interpreter.execute(printNode.expression) ?: throw InterpreterException(<span class="st">&quot;Invalid expression in PrintNode&quot;</span>)</span><span class="l"><i>18</i></span><span class="l"><i>19</i><span class="cm">        // Un valor leído de afuera dentro de un println es un string, según la consigna.</span></span><span class="l hl"><i>20</i>        <span class="kw">val</span> resolved = <span class="kw">if</span> (value <span class="kw">is</span> ExternalInput) value.asType(<span class="st">&quot;string&quot;</span>) <span class="kw">else</span> value</span><span class="l"><i>21</i></span><span class="l hl"><i>22</i>        interpreter.printer.print(resolved.toString())</span><span class="l"><i>23</i>        <span class="kw">return</span> Unit</span><span class="l"><i>24</i>    }</span></pre></div>
+</section>
+
+<section id="errors">
+  <h2>Errors and where they point</h2>
+  <p class="sub">Real messages from the jar. The position comes from the innermost node that failed.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Program</th><th>Message</th><th>Points at</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">let x: number = 5 / 0;</td><td>Division by zero <span class="c">(1:19)</span></td><td>the <code>/</code>: BinaryNode</td></tr>
+      <tr><td class="mono">println(y);</td><td>Undefined variable: y <span class="c">(2:9)</span></td><td>the <code>y</code>: LiteralNode</td></tr>
+      <tr><td class="mono">println("a" * 2);</td><td>Invalid operation: cannot multiply a string by a number <span class="c">(1:13)</span></td><td>the <code>*</code></td></tr>
+      <tr><td class="mono">let x: number = 1; x = "a";</td><td>Invalid expression for type numberliteral <span class="c">(2:3)</span></td><td>the <code>=</code>: AssignationNode</td></tr>
+      <tr><td class="mono">const c: number = 1; c = 2;</td><td>No es posible reasignar una variable de tipo const <span class="c">(2:3)</span></td><td>the <code>=</code></td></tr>
+      <tr><td class="mono">let x: number = 1; let x: number = 2;</td><td>La variable 'x' ya ha sido declarada <span class="c">(2:5)</span></td><td>the name: DeclarationNode</td></tr>
+      <tr><td class="mono">let n: number = 1; if (n) { … }</td><td>Condition must evaluate to a boolean <span class="c">(2:5)</span></td><td>the condition</td></tr>
+      <tr><td class="mono">let sh: string = readEnv("NOPE");</td><td>La variable de entorno 'NOPE' no está definida <span class="c">(1:18)</span></td><td>the <code>readEnv</code> call</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Execution interleaves with parsing</h3>
+  <div class="measure">
+    <div><span class="big">one, two</span><p>printed before the lexer error on line 3 of <code>println("one"); println("two"); let x: number = 5 @ 3; println("four");</code>.</p></div>
+    <div><span class="big">0 nodes</span><p>are kept after they run. The CLI and the TCK execute each node as it arrives, so the program is never held as a whole.</p></div>
+  </div>
+  <p>This is the streaming design seen from the output side. Statements before an error have already had their effects, and validation mode is how you check a file without running it.</p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>An evaluator per node type, in a list, instead of a Visitor or one big <code>when</code></h4>
+    <p>A new node type is a new class plus a list entry, and <code>Interpreter</code> doesn't change (Open/Closed). The version is the list (<span class="ref">InterpreterFactory.kt:28–56</span>). A Visitor would require changing every visitor whenever a node type is added.</p>
+    <p class="cost"><b>Cost</b>Dispatch is a run-time search, and each evaluator casts its node (<code>node as BinaryNode</code>), so a missing evaluator is a run-time error rather than a compile error.</p>
+  </div>
+
+  <div class="decision">
+    <h4>All recursion goes back through <code>interpreter.execute</code></h4>
+    <p>There's one entry point for dispatch and one place that positions errors (<span class="ref">Interpreter.kt:36–41</span>). Evaluators stay independent of each other, and none of them handles positions.</p>
+    <p class="cost"><b>Cost</b>Every child evaluation repeats the search (at most 9 <code>canEvaluate</code> calls), and errors carry a start position but no end.</p>
+  </div>
+
+  <div class="decision">
+    <h4><code>Printer</code> and <code>Reader</code> are injected</h4>
+    <p>Dependency inversion. The spec asks for "a mechanism to provide values" when the interpreter is used programmatically. The CLI plugs in stdout/stdin, the TCK plugs in its emitter and provider as method references, and tests capture output in a list.</p>
+    <p class="cost"><b>Cost</b><code>readEnv</code> still reads <code>System.getenv</code> directly (<span class="ref">FunctionEvaluator.kt:56</span>), so tests depend on the real environment. The TCK's <code>build.gradle</code> sets a variable for exactly that reason.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Plain Kotlin values, with Int kept separate from Double</h4>
+    <p>There are fewer classes, Kotlin's operators and <code>toString()</code> do the work, and whole numbers print without <code>.0</code>, which the spec's examples require (<code>Result: 3</code>).</p>
+    <p class="cost"><b>Cost</b><code>is</code> checks across evaluators and an explicit promotion table (<span class="ref">ArithmeticOperations.kt</span>).</p>
+  </div>
+
+  <div class="decision">
+    <h4>External input stays untyped until its destination is known</h4>
+    <p>It follows the spec literally: the type comes from the variable, or is <code>string</code> inside <code>println</code>. The same <code>"41"</code> correctly becomes a number or a string.</p>
+    <p class="cost"><b>Cost</b>Every place that receives a value has to resolve it: declaration, assignment and print. A fourth destination would need the same call.</p>
+  </div>
+
+  <div class="decision">
+    <h4>State as three maps on the interpreter</h4>
+    <p>Evaluators hold no state, so a single instance of each can be shared, and state is easy to inspect in tests: the tables above were printed straight from the maps.</p>
+    <p class="cost"><b>Cost</b>Any evaluator can write to any map. Moving the maps into an <code>Environment</code> class would be the natural next step, and also the place to add block scopes.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Why not a Visitor pattern?</summary>
+      <p>A Visitor needs a method per node type on every visitor, so adding a node changes them all. With evaluators, adding a node adds a class, and versions are just lists. The cost is losing compile-time exhaustiveness; the <code>Tokenizer</code> in <code>commons</code>, where exhaustiveness matters more, uses a <code>when</code> instead.</p></details>
+    <details><summary>Why does a division by zero point at the <code>/</code> and not at the declaration?</summary>
+      <p>The error is thrown inside <code>BinaryEvaluator</code>. The innermost <code>execute</code>, the one for the <code>BinaryNode</code>, catches it first and adds that node's position, the operator. The outer call for the declaration sees a position already set and rethrows it unchanged (<span class="ref">Interpreter.kt:39</span>).</p></details>
+    <details><summary>Why keep <code>Int</code> and <code>Double</code> apart if PrintScript has one <code>number</code>?</summary>
+      <p>So whole numbers print as whole numbers. Example 2 must print <code>Result: 3</code>, and a Double would print <code>3.0</code>. For type checks they're the same PrintScript type (<span class="ref">AssignmentEvaluator.kt:64–70</span>).</p></details>
+    <details><summary>How does <code>readInput</code> know its type?</summary>
+      <p>It doesn't. It returns <code>ExternalInput</code>, and the declaration, assignment or <code>println</code> that receives it converts it with <code>asType</code>. A value that can't be converted fails there, like <code>"41"</code> for a boolean.</p></details>
+    <details><summary>How is <code>const</code> enforced?</summary>
+      <p>The declaration records the keyword (<span class="ref">DeclarationEvaluator.kt:33</span>), and any later assignment to that name checks it and throws (<span class="ref">AssignmentEvaluator.kt:50–53</span>).</p></details>
+    <details><summary>What happens if the program fails halfway?</summary>
+      <p>Statements before the failure have already run, as the <code>one, two</code> measurement shows. That's inherent to executing while streaming. The CLI's validation operation parses the whole file without executing anything.</p></details>
+    <details><summary>How does the TCK provide input?</summary>
+      <p>Its <code>InputProvider</code> has the same shape as our <code>Reader</code> (one method, string in, string out), so the adapter passes <code>provider::input</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">List the evaluator calls for <code>let c: number = a / b;</code>, in order.</label>
+      <details><summary>Answer</summary><p>Declaration → Binary <code>/</code> → Literal <code>a</code> (12) → Literal <code>b</code> (4). Binary returns 3 and Declaration stores it. Every arrow goes through <code>interpreter.execute</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2">Why do evaluators call <code>interpreter.execute</code> instead of each other?</label>
+      <details><summary>Answer</summary><p>So there's a single place for dispatch and for adding error positions. Evaluators stay independent, and the version's list decides what's supported.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">Name the three maps and what each is for.</label>
+      <details><summary>Answer</summary><p><code>variables</code> holds the values. <code>declarationKeywords</code> holds let or const, to block reassigning a const. <code>declaredTypes</code> holds each declared type, to convert external input assigned later.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">An error thrown inside <code>BinaryEvaluator</code>: which position does it get, and why?</label>
+      <details><summary>Answer</summary><p>The <code>BinaryNode</code>'s, which is its operator. The innermost <code>execute</code> catches the position-less exception first and adds that node's position; outer calls rethrow because a position is already set.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">The reader returns <code>"41"</code>. What do <code>n + 1</code> (number) and <code>s + 1</code> (string) print?</label>
+      <details><summary>Answer</summary><p><code>42</code> and <code>411</code>. <code>ExternalInput.asType</code> converts using the declared type, and then <code>+</code> adds numbers or concatenates strings.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">Why is <code>12</code> an <code>Int</code> and not a <code>Double</code>?</label>
+      <details><summary>Answer</summary><p><code>LiteralEvaluator</code> tries <code>toIntOrNull</code> first. Int / Int stays Int, so Example 2 prints <code>Result: 3</code> and not <code>3.0</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">How do the CLI and the TCK plug in output and input?</label>
+      <details><summary>Answer</summary><p>Through <code>Printer</code> and <code>Reader</code>. The CLI uses <code>OutputPrinter</code> (stdout) and <code>ConsoleReader</code> (stdin); the TCK passes <code>emitter::print</code> and <code>provider::input</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">What stops an <code>if</code> node in the 1.0 interpreter, and why does that almost never happen?</label>
+      <details><summary>Answer</summary><p>The 1.0 evaluator list has no <code>ConditionalEvaluator</code>, so you'd get "Unsupported node type: ConditionalNode". But the 1.0 lexer already rejects <code>{</code>, and the 1.0 parser has no <code>ConditionalFactory</code>.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">126 tests in 6 files.</p>
+  <ul class="points tests">
+    <li><strong>InterpreterTests (93):</strong> every evaluator directly on hand-built nodes (literals, arithmetic, concatenation, division by zero, undefined variables, blocks, conditionals, functions, readEnv), plus programmatic scripts.</li>
+    <li><strong>ExternalInputTypingTest (9):</strong> input kept as typed for strings, converted for numbers and booleans, failures when it can't be converted, later assignments using the declared type, <code>readInput</code> inside <code>println</code> as a string, and <code>readEnv</code> typed the same way.</li>
+    <li><strong>SpecComplianceTest (8):</strong> the PDF's examples 1–3 word for word, decimals, int-to-decimal reassignment, concatenation with decimals and between variables, single-quoted strings.</li>
+    <li><strong>ProgramTest (7):</strong> lexer, parser and interpreter end to end, including both <code>if</code> branches and <code>const</code> reassignment in 1.1.</li>
+    <li><strong>PositionedRuntimeErrorTest (5):</strong> undefined variable, division by zero and type mismatch each report their location, and "the innermost failing node supplies the position".</li>
+    <li><strong>AssignmentTypeTests (4):</strong> boolean and decimal reassignment, a boolean-to-string mismatch, and no debug output on stdout.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-interpreter-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+})();
+</script>

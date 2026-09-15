@@ -1,0 +1,543 @@
+<title>PrintScript lexer Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:600px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .cell{fill:var(--surface);stroke:var(--rule)}
+svg .cell.gap{fill:var(--med-soft);stroke:var(--med)}
+svg .cell.dim{fill:var(--ground)}
+svg .ch{font-family:var(--mono);font-size:16px;fill:var(--ink)}
+svg .ch.dim{fill:var(--muted);opacity:.55}
+svg .ch.gap{fill:var(--med);font-weight:600}
+svg .col{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+svg .br{stroke:var(--accent);stroke-width:2;fill:none}
+svg .lab{font-family:var(--mono);font-size:11px;fill:var(--accent)}
+svg .lab.gap{fill:var(--med);font-weight:600}
+svg .lab.dim{fill:var(--muted)}
+svg .stem{stroke:var(--accent);stroke-width:1}
+
+.order{list-style:none;margin:10px 0 16px;padding:0;display:grid;gap:0;border-top:1px solid var(--rule)}
+.order li{display:grid;grid-template-columns:34px minmax(0,1.2fr) minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.order .n{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.order .pat{font-family:var(--mono);font-size:12.5px;overflow-wrap:anywhere}
+.order .ty{font-family:var(--mono);font-size:12.5px;font-weight:600}
+.order .tag{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap}
+.order .tag.v10{border:1px solid var(--rule);color:var(--muted)}
+.order .tag.v11{background:var(--accent-soft);color:var(--accent)}
+.order .tag.chg{background:var(--med-soft);color:var(--med)}
+@media (max-width:560px){.order li{grid-template-columns:28px minmax(0,1fr)}.order .ty,.order .tag{grid-column:2}}
+.raw{font-family:var(--mono);font-size:12px;line-height:1.5;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;overflow-x:auto;white-space:pre;margin:6px 0 14px}
+.raw b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:2px}
+.measure{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.measure div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.measure .big{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.measure p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:560px){.measure{grid-template-columns:minmax(0,1fr)}}
+td.mono{font-family:var(--mono);font-size:13px}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <span class="cur" aria-current="page">lexer</span>
+  <a href="parser.html">parser</a><a href="interpreter.html">interpreter</a><a href="formatter.html">formatter</a><a href="linter.html">linter</a><a href="cli.html">cli</a>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 2 of 8</p>
+  <h1><code>lexer</code></h1>
+  <p class="lede">Turns source text into a lazy stream of tokens, one line at a time. Every lexeme it can't recognise, and every word the chosen version doesn't allow, becomes an error with exact columns.</p>
+  <ul class="meta">
+    <li><b>6</b>files</li>
+    <li><b>242</b>lines</li>
+    <li><b>21</b>tests</li>
+    <li><b>1</b>dependency: commons</li>
+    <li><b>~20</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#scan">Scanning a line</a></li>
+    <li><a href="#regex">The combined regex</a></li>
+    <li><a href="#versions">1.0 vs 1.1</a></li>
+    <li><a href="#lazy">Laziness, measured</a></li>
+    <li><a href="#code">The code</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"The lexer is built from a map with one regex per token type, chosen by version. It joins those regexes into a single pattern and scans the source <strong>one line at a time</strong>. The regex finds where each lexeme starts and ends. A second step decides its type, checking reserved words first. Whatever the pattern skipped over is checked too: anything that isn't whitespace is an invalid character, reported with its columns. Because the output is a <code>Sequence</code>, a line is read only when the parser asks for more tokens, so memory depends on the longest line, not on the file size."</p>
+  </div>
+</section>
+
+<section id="where">
+  <h2>Where it sits</h2>
+  <p class="sub">Three callers in production code, each feeding it lines lazily. The list-returning overloads are used only by tests.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Caller</th><th>Call</th><th>Input</th><th>Tokens go to</th></tr></thead>
+    <tbody>
+      <tr><td>CLI</td><td><span class="ref">ParsingPipeline.kt:49</span></td><td><code>Sequence&lt;String&gt;</code> from the file</td><td>the parser</td></tr>
+      <tr><td>formatter</td><td><span class="ref">FormatterBuilderPS.kt:24</span> <span class="ref">SourceToken.kt:48</span></td><td><code>Sequence&lt;String&gt;</code></td><td>the formatter, paired with their original text</td></tr>
+      <tr><td>TCK</td><td><span class="ref">Pipeline.java:26</span></td><td><code>InputStream</code></td><td>the parser</td></tr>
+    </tbody>
+  </table></div>
+  <p>The lexer never learns who consumes its tokens, and the parser never imports the lexer; the callers above connect the two. That's why the lexer depends only on <code>commons</code>.</p>
+</section>
+
+<section id="scan">
+  <h2>Scanning one line</h2>
+  <p class="sub">What <code>convertLineToTokens</code> does with <code>let x: number = 5 @ 3;</code> under version 1.0.</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 640 106" role="img" aria-label="The line let x: number = 5 @ 3; drawn one character per cell. Brackets mark the six tokens matched before column 17. The run from column 17 to 20 contains an at sign that no pattern matched, so the lexer throws there, and 3 and the semicolon are never tokenized.">
+      <text class="col" x="33" y="13" text-anchor="middle">0</text>
+      <rect class="cell " x="20" y="20" width="26" height="28"/>
+      <text class="ch " x="33" y="40" text-anchor="middle">l</text>
+      <text class="col" x="59" y="13" text-anchor="middle">1</text>
+      <rect class="cell " x="46" y="20" width="26" height="28"/>
+      <text class="ch " x="59" y="40" text-anchor="middle">e</text>
+      <text class="col" x="85" y="13" text-anchor="middle">2</text>
+      <rect class="cell " x="72" y="20" width="26" height="28"/>
+      <text class="ch " x="85" y="40" text-anchor="middle">t</text>
+      <text class="col" x="111" y="13" text-anchor="middle">3</text>
+      <rect class="cell " x="98" y="20" width="26" height="28"/>
+      <text class="col" x="137" y="13" text-anchor="middle">4</text>
+      <rect class="cell " x="124" y="20" width="26" height="28"/>
+      <text class="ch " x="137" y="40" text-anchor="middle">x</text>
+      <text class="col" x="163" y="13" text-anchor="middle">5</text>
+      <rect class="cell " x="150" y="20" width="26" height="28"/>
+      <text class="ch " x="163" y="40" text-anchor="middle">:</text>
+      <text class="col" x="189" y="13" text-anchor="middle">6</text>
+      <rect class="cell " x="176" y="20" width="26" height="28"/>
+      <text class="col" x="215" y="13" text-anchor="middle">7</text>
+      <rect class="cell " x="202" y="20" width="26" height="28"/>
+      <text class="ch " x="215" y="40" text-anchor="middle">n</text>
+      <text class="col" x="241" y="13" text-anchor="middle">8</text>
+      <rect class="cell " x="228" y="20" width="26" height="28"/>
+      <text class="ch " x="241" y="40" text-anchor="middle">u</text>
+      <text class="col" x="267" y="13" text-anchor="middle">9</text>
+      <rect class="cell " x="254" y="20" width="26" height="28"/>
+      <text class="ch " x="267" y="40" text-anchor="middle">m</text>
+      <text class="col" x="293" y="13" text-anchor="middle">10</text>
+      <rect class="cell " x="280" y="20" width="26" height="28"/>
+      <text class="ch " x="293" y="40" text-anchor="middle">b</text>
+      <text class="col" x="319" y="13" text-anchor="middle">11</text>
+      <rect class="cell " x="306" y="20" width="26" height="28"/>
+      <text class="ch " x="319" y="40" text-anchor="middle">e</text>
+      <text class="col" x="345" y="13" text-anchor="middle">12</text>
+      <rect class="cell " x="332" y="20" width="26" height="28"/>
+      <text class="ch " x="345" y="40" text-anchor="middle">r</text>
+      <text class="col" x="371" y="13" text-anchor="middle">13</text>
+      <rect class="cell " x="358" y="20" width="26" height="28"/>
+      <text class="col" x="397" y="13" text-anchor="middle">14</text>
+      <rect class="cell " x="384" y="20" width="26" height="28"/>
+      <text class="ch " x="397" y="40" text-anchor="middle">=</text>
+      <text class="col" x="423" y="13" text-anchor="middle">15</text>
+      <rect class="cell " x="410" y="20" width="26" height="28"/>
+      <text class="col" x="449" y="13" text-anchor="middle">16</text>
+      <rect class="cell " x="436" y="20" width="26" height="28"/>
+      <text class="ch " x="449" y="40" text-anchor="middle">5</text>
+      <text class="col" x="475" y="13" text-anchor="middle">17</text>
+      <rect class="cell gap" x="462" y="20" width="26" height="28"/>
+      <text class="col" x="501" y="13" text-anchor="middle">18</text>
+      <rect class="cell gap" x="488" y="20" width="26" height="28"/>
+      <text class="ch gap" x="501" y="40" text-anchor="middle">@</text>
+      <text class="col" x="527" y="13" text-anchor="middle">19</text>
+      <rect class="cell gap" x="514" y="20" width="26" height="28"/>
+      <text class="col" x="553" y="13" text-anchor="middle">20</text>
+      <rect class="cell dim" x="540" y="20" width="26" height="28"/>
+      <text class="ch dim" x="553" y="40" text-anchor="middle">3</text>
+      <text class="col" x="579" y="13" text-anchor="middle">21</text>
+      <rect class="cell dim" x="566" y="20" width="26" height="28"/>
+      <text class="ch dim" x="579" y="40" text-anchor="middle">;</text>
+      <path class="br" d="M23 52 V57 H95 V52"/>
+      <text class="lab" x="59.0" y="74" text-anchor="middle">KEYWORD</text>
+      <path class="br" d="M127 52 V57 H147 V52"/>
+      <line class="stem" x1="137.0" y1="57" x2="137.0" y2="86"/>
+      <text class="lab" x="137.0" y="98" text-anchor="middle">IDENTIFIER</text>
+      <path class="br" d="M153 52 V57 H173 V52"/>
+      <text class="lab" x="163.0" y="74" text-anchor="middle">DECLARATOR</text>
+      <path class="br" d="M205 52 V57 H355 V52"/>
+      <line class="stem" x1="280.0" y1="57" x2="280.0" y2="86"/>
+      <text class="lab" x="280.0" y="98" text-anchor="middle">DATA_TYPE</text>
+      <path class="br" d="M387 52 V57 H407 V52"/>
+      <text class="lab" x="397.0" y="74" text-anchor="middle">ASSIGNATION</text>
+      <path class="br" d="M439 52 V57 H459 V52"/>
+      <line class="stem" x1="449.0" y1="57" x2="449.0" y2="86"/>
+      <text class="lab" x="449.0" y="98" text-anchor="middle">NUMBERLITERAL</text>
+      <path class="br" style="stroke:var(--med)" d="M465 52 V57 H537 V52"/>
+      <text class="lab gap" x="501.0" y="74" text-anchor="middle">skipped → error</text>
+      <text class="lab dim" x="592" y="98" text-anchor="end">never tokenized</text>
+    </svg>
+    </div>
+    <figcaption>Each cell is one character; the small numbers are 0-based columns. Six tokens match. The regex's next match is <code>3</code> at column 20, so the lexer checks the text it jumped over (columns 17–20). It isn't blank: <code>'@'</code> becomes the error <em>"Carácter inválido encontrado: '@' (desde línea 1, columna 19 hasta línea 1, columna 20)"</em>, the real output of the jar.</figcaption>
+  </figure>
+  <div class="code"><pre><span class="l"><i>46</i>    <span class="kw">private</span> <span class="kw">fun</span> convertLineToTokens(</span><span class="l"><i>47</i>        lineContent: String,</span><span class="l"><i>48</i>        row: Int,</span><span class="l"><i>49</i>    ): List&lt;Token&gt; {</span><span class="l"><i>50</i>        <span class="kw">val</span> lineTokens = mutableListOf&lt;Token&gt;()</span><span class="l hl"><i>51</i>        <span class="kw">val</span> matcher = pattern.matcher(lineContent)</span><span class="l"><i>52</i>        <span class="kw">var</span> scanned = 0</span><span class="l"><i>53</i></span><span class="l hl"><i>54</i>        while (matcher.find()) {</span><span class="l hl"><i>55</i>            rejectSkippedText(lineContent, row, scanned, matcher.start())</span><span class="l"><i>56</i></span><span class="l"><i>57</i>            <span class="kw">val</span> rawValue = matcher.group()</span><span class="l hl"><i>58</i>            <span class="kw">val</span> startPos = TokenPosition(row, matcher.start())</span><span class="l hl"><i>59</i>            <span class="kw">val</span> endPos = TokenPosition(row, matcher.end())</span><span class="l"><i>60</i></span><span class="l"><i>61</i><span class="cm">            // Palabra válida del lenguaje pero no de esta versión (por ejemplo &quot;const&quot; en 1.0).</span></span><span class="l hl"><i>62</i>            classifier.disallowedReason(rawValue)?.let { reason -&gt; throw LexerException(reason, startPos, endPos) }</span><span class="l"><i>63</i></span><span class="l hl"><i>64</i>            <span class="kw">val</span> tokenType = classifier.classify(rawValue)</span><span class="l hl"><i>65</i>            <span class="kw">if</span> (tokenType == TokenType.UNKNOWN) {</span><span class="l hl"><i>66</i>                throw LexerException(<span class="st">&quot;Carácter inválido encontrado: &#x27;$rawValue&#x27;&quot;</span>, startPos, endPos)</span><span class="l hl"><i>67</i>            }</span><span class="l"><i>68</i></span><span class="l"><i>69</i>            <span class="kw">val</span> actualValue = extractTokenValue(tokenType, rawValue)</span><span class="l"><i>70</i>            lineTokens.add(Token(tokenType, actualValue, startPos, endPos))</span><span class="l"><i>71</i>            scanned = matcher.end()</span><span class="l"><i>72</i>        }</span><span class="l hl"><i>73</i>        rejectSkippedText(lineContent, row, scanned, lineContent.length)</span><span class="l"><i>74</i></span><span class="l"><i>75</i>        <span class="kw">return</span> lineTokens</span><span class="l"><i>76</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>One <code>Matcher</code> per line</strong> (:51) over the pattern compiled once when the <code>Lexer</code> was built (:14).</li>
+    <li><strong>Positions come straight from the match</strong> (:58–59): <code>matcher.start()</code> and <code>matcher.end()</code> are the 0-based start and end columns, and the row is the line number.</li>
+    <li><strong>The gap check runs before every token</strong> (:55) and once more for the rest of the line (:73). <code>scanned</code> (:52, :71) remembers where the last token ended.</li>
+    <li><strong>Then three questions, in order.</strong> Is this word disallowed in this version (:62)? What type is it (:64)? Is that type UNKNOWN (:65–67)? Each "wrong" answer throws a <code>LexerException</code> with the same start and end positions.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>78</i><span class="cm">    /**</span></span><span class="l"><i>79</i><span class="cm">     * Rechaza el texto que el patrón no reconoció.</span></span><span class="l"><i>80</i><span class="cm">     *</span></span><span class="l hl"><i>81</i><span class="cm">     * `Matcher.find` no falla ante un lexema inválido: simplemente lo saltea y sigue con el</span></span><span class="l hl"><i>82</i><span class="cm">     * match siguiente. Para detectarlo hay que mirar los huecos que deja entre matches —y la</span></span><span class="l hl"><i>83</i><span class="cm">     * cola de la línea—, donde cualquier cosa que no sea espacio en blanco es un error.</span></span><span class="l hl"><i>84</i><span class="cm">     */</span></span><span class="l"><i>85</i>    <span class="kw">private</span> <span class="kw">fun</span> rejectSkippedText(</span><span class="l"><i>86</i>        lineContent: String,</span><span class="l"><i>87</i>        row: Int,</span><span class="l"><i>88</i>        from: Int,</span><span class="l"><i>89</i>        to: Int,</span><span class="l"><i>90</i>    ) {</span><span class="l hl"><i>91</i>        <span class="kw">if</span> (from &gt;= to) <span class="kw">return</span></span><span class="l"><i>92</i>        <span class="kw">val</span> skipped = lineContent.substring(from, to)</span><span class="l hl"><i>93</i>        <span class="kw">if</span> (skipped.isBlank()) <span class="kw">return</span></span><span class="l"><i>94</i></span><span class="l hl"><i>95</i>        <span class="kw">val</span> leadingBlanks = skipped.indexOfFirst { !it.isWhitespace() }</span><span class="l hl"><i>96</i>        <span class="kw">val</span> invalid = skipped.trim()</span><span class="l hl"><i>97</i>        <span class="kw">val</span> startColumn = from + leadingBlanks</span><span class="l"><i>98</i>        throw LexerException(</span><span class="l"><i>99</i>            <span class="st">&quot;Carácter inválido encontrado: &#x27;$invalid&#x27;&quot;</span>,</span><span class="l"><i>100</i>            TokenPosition(row, startColumn),</span><span class="l"><i>101</i>            TokenPosition(row, startColumn + invalid.length),</span><span class="l"><i>102</i>        )</span><span class="l"><i>103</i>    }</span></pre></div>
+  <p class="code-cap">The comment at :81–84 is the key sentence: <code>Matcher.find</code> doesn't fail on garbage, it silently skips it. Checking the gaps is the only way to notice.</p>
+</section>
+
+<section id="regex">
+  <h2>The combined regex</h2>
+  <p class="sub"><code>PatternMatcher</code> joins every strategy's regex into one alternation. These strings were printed from the compiled jar.</p>
+  <div class="raw"><b>1.0</b>(\blet\b)|(\bprintln\b)|([()])|(:)|(=)|(\bstring\b|\bnumber\b)|([-+*/%=&gt;&lt;!&amp;|^~]+)|(\b[a-zA-Z_][a-zA-Z0-9_]*\b)|('[^']*'|"[^"]*")|([0-9]+(\.[0-9]+)?)|([()\[\],;.])</div>
+  <div class="raw"><b>1.1</b>(\blet\b|\bconst\b)|(println|readInput|readEnv)|([()])|(:)|(=)|((\bstring\b|\bnumber\b|\bboolean\b))|([-+*/%=&gt;&lt;!&amp;|^~]+)|(\b[a-zA-Z_][a-zA-Z0-9_]*\b)|('[^']*'|"[^"]*")|([0-9]+(\.[0-9]+)?)|([{}()\[\],;.])|(\bif\b|\belse\b)|((true|false))</div>
+
+  <h3>Order is part of the design</h3>
+  <p>At each position, Java's regex engine takes the <em>first alternative that matches</em>, not the longest one. So the order of this list (which is the insertion order of the <code>mapOf</code>) decides what a lexeme becomes.</p>
+  <ol class="order">
+    <li><span class="n">1</span><span class="pat">\blet\b|\bconst\b</span><span class="ty">KEYWORD</span><span class="tag chg">const in 1.1</span></li>
+    <li><span class="n">2</span><span class="pat">println|readInput|readEnv</span><span class="ty">FUNCTION</span><span class="tag chg">+2 in 1.1</span></li>
+    <li><span class="n">3</span><span class="pat">[()]</span><span class="ty">PARENTHESIS</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">4</span><span class="pat">:</span><span class="ty">DECLARATOR</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">5</span><span class="pat">=</span><span class="ty">ASSIGNATION</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">6</span><span class="pat">string|number|boolean</span><span class="ty">DATA_TYPE</span><span class="tag chg">boolean in 1.1</span></li>
+    <li><span class="n">7</span><span class="pat">[-+*/%=&gt;&lt;!&amp;|^~]+</span><span class="ty">OPERATOR</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">8</span><span class="pat">\b[a-zA-Z_][a-zA-Z0-9_]*\b</span><span class="ty">IDENTIFIER</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">9</span><span class="pat">'[^']*'|"[^"]*"</span><span class="ty">STRINGLITERAL</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">10</span><span class="pat">[0-9]+(\.[0-9]+)?</span><span class="ty">NUMBERLITERAL</span><span class="tag v10">1.0</span></li>
+    <li><span class="n">11</span><span class="pat">[{}()\[\],;.]</span><span class="ty">PUNCTUATOR</span><span class="tag chg">{ } in 1.1</span></li>
+    <li><span class="n">12</span><span class="pat">\bif\b|\belse\b</span><span class="ty">CONDITIONAL</span><span class="tag v11">new in 1.1</span></li>
+    <li><span class="n">13</span><span class="pat">true|false</span><span class="ty">BOOLEANLITERAL</span><span class="tag v11">new in 1.1</span></li>
+  </ol>
+  <ul class="points">
+    <li><strong><code>=</code> before OPERATOR</strong> (5 before 7) makes <code>x = 5</code> produce an ASSIGNATION token. It also means <code>==</code>, which isn't PrintScript, lexes as two ASSIGNATION tokens rather than one operator.</li>
+    <li><strong>KEYWORD and DATA_TYPE before IDENTIFIER</strong> (1 and 6 before 8), with <code>\b</code> word boundaries. <code>let</code> is a keyword, but <code>letter</code> doesn't start with a <code>let</code> token: <code>\blet\b</code> fails because no boundary follows the <code>t</code>, so the identifier pattern takes the whole word.</li>
+    <li><strong>Groups 12 and 13 come after IDENTIFIER.</strong> In 1.1 they were added to the end of a copied map (<span class="ref">TokenMapper.kt:63, 67</span>), so the regex matches <code>true</code> and <code>if</code> with the <em>identifier</em> group. They still get the right type because of the second step below.</li>
+  </ul>
+
+  <h3>Two steps: find the lexeme, then decide its type</h3>
+  <div class="code"><pre><span class="l hl"><i>22</i>    <span class="kw">fun</span> disallowedReason(input: String): String? = disallowedKeywords[input]</span><span class="l"><i>23</i></span><span class="l"><i>24</i>    <span class="kw">fun</span> classify(input: String): TokenType {</span><span class="l"><i>25</i>        <span class="kw">if</span> (input.isBlank()) <span class="kw">return</span> TokenType.UNKNOWN</span><span class="l"><i>26</i></span><span class="l hl"><i>27</i>        <span class="kw">return</span> reservedKeywords[input]</span><span class="l hl"><i>28</i>            ?: strategyMap.entries.firstOrNull { it.value.classify(input) }?.key</span><span class="l hl"><i>29</i>            ?: TokenType.UNKNOWN</span><span class="l"><i>30</i>    }</span></pre></div>
+  <p>The regex only finds <em>boundaries</em>. <code>classify</code> then looks the text up in the reserved words (<span class="ref">TokenMapper.kt:35–44</span>) before trying strategies in order. That's what turns an identifier-shaped <code>true</code> into BOOLEANLITERAL and <code>if</code> into CONDITIONAL, whatever the alternation order. Reserved words are a fixed table, so their type never depends on where a pattern sits in the list.</p>
+</section>
+
+<section id="versions">
+  <h2>1.0 vs 1.1</h2>
+  <p class="sub">The same lexemes classified by both mappers. Output from the compiled jar.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Lexeme</th><th>1.0</th><th>1.1</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">let</td><td class="mono">KEYWORD</td><td class="mono">KEYWORD</td><td>reserved word</td></tr>
+      <tr><td class="mono">const</td><td class="mono">KEYWORD</td><td class="mono">KEYWORD</td><td>but 1.0 has a disallowed reason: <em>"Const declarations are not allowed in version 1.0"</em></td></tr>
+      <tr><td class="mono">boolean</td><td class="mono">IDENTIFIER</td><td class="mono">DATA_TYPE</td><td>1.0 has no boolean type</td></tr>
+      <tr><td class="mono">readInput</td><td class="mono">IDENTIFIER</td><td class="mono">FUNCTION</td><td>just a name in 1.0</td></tr>
+      <tr><td class="mono">if</td><td class="mono">CONDITIONAL</td><td class="mono">CONDITIONAL</td><td>the reserved table is shared by both versions</td></tr>
+      <tr><td class="mono">true</td><td class="mono">BOOLEANLITERAL</td><td class="mono">BOOLEANLITERAL</td><td>same</td></tr>
+      <tr><td class="mono">{</td><td class="mono">UNKNOWN</td><td class="mono">PUNCTUATOR</td><td>braces don't exist in 1.0</td></tr>
+      <tr><td class="mono">'hi'</td><td class="mono">STRINGLITERAL</td><td class="mono">STRINGLITERAL</td><td>single or double quotes, as the spec requires</td></tr>
+      <tr><td class="mono">3.14</td><td class="mono">NUMBERLITERAL</td><td class="mono">NUMBERLITERAL</td><td>integers and decimals</td></tr>
+      <tr><td class="mono">@</td><td class="mono">UNKNOWN</td><td class="mono">UNKNOWN</td><td>never a valid lexeme</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Where each 1.1 feature is stopped under 1.0</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Program under 1.0</th><th>Stopped by</th><th>What the user sees</th></tr></thead>
+    <tbody>
+      <tr><td><code>const c: number = 1;</code></td><td>lexer, disallowed reason</td><td><em>Const declarations are not allowed in version 1.0</em> (columns 1–6)</td></tr>
+      <tr><td><code>if (true) { println(1); }</code></td><td>lexer, unknown character</td><td><em>Carácter inválido encontrado: '{'</em> (columns 11–12)</td></tr>
+      <tr><td><code>let b: boolean = true;</code></td><td>parser</td><td>lexes fine; <code>boolean</code> is an IDENTIFIER, so <code>DeclarationFactory</code> finds no DATA_TYPE</td></tr>
+      <tr><td><code>readInput("x")</code></td><td>parser</td><td>lexes fine; <code>readInput</code> is just an identifier in 1.0</td></tr>
+    </tbody>
+  </table></div>
+  <p>Only <code>const</code> needs special handling in the lexer (<span class="ref">TokenMapper.kt:81–86</span>): it's a valid word in both versions, so without an explicit rule 1.0 would accept it. The other features stop naturally, because 1.0's vocabulary doesn't give them the token type they need.</p>
+</section>
+
+<section id="lazy">
+  <h2>Laziness, measured</h2>
+  <p class="sub">Two experiments against the compiled jar.</p>
+  <div class="measure">
+    <div><span class="big">1 line</span><p>read to hand out the first 5 tokens of an <strong>infinite</strong> source of <code>println("line");</code>. The 10th token needed exactly 2 lines.</p></div>
+    <div><span class="big">7 tokens</span><p>delivered before the error in <code>let a: number = 1;</code> ⏎ <code>println(a); @</code>. None of line 2's five valid tokens came out first.</p></div>
+  </div>
+  <div class="code"><pre><span class="l"><i>29</i>    <span class="kw">fun</span> convertToTokens(lines: Sequence&lt;String&gt;): Sequence&lt;Token&gt; =</span><span class="l hl"><i>30</i>        sequence {</span><span class="l"><i>31</i>            <span class="kw">var</span> row = 0</span><span class="l"><i>32</i>            <span class="kw">for</span> (lineContent <span class="kw">in</span> lines) {</span><span class="l hl"><i>33</i>                <span class="kw">val</span> lineTokens = convertLineToTokens(lineContent, row)</span><span class="l hl"><i>34</i>                <span class="kw">for</span> (token <span class="kw">in</span> lineTokens) {</span><span class="l hl"><i>35</i>                    yield(token)</span><span class="l"><i>36</i>                }</span><span class="l"><i>37</i>                row++</span><span class="l"><i>38</i>            }</span><span class="l"><i>39</i>        }</span><span class="l"><i>40</i></span><span class="l"><i>41</i>    <span class="kw">fun</span> convertToTokens(inputStream: InputStream): Sequence&lt;Token&gt; {</span><span class="l hl"><i>42</i>        <span class="kw">val</span> reader = BufferedReader(InputStreamReader(inputStream))</span><span class="l hl"><i>43</i>        <span class="kw">return</span> convertToTokens(reader.lineSequence())</span><span class="l"><i>44</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong><code>sequence { yield }</code></strong> (:30, :35) turns the loop into a generator: execution pauses at each <code>yield</code> until the consumer asks for the next token. That's the first experiment: an infinite input can't hang it.</li>
+    <li><strong>The unit of work is a line.</strong> <code>convertLineToTokens</code> returns a complete <code>List</code> (:33), which is then yielded token by token. That's the second experiment: a bad character anywhere in a line fails before that line's tokens are delivered. Memory is bounded by the longest line.</li>
+    <li><strong>The <code>InputStream</code> overload</strong> (:41–44) wraps a <code>BufferedReader</code> and reuses the same path. The caller owns the stream and closes it.</li>
+  </ul>
+</section>
+
+<section id="code">
+  <h2>The rest of the code</h2>
+  <p class="sub">The pieces not already shown above.</p>
+
+  <h3>TokenMapper.kt <span class="path">construction and versions</span></h3>
+  <div class="code"><pre><span class="l hl"><i>5</i><span class="kw">class</span> TokenMapper(</span><span class="l hl"><i>6</i>    <span class="kw">private</span> <span class="kw">val</span> strategyMap: Map&lt;TokenType, TokenClassifierStrategy&gt;,</span><span class="l hl"><i>7</i>    <span class="kw">private</span> <span class="kw">val</span> reservedKeywords: Map&lt;String, TokenType&gt; = defaultReservedKeywords(),</span><span class="l hl"><i>8</i>    <span class="kw">private</span> <span class="kw">val</span> disallowedKeywords: Map&lt;String, String&gt; = emptyMap(),</span><span class="l"><i>9</i>) {</span><span class="l hl"><i>10</i>    <span class="kw">constructor</span>(version: String) : this(</span><span class="l hl"><i>11</i>        strategyMap = getStrategiesForVersion(version),</span><span class="l hl"><i>12</i>        disallowedKeywords = getDisallowedForVersion(version),</span><span class="l hl"><i>13</i>    )</span></pre></div>
+  <ul class="points">
+    <li><strong>The primary constructor takes the three maps</strong> (:5–8), so a test can build a lexer with any vocabulary ("test custom strategies injection"). The secondary constructor (:10–13) is the convenient version-based one that production code uses.</li>
+    <li><code>disallowedKeywords</code> defaults to empty, so a mapper built from custom maps allows everything unless told otherwise.</li>
+  </ul>
+  <div class="code"><pre><span class="l hl"><i>46</i>        <span class="kw">fun</span> version10Strategies(): Map&lt;TokenType, TokenClassifierStrategy&gt; =</span><span class="l"><i>47</i>            mapOf(</span><span class="l"><i>48</i>                TokenType.KEYWORD to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;\blet\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>49</i>                TokenType.FUNCTION to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;\bprintln\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>50</i>                TokenType.PARENTHESIS to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;[()]&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>51</i>                TokenType.DECLARATOR to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;:&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>52</i>                TokenType.ASSIGNATION to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;=&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>53</i>                TokenType.DATA_TYPE to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;\bstring\b|\bnumber\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>54</i>                TokenType.OPERATOR to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;[-+*/%=&gt;&lt;!&amp;|^~]+&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>55</i>                TokenType.IDENTIFIER to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;\b[a-zA-Z_][a-zA-Z0-9_]*\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>56</i>                TokenType.STRINGLITERAL to RegexTokenClassifier(<span class="st">&quot;\&#x27;[^\&#x27;]*\&#x27;|\&quot;</span>[^\<span class="st">&quot;]*\&quot;</span>&quot;.toRegex()),</span><span class="l"><i>57</i>                TokenType.NUMBERLITERAL to RegexTokenClassifier(<span class="st">&quot;[0-9]+(\\.[0-9]+)?&quot;</span>.toRegex()),</span><span class="l"><i>58</i>                TokenType.PUNCTUATOR to RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;[()\[\],;.]&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>59</i>            )</span><span class="l"><i>60</i></span><span class="l hl"><i>61</i>        <span class="kw">fun</span> version11Strategies(): Map&lt;TokenType, TokenClassifierStrategy&gt; {</span><span class="l hl"><i>62</i>            <span class="kw">val</span> map = version10Strategies().toMutableMap()</span><span class="l"><i>63</i>            map[TokenType.CONDITIONAL] = RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;\bif\b|\belse\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex())</span><span class="l"><i>64</i>            map[TokenType.KEYWORD] = RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;\blet\b|\bconst\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex())</span><span class="l"><i>65</i>            map[TokenType.FUNCTION] = RegexTokenClassifier(<span class="st">&quot;println|readInput|readEnv&quot;</span>.toRegex())</span><span class="l"><i>66</i>            map[TokenType.DATA_TYPE] = RegexTokenClassifier(<span class="st">&quot;(\\bstring\\b|\\bnumber\\b|\\bboolean\\b)&quot;</span>.toRegex())</span><span class="l"><i>67</i>            map[TokenType.BOOLEANLITERAL] = RegexTokenClassifier(<span class="st">&quot;(true|false)&quot;</span>.toRegex())</span><span class="l"><i>68</i>            map[TokenType.PUNCTUATOR] = RegexTokenClassifier(<span class="st">&quot;&quot;</span><span class="st">&quot;[{}()\[\],;.]&quot;</span><span class="st">&quot;&quot;</span>.toRegex())</span><span class="l hl"><i>69</i>            <span class="kw">return</span> map</span><span class="l"><i>70</i>        }</span><span class="l"><i>71</i></span><span class="l"><i>72</i>        <span class="kw">fun</span> forVersion(version: String): TokenMapper = TokenMapper(version)</span><span class="l"><i>73</i></span><span class="l hl"><i>74</i>        <span class="kw">private</span> <span class="kw">fun</span> getStrategiesForVersion(version: String): Map&lt;TokenType, TokenClassifierStrategy&gt; =</span><span class="l hl"><i>75</i>            <span class="kw">when</span> (version) {</span><span class="l hl"><i>76</i>                <span class="st">&quot;1.0&quot;</span> -&gt; version10Strategies()</span><span class="l hl"><i>77</i>                <span class="st">&quot;1.1&quot;</span> -&gt; version11Strategies()</span><span class="l hl"><i>78</i>                <span class="kw">else</span> -&gt; throw IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l"><i>79</i>            }</span><span class="l"><i>80</i></span><span class="l hl"><i>81</i>        <span class="kw">private</span> <span class="kw">fun</span> getDisallowedForVersion(version: String): Map&lt;String, String&gt; =</span><span class="l hl"><i>82</i>            <span class="kw">when</span> (version) {</span><span class="l hl"><i>83</i>                <span class="st">&quot;1.0&quot;</span> -&gt; mapOf(<span class="st">&quot;const&quot;</span> to <span class="st">&quot;Const declarations are not allowed in version 1.0&quot;</span>)</span><span class="l hl"><i>84</i>                <span class="st">&quot;1.1&quot;</span> -&gt; emptyMap()</span><span class="l hl"><i>85</i>                <span class="kw">else</span> -&gt; throw IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l hl"><i>86</i>            }</span></pre></div>
+  <ul class="points">
+    <li><strong>1.1 is built from 1.0</strong> (:62): copy the map, then add or replace six entries. The difference between the versions is readable in eight lines.</li>
+    <li><strong>An unknown version fails immediately</strong> (:78, :85), when the mapper is built and before any source is read.</li>
+  </ul>
+
+  <h3>PatternMatcher.kt</h3>
+  <div class="code"><pre><span class="l"><i>6</i><span class="kw">class</span> PatternMatcher(</span><span class="l"><i>7</i>    <span class="kw">private</span> <span class="kw">val</span> strategyMap: Map&lt;TokenType, TokenClassifierStrategy&gt;,</span><span class="l"><i>8</i>) {</span><span class="l"><i>9</i>    <span class="kw">fun</span> createPattern(): Pattern {</span><span class="l"><i>10</i>        <span class="kw">val</span> patternBuilder = StringBuilder()</span><span class="l hl"><i>11</i>        <span class="kw">for</span> ((_, strategy) <span class="kw">in</span> strategyMap) {</span><span class="l hl"><i>12</i>            <span class="kw">if</span> (strategy <span class="kw">is</span> RegexTokenClassifier) {</span><span class="l hl"><i>13</i>                patternBuilder.append(<span class="st">&quot;(${strategy.regex.pattern})|&quot;</span>)</span><span class="l"><i>14</i>            }</span><span class="l"><i>15</i>        }</span><span class="l hl"><i>16</i>        <span class="kw">return</span> Pattern.compile(patternBuilder.toString().removeSuffix(<span class="st">&quot;|&quot;</span>))</span><span class="l"><i>17</i>    }</span></pre></div>
+  <p>It wraps each regex in a group and joins them with <code>|</code>, removing the trailing <code>|</code> at :16. Only <code>RegexTokenClassifier</code> strategies contribute (:12).</p>
+
+  <h3>The strategy interface and its one implementation</h3>
+  <div class="code"><pre><span class="l"><i>3</i>interface TokenClassifierStrategy {</span><span class="l hl"><i>4</i>    <span class="kw">fun</span> classify(tokenValue: String): Boolean</span><span class="l"><i>5</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>3</i><span class="kw">class</span> RegexTokenClassifier(</span><span class="l"><i>4</i>    <span class="kw">val</span> regex: Regex,</span><span class="l"><i>5</i>) : TokenClassifierStrategy {</span><span class="l hl"><i>6</i>    <span class="kw">override</span> <span class="kw">fun</span> classify(tokenValue: String): Boolean = regex.matches(tokenValue)</span><span class="l"><i>7</i>}</span></pre></div>
+  <p><code>classify</code> uses <code>regex.matches</code>, which tests the <em>whole</em> lexeme, while the combined pattern uses <code>find</code> to locate lexemes. The same regex serves both purposes.</p>
+
+  <h3>LexerException.kt and extracting the value</h3>
+  <div class="code"><pre><span class="l"><i>6</i><span class="cm">/** Error de análisis léxico, con la ubicación exacta del lexema inválido. */</span></span><span class="l hl"><i>7</i><span class="kw">class</span> LexerException(</span><span class="l hl"><i>8</i>    message: String,</span><span class="l hl"><i>9</i>    startPosition: TokenPosition? = <span class="kw">null</span>,</span><span class="l hl"><i>10</i>    endPosition: TokenPosition? = <span class="kw">null</span>,</span><span class="l hl"><i>11</i>) : PrintScriptException(message, startPosition, endPosition)</span></pre></div>
+  <div class="code"><pre><span class="l"><i>105</i>    <span class="kw">private</span> <span class="kw">fun</span> extractTokenValue(</span><span class="l"><i>106</i>        tokenType: TokenType,</span><span class="l"><i>107</i>        rawValue: String,</span><span class="l"><i>108</i>    ): String =</span><span class="l"><i>109</i>        <span class="kw">when</span> (tokenType) {</span><span class="l hl"><i>110</i>            TokenType.STRINGLITERAL -&gt; rawValue.removeSurrounding(<span class="st">&quot;\&quot;</span><span class="st">&quot;, &quot;</span>\<span class="st">&quot;&quot;</span>).removeSurrounding(<span class="st">&quot;&#x27;&quot;</span>, <span class="st">&quot;&#x27;&quot;</span>)</span><span class="l"><i>111</i>            <span class="kw">else</span> -&gt; rawValue</span><span class="l"><i>112</i>        }</span></pre></div>
+  <p>String values lose their quotes here (:110), while the token's positions still include them. Downstream code gets the content, and the formatter recovers the quotes from the original line.</p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>A strategy per token type, not a hand-written scanner</h4>
+    <p>Token types are data in a map. A new token is a new entry, <code>Lexer</code> never changes (Open/Closed), and a version is simply a different map. A character-by-character scanner would need version checks inside its loop.</p>
+    <p class="cost"><b>Cost</b>Alternation order matters, as the <code>=</code> vs OPERATOR and <code>let</code> vs IDENTIFIER examples show, so anyone adding a strategy has to think about where it goes.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Find the lexeme with the regex, decide its type with <code>classify</code></h4>
+    <p>Reserved words go through a fixed table first, so their type doesn't depend on alternation order. 1.1's <code>true</code> and <code>if</code> are matched by the identifier group and still come out correct.</p>
+    <p class="cost"><b>Cost</b>Each lexeme is tested against the strategies a second time: at most 13 small <code>matches</code> calls per token. We chose readability over reading regex group indices.</p>
+  </div>
+
+  <div class="decision">
+    <h4>One pattern, compiled once per lexer</h4>
+    <p><code>Pattern.compile</code> is expensive, so it runs in the <code>Lexer</code>'s initialiser (<span class="ref">Lexer.kt:14</span>), and each line only creates a cheap <code>Matcher</code>. A compiled <code>Pattern</code> is immutable and thread-safe; <code>Matcher</code>s aren't, which is why one is created per line.</p>
+    <p class="cost"><b>Cost</b>Only regex strategies take part in finding lexemes (<span class="ref">PatternMatcher.kt:12</span>). A non-regex strategy could classify text but would never be asked to find it.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Lazy and line-granular</h4>
+    <p>This meets the assignment's "sources that don't fit in memory" requirement. Memory is bounded by the longest line, rows come free from the line count, and the TCK's 131,072-line test passes in a 7 MB heap.</p>
+    <p class="cost"><b>Cost</b>A token can't span lines, which is fine because PrintScript has no multi-line strings. An error later in a line surfaces before that line's earlier tokens are delivered.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Reject version-specific words in the lexer, with a reason</h4>
+    <p>The lexer is the stage that knows the lexeme's exact columns, so the <code>const</code> error points at <code>const</code> (<span class="ref">TokenMapper.kt:15–21</span>). Doing it inside <code>classify</code> would have thrown without a position.</p>
+    <p class="cost"><b>Cost</b>Only <code>const</code> gets a tailored message. Other 1.1 features fail as an invalid <code>{</code> or in the parser, which is accurate and positioned but less descriptive.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Check the gaps instead of adding a catch-all group</h4>
+    <p>The alternative is a last group <code>(.)</code> mapped to UNKNOWN. Checking the text between matches keeps the pattern made only of real token types, and it reports a whole invalid run, trimmed, with correct columns (<span class="ref">Lexer.kt:95–101</span>).</p>
+    <p class="cost"><b>Cost</b>About 20 lines of explicit code, and the check must run in two places: before each token and at the end of the line.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Why not a lexer generator like JFlex?</summary>
+      <p>The vocabulary is 11–13 patterns, and versions are map differences (<span class="ref">TokenMapper.kt:61–70</span>). A generator adds a grammar file, a build step and generated code to explain, and versioning would mean two grammars.</p></details>
+    <details><summary>How does it know <code>let</code> is a keyword and <code>letter</code> isn't?</summary>
+      <p>Two layers. In the regex, KEYWORD comes before IDENTIFIER and uses <code>\b</code>, so <code>letter</code> doesn't match <code>\blet\b</code>. In <code>classify</code>, the reserved-word table is checked first (<span class="ref">TokenMapper.kt:27</span>), and <code>letter</code> isn't in it.</p></details>
+    <details><summary>Why does a string's value lose its quotes?</summary>
+      <p>Everything downstream wants the content: the interpreter prints it, and the parser checks its type. The positions still cover the quotes, and the formatter re-reads the original text when it needs them (<span class="ref">SourceToken.kt:51</span>).</p></details>
+    <details><summary>Is the lexer thread-safe?</summary>
+      <p>A <code>Lexer</code> holds only its mapper and a compiled <code>Pattern</code>, both effectively immutable. Each line creates its own <code>Matcher</code> (<span class="ref">Lexer.kt:51</span>), so one instance can serve several sources. Each returned sequence has its own state and should be consumed by one thread.</p></details>
+    <details><summary>Why is <code>if</code> a CONDITIONAL token even in 1.0?</summary>
+      <p>The reserved-word table is shared by both versions (<span class="ref">TokenMapper.kt:7</span>). That's harmless: a 1.0 <code>if</code> program can't get past the <code>{</code>, and the 1.0 parser has no <code>ConditionalFactory</code> anyway.</p></details>
+    <details><summary>How would you add <code>while</code> for 1.2?</summary>
+      <p>Add a <code>version12Strategies()</code> that copies 1.1 and adds <code>\bwhile\b</code>, put <code>"while"</code> in the reserved table so pattern order can't affect it, and add a <code>"1.2"</code> branch to both version switches (<span class="ref">TokenMapper.kt:74–86</span>). <code>Lexer</code> and <code>PatternMatcher</code> don't change.</p></details>
+    <details><summary>What does <code>execute(input)</code> do?</summary>
+      <p>It's an alias for <code>convertToTokens(String)</code>, which returns a list (<span class="ref">Lexer.kt:16</span>). Tests use it for convenience; production code always uses the <code>Sequence</code> or <code>InputStream</code> overloads.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">Tokenize <code>x=5+letter;</code> (1.0). What types come out?</label>
+      <details><summary>Answer</summary><p>IDENTIFIER <code>x</code>, ASSIGNATION <code>=</code>, NUMBERLITERAL <code>5</code>, OPERATOR <code>+</code>, IDENTIFIER <code>letter</code>, PUNCTUATOR <code>;</code>. No spaces are needed, because the regex finds each boundary itself.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2">What error does <code>let x: number = 5 @ 3;</code> give, and which function finds it?</label>
+      <details><summary>Answer</summary><p><code>rejectSkippedText</code>. The next match after <code>5</code> is <code>3</code>, and the skipped text <code>" @ "</code> isn't blank, so it throws <em>Carácter inválido encontrado: '@'</em> at 1-based columns 19–20.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">Why does the gap check exist at all?</label>
+      <details><summary>Answer</summary><p><code>Matcher.find</code> doesn't fail on text that matches no pattern; it silently jumps to the next match. Without checking the gaps, invalid characters would simply disappear.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">In 1.1, which regex group matches <code>true</code>? How does it still become BOOLEANLITERAL?</label>
+      <details><summary>Answer</summary><p>The IDENTIFIER group, because BOOLEANLITERAL was appended after it. <code>classify</code> checks the reserved-word table first, where <code>true</code> maps to BOOLEANLITERAL.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">Under 1.0, where are <code>const</code>, <code>if (…) {</code> and <code>boolean</code> each rejected?</label>
+      <details><summary>Answer</summary><p><code>const</code>: lexer, disallowed reason with an explicit message. <code>{</code>: lexer, invalid character. <code>boolean</code>: it lexes as an IDENTIFIER, and the parser rejects the declaration for lacking a DATA_TYPE.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">You take 5 tokens from an infinite source. How many lines are read, and why?</label>
+      <details><summary>Answer</summary><p>One. <code>sequence { yield }</code> pauses after each token, and a line is only read when the tokens from the previous line run out. Each line of that source holds exactly 5 tokens.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">Why is the pattern compiled in the constructor and not per line?</label>
+      <details><summary>Answer</summary><p>Compiling is the expensive part, and a compiled <code>Pattern</code> is immutable and safe to reuse. Only the cheap, stateful <code>Matcher</code> is created per line.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">Add a <code>while</code> keyword for 1.2. Which files change?</label>
+      <details><summary>Answer</summary><p>Only <code>TokenMapper.kt</code>: a 1.2 strategy map, the reserved-word entry and the version switches. <code>Lexer</code>, <code>PatternMatcher</code> and the strategy classes stay as they are.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">21 tests in 2 files.</p>
+  <ul class="points tests">
+    <li><strong>LexerTests (7):</strong> a first instruction, multi-line input with blank lines, a sum, decimals, a long operation, streaming from an <code>InputStream</code>, and <em>"a keyword from a later version is rejected with its position"</em>.</li>
+    <li><strong>TokenMapperTest (14):</strong> building 1.0 and 1.1; reserved words in each version; classifying number, string, identifier, operator and unknown lexemes; <code>const</code> disallowed in 1.0 and allowed in 1.1; a valid lexeme has no disallowed reason; an unsupported version throws; custom strategy injection.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-lexer-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+})();
+</script>

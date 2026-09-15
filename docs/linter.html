@@ -1,0 +1,516 @@
+<title>PrintScript linter Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:700px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .n{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+svg .n.core{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+svg .n.src{fill:var(--ground);stroke-dasharray:5 4}
+svg .t{fill:var(--ink);font-family:var(--mono);font-size:13px;font-weight:600}
+svg .s{fill:var(--muted);font-family:var(--body);font-size:12px}
+svg .e{stroke:var(--ink);stroke-width:1.2;fill:none}
+svg .e.acc{stroke:var(--accent);stroke-width:1.6}
+svg .el{fill:var(--muted);font-family:var(--mono);font-size:11.5px}
+svg .el.acc{fill:var(--accent)}
+svg .ah{fill:var(--ink)} svg .ah.acc{fill:var(--accent)}
+.flat{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:8px 0 14px}
+.flat table{font-size:12.5px;margin:0}
+.flat td{padding:7px 12px;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:baseline}
+.flat tr:last-child td{border-bottom:0}
+.flat td:first-child{color:var(--muted);font-family:var(--mono)}
+.tok{display:inline-block;margin:1px 6px 1px 0;padding:0 6px;border:1px solid var(--rule);border-radius:3px}
+.tok i{font-style:normal;color:var(--muted);font-size:11px;margin-right:4px}
+.tok.op{border-color:var(--med);color:var(--med)}
+.tok.fn{border-color:var(--accent);color:var(--accent)}
+.out{font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:12px 16px;overflow-x:auto;white-space:pre;margin:8px 0 14px}
+.out .r{color:var(--muted)}
+.yn{font-family:var(--mono);font-size:12.5px;text-align:center}
+.yn.y{color:var(--accent);font-weight:600}
+.yn.n{color:var(--muted);opacity:.6}
+.measure{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.measure div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.measure .big{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;color:var(--accent);font-variant-numeric:tabular-nums}
+.measure p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:640px){.measure{grid-template-columns:minmax(0,1fr)}}
+td.mono{font-family:var(--mono);font-size:13px}
+td .c{color:var(--muted)}
+h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40px}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <a href="lexer.html">lexer</a>
+  <a href="parser.html">parser</a>
+  <a href="interpreter.html">interpreter</a>
+  <a href="formatter.html">formatter</a>
+  <span class="cur" aria-current="page">linter</span>
+  <a href="cli.html">cli</a>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 6 of 8</p>
+  <h1><code>linter</code></h1>
+  <p class="lede">The static code analyzer. It reads a JSON config, builds the enabled rules for the version, and checks each statement as it streams past, collecting every violation with its position instead of stopping at the first.</p>
+  <ul class="meta">
+    <li><b>14</b>files</li>
+    <li><b>369</b>lines</li>
+    <li><b>58</b>tests</li>
+    <li><b>2</b>dependencies in main code: commons, jackson</li>
+    <li><b>~20</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#shape">The shape</a></li>
+    <li><a href="#config">Config to rules</a></li>
+    <li><a href="#flat">What rules see</a></li>
+    <li><a href="#rules">The four rules</a></li>
+    <li><a href="#report">Reporting</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"The linter has two inputs. The <strong>JSON config</strong> is read into rule names, and a factory turns those into rule objects, rejecting any rule the chosen version doesn't support. The <strong>AST nodes</strong> come from the parser, one statement at a time. Each statement is flattened into a short list of tokens, and every rule checks that list. A rule is a small class: identifier rules filter identifiers by naming style, and the <code>println</code> and <code>readInput</code> rules look for an operator or a nested call among the arguments. Violations are collected, not thrown, so one run reports all of them with their positions, and only the report takes up memory."</p>
+  </div>
+</section>
+
+<section id="shape">
+  <h2>The shape</h2>
+  <p class="sub">Two lanes that meet at the validator.</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 910 216" role="img" aria-label="Top lane: the JSON config goes to RuleJsonReader, which produces rule names, then to RuleFactory, which checks the version and produces a list of rules. Bottom lane: AST nodes from the parser go to Tokenizer, which produces a list of tokens per statement. Both lanes meet at RuleValidator, which applies every rule to each statement and adds BrokenRules to LinterOutput.">
+      <defs>
+        <marker id="la" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="lb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah acc" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <rect class="n src" x="20" y="16" width="130" height="48" rx="5"/>
+      <text class="t" x="85" y="45" text-anchor="middle">config JSON</text>
+      <line class="e" x1="150" y1="40" x2="196" y2="40" marker-end="url(#la)"/>
+      <rect class="n" x="200" y="12" width="150" height="56" rx="5"/>
+      <text class="t" x="275" y="36" text-anchor="middle">RuleJsonReader</text>
+      <text class="s" x="275" y="55" text-anchor="middle">rule names</text>
+      <line class="e" x1="350" y1="40" x2="386" y2="40" marker-end="url(#la)"/>
+      <rect class="n" x="390" y="12" width="140" height="56" rx="5"/>
+      <text class="t" x="460" y="36" text-anchor="middle">RuleFactory</text>
+      <text class="s" x="460" y="55" text-anchor="middle">+ version check</text>
+      <path class="e" d="M530 40 H635 V136" marker-end="url(#la)"/>
+      <text class="el" x="582" y="31" text-anchor="middle">List&lt;Rule&gt;</text>
+
+      <rect class="n src" x="20" y="140" width="130" height="60" rx="5"/>
+      <text class="t" x="85" y="166" text-anchor="middle">AST nodes</text>
+      <text class="s" x="85" y="185" text-anchor="middle">from the parser</text>
+      <line class="e acc" x1="150" y1="170" x2="196" y2="170" marker-end="url(#lb)"/>
+      <rect class="n" x="200" y="140" width="150" height="60" rx="5"/>
+      <text class="t" x="275" y="166" text-anchor="middle">Tokenizer</text>
+      <text class="s" x="275" y="185" text-anchor="middle">flattens one statement</text>
+      <line class="e acc" x1="350" y1="170" x2="556" y2="170" marker-end="url(#lb)"/>
+      <text class="el acc" x="453" y="160" text-anchor="middle">List&lt;Token&gt; per statement</text>
+
+      <rect class="n core" x="560" y="140" width="150" height="60" rx="5"/>
+      <text class="t" x="635" y="166" text-anchor="middle">RuleValidator</text>
+      <text class="s" x="635" y="185" text-anchor="middle">every rule</text>
+      <line class="e acc" x1="710" y1="170" x2="766" y2="170" marker-end="url(#lb)"/>
+      <rect class="n" x="770" y="140" width="120" height="60" rx="5"/>
+      <text class="t" x="830" y="166" text-anchor="middle">LinterOutput</text>
+      <text class="s" x="830" y="185" text-anchor="middle">BrokenRule list</text>
+    </svg>
+    </div>
+    <figcaption>The top lane runs once, when the linter is configured. The bottom lane runs once per statement: accent arrows are the streaming path, and only <code>LinterOutput</code> grows. <code>Tokenizer</code> lives in <code>commons</code> (see the <a href="commons.html">commons sheet</a>).</figcaption>
+  </figure>
+  <div class="code"><pre><span class="l"><i>9</i><span class="kw">class</span> Linter(</span><span class="l hl"><i>10</i>    <span class="kw">private</span> <span class="kw">var</span> version: LinterVersion,</span><span class="l"><i>11</i>) {</span><span class="l"><i>12</i>    <span class="kw">private</span> <span class="kw">var</span> rules: List&lt;Rule&gt; = listOf()</span><span class="l"><i>13</i>    <span class="kw">private</span> <span class="kw">val</span> jsonReader = RuleJsonReader()</span><span class="l"><i>14</i>    <span class="kw">private</span> <span class="kw">val</span> ruleFactory = RuleFactory()</span><span class="l"><i>15</i>    <span class="kw">private</span> <span class="kw">val</span> tokenizer = Tokenizer()</span><span class="l"><i>16</i>    <span class="kw">private</span> <span class="kw">val</span> validator = RuleValidator()</span><span class="l"><i>17</i>    <span class="kw">private</span> <span class="kw">val</span> fileManager = OutputFileManager()</span><span class="l"><i>18</i></span><span class="l hl"><i>19</i>    <span class="kw">fun</span> readJson(jsonContent: String) {</span><span class="l hl"><i>20</i>        <span class="kw">val</span> ruleNames = jsonReader.getRuleNamesFromJson(jsonContent)</span><span class="l hl"><i>21</i>        rules = ruleFactory.createRules(ruleNames, version)</span><span class="l hl"><i>22</i>    }</span><span class="l"><i>23</i></span><span class="l"><i>24</i><span class="cm">    /**</span></span><span class="l"><i>25</i><span class="cm">     * Analiza el programa consumiendo el flujo de nodos sentencia por sentencia.</span></span><span class="l"><i>26</i><span class="cm">     *</span></span><span class="l"><i>27</i><span class="cm">     * Las reglas actuales evalúan cada sentencia de forma independiente, así que alcanza con</span></span><span class="l"><i>28</i><span class="cm">     * re-tokenizar una a la vez: nunca se retiene el AST completo. Lo único que crece es el</span></span><span class="l"><i>29</i><span class="cm">     * reporte, acotado por la cantidad de violaciones y no por el tamaño del fuente.</span></span><span class="l"><i>30</i><span class="cm">     */</span></span><span class="l hl"><i>31</i>    <span class="kw">fun</span> check(trees: Sequence&lt;ASTNode&gt;): LinterOutput {</span><span class="l hl"><i>32</i>        <span class="kw">val</span> linterOutput = LinterOutput()</span><span class="l hl"><i>33</i>        <span class="kw">for</span> (statementTokens <span class="kw">in</span> tokenizer.parseToTokens(trees)) {</span><span class="l hl"><i>34</i>            <span class="kw">for</span> (brokenRule <span class="kw">in</span> validator.checkRule(rules, listOf(statementTokens))) {</span><span class="l hl"><i>35</i>                linterOutput.addBrokenRule(brokenRule)</span><span class="l hl"><i>36</i>            }</span><span class="l hl"><i>37</i>        }</span><span class="l hl"><i>38</i>        <span class="kw">return</span> linterOutput</span><span class="l hl"><i>39</i>    }</span><span class="l"><i>40</i></span><span class="l hl"><i>41</i>    <span class="kw">fun</span> check(trees: List&lt;ASTNode&gt;): LinterOutput = check(trees.asSequence())</span></pre></div>
+  <ul class="points">
+    <li><strong>Two steps, two methods</strong>: <code>readJson</code> configures (:19–22), and <code>check</code> analyses (:31–39).</li>
+    <li><strong>The loop</strong> (:33–37) flattens one statement, runs every rule on it, and adds each violation. The <code>Sequence</code> is pulled one statement at a time.</li>
+    <li><strong>Collaborators are built in the class</strong> (:13–17), and the version is fixed in the constructor (:10).</li>
+  </ul>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Caller</th><th>Builds and runs it</th><th>Violations become</th></tr></thead>
+    <tbody>
+      <tr><td>CLI</td><td><span class="ref">CommandFactory.kt:78–86</span> · <span class="ref">AnalyzingCommand.kt:22</span></td><td>lines on stderr and exit code 1</td></tr>
+      <tr><td>TCK</td><td><span class="ref">LinterAdapter.java:25–28</span></td><td>one <code>handler.reportError</code> per violation</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="config">
+  <h2>From config to rules</h2>
+  <p class="sub">Jackson reads the JSON, and the reader translates it into names.</p>
+  <div class="code"><pre><span class="l hl"><i>8</i>@JsonIgnoreProperties(ignoreUnknown = true)</span><span class="l"><i>9</i><span class="kw">class</span> FormattingRules {</span><span class="l hl"><i>10</i>    @JsonProperty(<span class="st">&quot;identifier_format&quot;</span>)</span><span class="l"><i>11</i>    <span class="kw">var</span> identifier: String? = <span class="kw">null</span></span><span class="l"><i>12</i></span><span class="l hl"><i>13</i>    @JsonProperty(<span class="st">&quot;mandatory-variable-or-literal-in-println&quot;</span>)</span><span class="l"><i>14</i>    <span class="kw">var</span> isEnablePrintOnly: Boolean = false</span><span class="l"><i>15</i></span><span class="l hl"><i>16</i>    @JsonProperty(<span class="st">&quot;mandatory-variable-or-literal-in-readInput&quot;</span>)</span><span class="l"><i>17</i>    <span class="kw">var</span> isEnableInputOnly: Boolean = false</span><span class="l"><i>18</i>}</span><span class="l"><i>19</i></span><span class="l"><i>20</i><span class="cm">/**</span></span><span class="l"><i>21</i><span class="cm"> * Lee la configuración del linter y la traduce a nombres de regla.</span></span><span class="l"><i>22</i><span class="cm"> *</span></span><span class="l"><i>23</i><span class="cm"> * Devuelve nombres —no instancias— porque el único constructor de reglas es</span></span><span class="l"><i>24</i><span class="cm"> * [rules.RuleFactory], que además aplica el filtro por versión.</span></span><span class="l"><i>25</i><span class="cm"> */</span></span><span class="l"><i>26</i><span class="kw">class</span> RuleJsonReader {</span><span class="l"><i>27</i>    <span class="kw">fun</span> getRuleNamesFromFile(path: String): List&lt;String&gt; = getRuleNamesFromJson(File(path).readText())</span><span class="l"><i>28</i></span><span class="l"><i>29</i>    <span class="kw">fun</span> getRuleNamesFromJson(jsonContent: String): List&lt;String&gt; {</span><span class="l hl"><i>30</i>        <span class="kw">val</span> formattingRules = jacksonObjectMapper().readValue(jsonContent, FormattingRules::<span class="kw">class</span>.java)</span><span class="l"><i>31</i>        <span class="kw">val</span> ruleNames = mutableListOf&lt;String&gt;()</span><span class="l"><i>32</i></span><span class="l hl"><i>33</i>        <span class="kw">when</span> (formattingRules.identifier?.replace(<span class="st">&quot; &quot;</span>, <span class="st">&quot;&quot;</span>)?.lowercase()) {</span><span class="l hl"><i>34</i>            <span class="st">&quot;camelcase&quot;</span> -&gt; ruleNames.add(<span class="st">&quot;camelcase&quot;</span>)</span><span class="l hl"><i>35</i>            <span class="st">&quot;snakecase&quot;</span> -&gt; ruleNames.add(<span class="st">&quot;snakecase&quot;</span>)</span><span class="l hl"><i>36</i>        }</span><span class="l"><i>37</i></span><span class="l hl"><i>38</i>        <span class="kw">if</span> (formattingRules.isEnablePrintOnly) ruleNames.add(<span class="st">&quot;printonly&quot;</span>)</span><span class="l hl"><i>39</i>        <span class="kw">if</span> (formattingRules.isEnableInputOnly) ruleNames.add(<span class="st">&quot;inputonly&quot;</span>)</span><span class="l"><i>40</i></span><span class="l"><i>41</i>        <span class="kw">return</span> ruleNames</span><span class="l"><i>42</i>    }</span><span class="l"><i>43</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>A typed config class</strong> (:9–18). Each JSON key the TCK uses maps to a property with <code>@JsonProperty</code>, and <code>ignoreUnknown = true</code> (:8) lets other keys pass.</li>
+    <li><strong>Spelling is normalised</strong> (:33): spaces removed and lowercased, so <code>"camel case"</code>, <code>"camelcase"</code> and <code>"Camel Case"</code> are the same setting.</li>
+    <li><strong>Returns names, not objects</strong> (:20–25). The only place that constructs rules is the factory.</li>
+  </ul>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Config</th><th>Rule names</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">{}</td><td class="mono">[]</td></tr>
+      <tr><td class="mono">{"identifier_format": "camel case"}</td><td class="mono">[camelcase]</td></tr>
+      <tr><td class="mono">{"identifier_format": "snakecase", "mandatory-variable-or-literal-in-println": true}</td><td class="mono">[snakecase, printonly]</td></tr>
+      <tr><td class="mono">{"mandatory-variable-or-literal-in-readInput": true, "some-future-rule": 3}</td><td class="mono">[inputonly]</td></tr>
+      <tr><td class="mono">{"identifier_format": "Camel Case", "mandatory-variable-or-literal-in-println": false}</td><td class="mono">[camelcase]</td></tr>
+    </tbody>
+  </table></div>
+  <p class="code-cap">Output of <code>getRuleNamesFromJson</code> from the jar.</p>
+  <div class="code"><pre><span class="l"><i>3</i><span class="kw">enum</span> <span class="kw">class</span> LinterVersion(</span><span class="l"><i>4</i>    <span class="kw">val</span> version: String,</span><span class="l"><i>5</i>) {</span><span class="l hl"><i>6</i>    VERSION_1_0(<span class="st">&quot;1.0&quot;</span>),</span><span class="l hl"><i>7</i>    VERSION_1_1(<span class="st">&quot;1.1&quot;</span>),</span><span class="l"><i>8</i>    ;</span><span class="l"><i>9</i></span><span class="l"><i>10</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l hl"><i>11</i>        <span class="kw">fun</span> fromString(version: String): LinterVersion? = entries.find { it.version == version }</span><span class="l"><i>12</i>    }</span><span class="l"><i>13</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>5</i><span class="kw">class</span> RuleFactory {</span><span class="l"><i>6</i>    <span class="kw">fun</span> createRules(</span><span class="l"><i>7</i>        ruleNames: List&lt;String&gt;,</span><span class="l"><i>8</i>        version: LinterVersion,</span><span class="l hl"><i>9</i>    ): List&lt;Rule&gt; = ruleNames.map { createRule(it, version) }</span><span class="l"><i>10</i></span><span class="l"><i>11</i>    <span class="kw">private</span> <span class="kw">fun</span> createRule(</span><span class="l"><i>12</i>        ruleName: String,</span><span class="l"><i>13</i>        version: LinterVersion,</span><span class="l"><i>14</i>    ): Rule =</span><span class="l hl"><i>15</i>        <span class="kw">when</span> (ruleName.lowercase()) {</span><span class="l hl"><i>16</i>            <span class="st">&quot;camelcase&quot;</span> -&gt; CamelCaseRule()</span><span class="l hl"><i>17</i>            <span class="st">&quot;snakecase&quot;</span> -&gt; SnakeCaseRule()</span><span class="l hl"><i>18</i>            <span class="st">&quot;printonly&quot;</span> -&gt; PrintOnlyRule()</span><span class="l hl"><i>19</i>            <span class="st">&quot;inputonly&quot;</span> -&gt; requireVersion11(version) { InputOnlyRule() }</span><span class="l hl"><i>20</i>            <span class="kw">else</span> -&gt; throw IllegalArgumentException(<span class="st">&quot;Rule not available for this version&quot;</span>)</span><span class="l"><i>21</i>        }</span><span class="l"><i>22</i></span><span class="l hl"><i>23</i>    <span class="kw">private</span> <span class="kw">fun</span> requireVersion11(</span><span class="l hl"><i>24</i>        version: LinterVersion,</span><span class="l hl"><i>25</i>        rule: () -&gt; Rule,</span><span class="l hl"><i>26</i>    ): Rule {</span><span class="l hl"><i>27</i>        <span class="kw">if</span> (version != LinterVersion.VERSION_1_1) {</span><span class="l hl"><i>28</i>            throw IllegalArgumentException(<span class="st">&quot;Rule not available for this version&quot;</span>)</span><span class="l hl"><i>29</i>        }</span><span class="l hl"><i>30</i>        <span class="kw">return</span> rule()</span><span class="l hl"><i>31</i>    }</span><span class="l"><i>32</i>}</span></pre></div>
+  <p><strong>The version check lives here.</strong> <code>inputonly</code> goes through <code>requireVersion11</code> (:19, :23–31), because <code>readInput</code> doesn't exist in 1.0. Checked against the jar: under 1.0 it throws <em>"Rule not available for this version"</em>; under 1.1 it builds <code>InputOnly</code>. The CLI reports it as <code>Error de configuración: Rule not available for this version</code> and exits with code 2, a configuration problem rather than a problem with the source.</p>
+</section>
+
+<section id="flat">
+  <h2>What the rules see</h2>
+  <p class="sub">Each statement is flattened into the tokens rules care about. Real <code>Tokenizer</code> output for a 1.1 program.</p>
+<pre class="out"><span class="r">0</span> let firstName: string = "Ada";
+<span class="r">1</span> let last_name: string = "Lovelace";
+<span class="r">2</span> println(firstName);
+<span class="r">3</span> println(firstName + " " + last_name);
+<span class="r">4</span> let age: number = readInput("Age?");
+<span class="r">5</span> let code: string = readInput("Code " + firstName);</pre>
+  <div class="flat"><table>
+    <tbody>
+      <tr><td>0</td><td><span class="tok"><i>ID</i>firstName</span><span class="tok"><i>STR</i>Ada</span></td></tr>
+      <tr><td>1</td><td><span class="tok"><i>ID</i>last_name</span><span class="tok"><i>STR</i>Lovelace</span></td></tr>
+      <tr><td>2</td><td><span class="tok fn"><i>FN</i>println</span><span class="tok"><i>ID</i>firstName</span></td></tr>
+      <tr><td>3</td><td><span class="tok fn"><i>FN</i>println</span><span class="tok"><i>ID</i>firstName</span><span class="tok op"><i>OP</i>+</span><span class="tok"><i>STR</i>&nbsp;</span><span class="tok op"><i>OP</i>+</span><span class="tok"><i>ID</i>last_name</span></td></tr>
+      <tr><td>4</td><td><span class="tok"><i>ID</i>age</span><span class="tok fn"><i>FN</i>readinput</span><span class="tok"><i>STR</i>Age?</span></td></tr>
+      <tr><td>5</td><td><span class="tok"><i>ID</i>code</span><span class="tok fn"><i>FN</i>readinput</span><span class="tok"><i>STR</i>Code </span><span class="tok op"><i>OP</i>+</span><span class="tok"><i>ID</i>firstName</span></td></tr>
+    </tbody>
+  </table></div>
+  <ul class="points">
+    <li><strong>Gone:</strong> <code>let</code>, the type, <code>:</code>, <code>=</code>, parentheses and <code>;</code>. None of the rules needs them.</li>
+    <li><strong>Kept:</strong> identifiers (for naming rules), function names, and operators (for the "no expression" rules). Every statement fits on one short row.</li>
+    <li><code>readInput</code> becomes <code>readinput</code>, because the <code>Tokenizer</code> lowercases function names. The rule predicates lowercase too (<span class="ref">TokenPredicates.kt:9</span>), so either spelling matches.</li>
+  </ul>
+</section>
+
+<section id="rules">
+  <h2>The four rules</h2>
+  <p class="sub">Each implements one interface, and one validator applies them all.</p>
+  <div class="code"><pre><span class="l"><i>6</i>interface Rule {</span><span class="l hl"><i>7</i>    <span class="kw">fun</span> applyRule(tokens: List&lt;List&lt;Token&gt;&gt;): List&lt;BrokenRule&gt;</span><span class="l"><i>8</i></span><span class="l"><i>9</i>    <span class="kw">fun</span> getRuleName(): String</span><span class="l"><i>10</i></span><span class="l"><i>11</i>    <span class="kw">fun</span> getRuleDescription(): String</span><span class="l"><i>12</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>6</i><span class="kw">class</span> RuleValidator {</span><span class="l"><i>7</i>    <span class="kw">fun</span> checkRule(</span><span class="l"><i>8</i>        rules: List&lt;Rule&gt;,</span><span class="l"><i>9</i>        tokens: List&lt;List&lt;Token&gt;&gt;,</span><span class="l hl"><i>10</i>    ): List&lt;BrokenRule&gt; = rules.flatMap { it.applyRule(tokens) }</span><span class="l"><i>11</i>}</span></pre></div>
+
+  <h3 class="part">Identifier format</h3>
+  <div class="code"><pre><span class="l"><i>7</i><span class="kw">class</span> CamelCaseRule(</span><span class="l"><i>8</i>    <span class="kw">private</span> <span class="kw">var</span> errorMessage: String = <span class="st">&quot;The following identifier must be in camel case&quot;</span>,</span><span class="l"><i>9</i>) : Rule {</span><span class="l hl"><i>10</i>    <span class="kw">override</span> <span class="kw">fun</span> applyRule(tokens: List&lt;List&lt;Token&gt;&gt;): List&lt;BrokenRule&gt; =</span><span class="l hl"><i>11</i>        tokens</span><span class="l hl"><i>12</i>            .flatten()</span><span class="l hl"><i>13</i>            .filter { isIdentifierType(it) &amp;&amp; !isCamelCase(it.value) }</span><span class="l hl"><i>14</i>            .map { BrokenRule(errorMessage, it.getPosition()) }</span><span class="l"><i>15</i></span><span class="l"><i>16</i>    <span class="kw">private</span> <span class="kw">fun</span> isIdentifierType(token: Token): Boolean = token.getType() == TokenType.IDENTIFIER</span><span class="l"><i>17</i></span><span class="l"><i>18</i><span class="cm">    /** camelCase: empieza en minúscula y no usa guiones bajos como separador. */</span></span><span class="l hl"><i>19</i>    <span class="kw">private</span> <span class="kw">fun</span> isCamelCase(identifier: String): Boolean =</span><span class="l hl"><i>20</i>        identifier.isNotEmpty() &amp;&amp;</span><span class="l hl"><i>21</i>            identifier[0].isLowerCase() &amp;&amp;</span><span class="l hl"><i>22</i>            !identifier.contains(<span class="st">&quot;_&quot;</span>)</span><span class="l"><i>23</i></span></pre></div>
+  <div class="code"><pre><span class="l"><i>10</i>    <span class="kw">override</span> <span class="kw">fun</span> applyRule(tokens: List&lt;List&lt;Token&gt;&gt;): List&lt;BrokenRule&gt; =</span><span class="l"><i>11</i>        tokens</span><span class="l"><i>12</i>            .flatten()</span><span class="l hl"><i>13</i>            .filter { isIdentifierType(it) &amp;&amp; !isSnakeCase(it.value) }</span><span class="l"><i>14</i>            .map { BrokenRule(errorMessage + it.value, it.getPosition()) }</span><span class="l"><i>15</i></span><span class="l hl"><i>16</i>    <span class="kw">private</span> <span class="kw">fun</span> isSnakeCase(identifier: String): Boolean =</span><span class="l hl"><i>17</i>        identifier.isNotEmpty() &amp;&amp;</span><span class="l hl"><i>18</i>            identifier[0].isLowerCase() &amp;&amp;</span><span class="l hl"><i>19</i><span class="cm">            // Should not have consecutive underscores</span></span><span class="l hl"><i>20</i>            !identifier.contains(<span class="st">&quot;__&quot;</span>) &amp;&amp;</span><span class="l hl"><i>21</i>            identifier.all { it.isLowerCase() || it == &#x27;_&#x27; }</span></pre></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Identifier</th><th class="yn">camel case</th><th class="yn">snake case</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">myVar</td><td class="yn y">passes</td><td class="yn n">flagged</td></tr>
+      <tr><td class="mono">userName</td><td class="yn y">passes</td><td class="yn n">flagged</td></tr>
+      <tr><td class="mono">my_var</td><td class="yn n">flagged</td><td class="yn y">passes</td></tr>
+      <tr><td class="mono">user_name</td><td class="yn n">flagged</td><td class="yn y">passes</td></tr>
+      <tr><td class="mono">MyVar</td><td class="yn n">flagged</td><td class="yn n">flagged</td></tr>
+      <tr><td class="mono">x</td><td class="yn y">passes</td><td class="yn y">passes</td></tr>
+      <tr><td class="mono">a__b</td><td class="yn n">flagged</td><td class="yn n">flagged</td></tr>
+    </tbody>
+  </table></div>
+  <p class="code-cap">Results from both rule classes in the jar. A single lowercase word like <code>x</code> is valid in both styles, and PascalCase is valid in neither.</p>
+  <p>Both rules flatten the statement's token list, keep IDENTIFIER tokens that break the style, and report each one at its own position. Every <em>use</em> of a name is checked, not just its declaration: in the program above, snake case flags <code>firstName</code> four times.</p>
+
+  <h3 class="part"><code>println</code> and <code>readInput</code> with an expression</h3>
+  <div class="code"><pre><span class="l hl"><i>9</i><span class="kw">internal</span> <span class="kw">fun</span> Token.isFunctionNamed(name: String): Boolean = getType() == TokenType.FUNCTION &amp;&amp; value.lowercase() == name</span><span class="l"><i>10</i></span><span class="l"><i>11</i><span class="cm">/**</span></span><span class="l"><i>12</i><span class="cm"> * Un token forma parte de una *expresión*, a diferencia de un argumento simple.</span></span><span class="l"><i>13</i><span class="cm"> *</span></span><span class="l"><i>14</i><span class="cm"> * Son expresión un operador y una llamada anidada. Un identificador o un literal</span></span><span class="l"><i>15</i><span class="cm"> * (`NUMBERLITERAL`, `STRINGLITERAL`, `BOOLEANLITERAL`) no lo son: la consigna admite</span></span><span class="l"><i>16</i><span class="cm"> * `println(x)` y `println(5)`, y sólo rechaza `println(1 + 2)`.</span></span><span class="l"><i>17</i><span class="cm"> */</span></span><span class="l hl"><i>18</i><span class="kw">internal</span> <span class="kw">fun</span> Token.isExpressionToken(): Boolean = getType() == TokenType.OPERATOR || getType() == TokenType.FUNCTION</span></pre></div>
+  <p><strong>What counts as an expression</strong> (:18): an operator, or a nested function call. Identifiers and literals don't, which matches the assignment: <code>println(x)</code> and <code>println(5)</code> are allowed, <code>println(1 + 2)</code> isn't.</p>
+  <div class="code"><pre><span class="l"><i>9</i>    <span class="kw">override</span> <span class="kw">fun</span> applyRule(tokens: List&lt;List&lt;Token&gt;&gt;): List&lt;BrokenRule&gt; {</span><span class="l"><i>10</i>        <span class="kw">val</span> brokenRules = mutableListOf&lt;BrokenRule&gt;()</span><span class="l hl"><i>11</i>        <span class="kw">for</span> (row <span class="kw">in</span> tokens) {</span><span class="l hl"><i>12</i>            <span class="kw">if</span> (!containsPrintln(row)) continue</span><span class="l hl"><i>13</i>            <span class="kw">if</span> (containsExpression(row.drop(1))) {</span><span class="l hl"><i>14</i>                brokenRules.add(BrokenRule(errorMessage, row[0].getPosition()))</span><span class="l hl"><i>15</i>            }</span><span class="l"><i>16</i>        }</span><span class="l"><i>17</i>        <span class="kw">return</span> brokenRules</span><span class="l"><i>18</i>    }</span><span class="l"><i>19</i></span><span class="l hl"><i>20</i>    <span class="kw">fun</span> containsPrintln(tokens: List&lt;Token&gt;): Boolean = tokens.firstOrNull()?.isFunctionNamed(<span class="st">&quot;println&quot;</span>) ?: false</span></pre></div>
+  <div class="code"><pre><span class="l"><i>9</i>    <span class="kw">override</span> <span class="kw">fun</span> applyRule(tokens: List&lt;List&lt;Token&gt;&gt;): List&lt;BrokenRule&gt; {</span><span class="l"><i>10</i>        <span class="kw">val</span> brokenRules = mutableListOf&lt;BrokenRule&gt;()</span><span class="l"><i>11</i>        <span class="kw">for</span> (row <span class="kw">in</span> tokens) {</span><span class="l hl"><i>12</i>            <span class="kw">if</span> (!containsReadInput(row)) continue</span><span class="l hl"><i>13</i>            <span class="kw">if</span> (containsExpression(argumentsOf(row))) {</span><span class="l hl"><i>14</i>                brokenRules.add(BrokenRule(errorMessage, row[0].getPosition()))</span><span class="l hl"><i>15</i>            }</span><span class="l"><i>16</i>        }</span><span class="l"><i>17</i>        <span class="kw">return</span> brokenRules</span><span class="l"><i>18</i>    }</span><span class="l"><i>19</i></span><span class="l"><i>20</i>    <span class="kw">fun</span> containsReadInput(tokens: List&lt;Token&gt;): Boolean = tokens.any { isReadInputType(it) }</span><span class="l"><i>21</i></span><span class="l"><i>22</i><span class="cm">    /** El Tokenizer emite el nombre de la función en minúsculas: `readInput` -&gt; `readinput`. */</span></span><span class="l hl"><i>23</i>    <span class="kw">private</span> <span class="kw">fun</span> isReadInputType(token: Token): Boolean = token.isFunctionNamed(<span class="st">&quot;readinput&quot;</span>)</span><span class="l"><i>24</i></span><span class="l"><i>25</i>    <span class="kw">fun</span> containsExpression(tokens: List&lt;Token&gt;): Boolean = tokens.any { it.isExpressionToken() }</span><span class="l"><i>26</i></span><span class="l"><i>27</i><span class="cm">    /** Tokens que siguen a la llamada a readInput, es decir sus argumentos. */</span></span><span class="l hl"><i>28</i>    <span class="kw">private</span> <span class="kw">fun</span> argumentsOf(tokens: List&lt;Token&gt;): List&lt;Token&gt; {</span><span class="l hl"><i>29</i>        <span class="kw">val</span> readInputPosition = tokens.indexOfFirst { isReadInputType(it) }</span><span class="l hl"><i>30</i>        <span class="kw">if</span> (readInputPosition &lt; 0) <span class="kw">return</span> emptyList()</span><span class="l hl"><i>31</i>        <span class="kw">return</span> tokens.subList(readInputPosition + 1, tokens.size)</span><span class="l"><i>32</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong><code>PrintOnlyRule</code></strong> applies to statements that <em>start</em> with <code>println</code> (:20) and looks for an expression token in everything after it (:13).</li>
+    <li><strong><code>InputOnlyRule</code></strong> finds <code>readinput</code> anywhere in the statement (:23), because it usually sits inside a declaration, and checks only the tokens after it (:28–31).</li>
+    <li><strong>Both report at the statement's first token</strong> (<code>row[0]</code>): <code>println</code> itself, or the declared name.</li>
+  </ul>
+</section>
+
+<section id="report">
+  <h2>Reporting</h2>
+  <p class="sub">Violations are data. The analysis always finishes, and the caller decides what to do.</p>
+  <div class="code"><pre><span class="l"><i>5</i><span class="kw">class</span> BrokenRule(</span><span class="l hl"><i>6</i>    <span class="kw">val</span> ruleDescription: String,</span><span class="l hl"><i>7</i>    <span class="kw">val</span> errorPosition: TokenPosition,</span><span class="l"><i>8</i>) {</span><span class="l"><i>9</i>    <span class="kw">override</span> <span class="kw">fun</span> toString(): String = <span class="st">&quot;Broken rule: $ruleDescription at $errorPosition&quot;</span></span><span class="l"><i>10</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>3</i><span class="kw">class</span> LinterOutput {</span><span class="l hl"><i>4</i>    <span class="kw">var</span> isCorrect: Boolean = true</span><span class="l"><i>5</i>        <span class="kw">private</span> set</span><span class="l"><i>6</i></span><span class="l hl"><i>7</i>    <span class="kw">private</span> <span class="kw">val</span> brokenRules: MutableList&lt;BrokenRule&gt; = mutableListOf()</span><span class="l"><i>8</i></span><span class="l"><i>9</i><span class="cm">    /** Representación textual de cada violación, derivada de la lista tipada. */</span></span><span class="l"><i>10</i>    <span class="kw">val</span> brokenRulesList: List&lt;String&gt;</span><span class="l"><i>11</i>        get() = brokenRules.map { formatBrokenRule(it) }</span><span class="l"><i>12</i></span><span class="l hl"><i>13</i>    <span class="kw">fun</span> addBrokenRule(brokenRule: BrokenRule) {</span><span class="l hl"><i>14</i>        isCorrect = false</span><span class="l hl"><i>15</i>        brokenRules.add(brokenRule)</span><span class="l hl"><i>16</i>    }</span><span class="l"><i>17</i></span><span class="l"><i>18</i>    <span class="kw">private</span> <span class="kw">fun</span> formatBrokenRule(brokenRule: BrokenRule): String {</span><span class="l"><i>19</i>        <span class="kw">val</span> position = brokenRule.errorPosition</span><span class="l"><i>20</i>        <span class="kw">return</span> <span class="st">&quot;Broken rule: ${brokenRule.ruleDescription} at ${position.row}:${position.column}&quot;</span></span><span class="l"><i>21</i>    }</span><span class="l"><i>22</i></span><span class="l"><i>23</i><span class="cm">    /** Las violaciones se conservan tipadas; [brokenRulesList] deriva su texto de acá. */</span></span><span class="l hl"><i>24</i>    <span class="kw">fun</span> getBrokenRules(): List&lt;BrokenRule&gt; = brokenRules.toList()</span><span class="l"><i>25</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Typed violations</strong> (:7), each with a description and a <code>TokenPosition</code>. <code>brokenRulesList</code> (:10–11) is just a text view derived from them.</li>
+    <li><strong><code>isCorrect</code> flips on the first violation</strong> (:14), and its setter is private.</li>
+    <li><strong><code>getBrokenRules</code> returns a copy</strong> (:24), so callers can't modify the report.</li>
+  </ul>
+
+  <h3>The same violations, three renderings</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Where</th><th>Format</th><th>Example (last_name in statement 1)</th></tr></thead>
+    <tbody>
+      <tr><td><code>LinterOutput.brokenRulesList</code></td><td>0-based, <code>row:col</code></td><td class="mono">… camel case at 1:4</td></tr>
+      <tr><td>CLI (<span class="ref">AnalyzingCommand.kt:37–38</span>)</td><td>1-based, Spanish</td><td class="mono">… camel case (línea 2, columna 5)</td></tr>
+      <tr><td>TCK (<span class="ref">LinterAdapter.java:38–42</span>)</td><td>1-based, English</td><td class="mono">… camel case (line 2, column 5)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Real CLI run</h3>
+<pre class="out"><span class="r">$ printscript analyzing lintdemo.ps --config lintdemo.json --version 1.1</span>
+Se encontraron 4 problemas en lintdemo.ps:
+The following identifier must be in camel case (línea 2, columna 5)
+The following identifier must be in camel case (línea 4, columna 27)
+Println must not be called with an expression (línea 4, columna 1)
+ReadInputs must not be called with an expression (línea 6, columna 5)
+<span class="r">exit 1</span></pre>
+  <div class="code"><pre><span class="l"><i>21</i>    <span class="kw">override</span> <span class="kw">fun</span> execute(): CommandStatus {</span><span class="l hl"><i>22</i>        <span class="kw">val</span> result = pipeline.consume(source) { nodes -&gt; linter.check(nodes) }</span><span class="l"><i>23</i>        <span class="kw">val</span> brokenRules = result.value.getBrokenRules()</span><span class="l"><i>24</i></span><span class="l hl"><i>25</i>        <span class="kw">if</span> (brokenRules.isEmpty()) {</span><span class="l hl"><i>26</i>            output.info(<span class="st">&quot;No se encontraron problemas en ${source.name}.&quot;</span>)</span><span class="l hl"><i>27</i>            <span class="kw">return</span> CommandStatus.SUCCESS</span><span class="l hl"><i>28</i>        }</span><span class="l"><i>29</i></span><span class="l hl"><i>30</i>        output.error(<span class="st">&quot;Se encontraron ${brokenRules.size} ${pluralize(brokenRules.size, &quot;</span>problema<span class="st">&quot;, &quot;</span>problemas<span class="st">&quot;)} en ${source.name}:&quot;</span>)</span><span class="l hl"><i>31</i>        brokenRules.forEach { output.error(describe(it)) }</span><span class="l hl"><i>32</i>        <span class="kw">return</span> CommandStatus.FAILURE</span><span class="l"><i>33</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Order is by statement, then by rule.</strong> In statement 4, the camel-case violation (column 27) comes before the <code>println</code> one (column 1) because <code>camelcase</code> precedes <code>printonly</code> in the rule list.</li>
+    <li><strong>Violations aren't an error</strong> (<span class="ref">AnalyzingCommand.kt:9–13</span>). The command returns <code>FAILURE</code>, which becomes exit code 1. A clean file prints <em>"No se encontraron problemas"</em> and exits 0, and a bad config exits 2.</li>
+  </ul>
+
+  <h3>Streaming, measured</h3>
+  <div class="measure">
+    <div><span class="big">131,072</span><p>statements linted, alternating <code>let user_name…</code> and <code>println(user_name)</code>, with snake case and the println rule.</p></div>
+    <div><span class="big">8 MB</span><p>maximum heap for that run, set with <code>-Xmx8m</code>. It finished with 0 violations.</p></div>
+    <div><span class="big">1.7 s</span><p>for the whole run. Memory depends on the number of violations, not on the size of the file.</p></div>
+  </div>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>Rules check flattened tokens per statement, not the tree</h4>
+    <p>Every rule gets the same simple input, and each fits in about ten lines: identifier rules are a filter, and expression rules are a search for an operator or a call. Checking statement by statement keeps the linter streaming.</p>
+    <p class="cost"><b>Cost</b>Nesting is lost when a statement is flattened. A future rule about structure, such as nesting depth, would need a tree-based rule interface next to this one.</p>
+  </div>
+
+  <div class="decision">
+    <h4>A <code>Rule</code> interface built by a factory</h4>
+    <p>Strategy pattern: the validator applies any list of rules without knowing what they check, and a new rule doesn't change <code>Linter</code> or <code>RuleValidator</code>.</p>
+    <p class="cost"><b>Cost</b>A new rule touches three places: its class, a branch in <code>RuleFactory</code>, and a property plus name in <code>RuleJsonReader</code>.</p>
+  </div>
+
+  <div class="decision">
+    <h4>The config reader returns names, not rules</h4>
+    <p>Jackson stays out of the rule classes, the JSON format can change without touching them, and the factory is the single place that decides which rules exist for a version.</p>
+    <p class="cost"><b>Cost</b>An extra step that looks redundant until you add a second config format or a new version.</p>
+  </div>
+
+  <div class="decision">
+    <h4>A rule the version doesn't support is a configuration error</h4>
+    <p>Enabling <code>readInput</code> checks for a 1.0 program is a mistake the user should see, so the CLI reports it and exits 2 instead of silently ignoring the rule.</p>
+    <p class="cost"><b>Cost</b>A 1.1 config that includes <code>inputonly</code> can't be reused as-is for 1.0 sources.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Unknown keys are ignored</h4>
+    <p>The TCK's configs, and future ones, can carry keys this version doesn't know (<span class="ref">RuleJsonReader.kt:8</span>), and the linter still runs the rules it does know.</p>
+    <p class="cost"><b>Cost</b>A misspelt key is silently ignored rather than reported.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Collect violations instead of throwing</h4>
+    <p>Unlike a syntax error, a style violation doesn't stop analysis. Users want every problem in one run, and the TCK expects one reported error per violation.</p>
+    <p class="cost"><b>Cost</b>The report grows with the number of violations. That's fine for real code; a file with hundreds of thousands of violations would hold them all.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Why does the linter work on tokens and not directly on AST nodes?</summary>
+      <p>The assignment's rules are about names and about operators inside a call. A flat token list answers both with a filter or a search, and the same input format serves every rule. The flattening already exists in <code>commons</code> (<code>Tokenizer</code>).</p></details>
+    <details><summary>Why does analysis with violations exit 1 but not throw?</summary>
+      <p>Finding violations means the tool worked. The command returns <code>CommandStatus.FAILURE</code>, and the CLI turns that into exit code 1 so scripts can react. Exceptions are for broken sources or configs.</p></details>
+    <details><summary>What counts as "an expression" for the println and readInput rules?</summary>
+      <p>Any OPERATOR token or nested FUNCTION token among the arguments (<span class="ref">TokenPredicates.kt:18</span>). Identifiers and literals are allowed, exactly the "identifier or literal" wording in the assignment.</p></details>
+    <details><summary>How would you add a rule, say "no <code>const</code> declarations"?</summary>
+      <p>Write <code>NoConstRule : Rule</code>, add a <code>"noconst"</code> branch in <code>RuleFactory</code> (gated to 1.1 like <code>inputonly</code>), and add a JSON property plus name in <code>RuleJsonReader</code>. <code>Linter</code> and <code>RuleValidator</code> don't change.</p></details>
+    <details><summary>Why does the readInput violation point at the variable name?</summary>
+      <p>Both expression rules report at the statement's first token (<code>row[0]</code>). For <code>println</code> that's <code>println</code> itself; for a declaration using <code>readInput</code> it's the declared name, which is where that line starts.</p></details>
+    <details><summary>How does the version reach the linter?</summary>
+      <p>As a <code>LinterVersion</code> enum built from the version string (<span class="ref">LinterVersion.kt:11</span>). The CLI and TCK convert it, and an unknown version is rejected before any linting.</p></details>
+    <details><summary>What is <code>OutputFileManager</code> for?</summary>
+      <p>It can render the violations as a <code>.txt</code> or <code>.html</code> report and save it to disk, and it's tested. It is not wired into the CLI or the TCK.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">Which rules does <code>{"identifier_format": "Camel Case", "mandatory-variable-or-literal-in-println": false}</code> enable?</label>
+      <details><summary>Answer</summary><p>Only <code>camelcase</code>. The format is normalised (spaces removed, lowercased), and a rule set to <code>false</code> isn't added.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2">What does a rule receive for <code>let age: number = readInput("Age?");</code>?</label>
+      <details><summary>Answer</summary><p><code>IDENTIFIER age</code>, <code>FUNCTION readinput</code>, <code>STRINGLITERAL Age?</code>. The keyword, type, <code>=</code>, parentheses and <code>;</code> are dropped.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">Camel case or snake case: <code>myVar</code>, <code>my_var</code>, <code>MyVar</code>, <code>x</code>?</label>
+      <details><summary>Answer</summary><p><code>myVar</code> is camel only, <code>my_var</code> is snake only, <code>MyVar</code> is neither (it starts uppercase), and <code>x</code> is both.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">What makes a token an "expression token"?</label>
+      <details><summary>Answer</summary><p>Being an OPERATOR or a FUNCTION. Identifiers and literals aren't, so <code>println(x)</code> passes and <code>println(1 + 2)</code> is flagged.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">The readInput rule under version 1.0: what happens in the CLI, and why?</label>
+      <details><summary>Answer</summary><p><code>RuleFactory</code> throws "Rule not available for this version", and the CLI prints it as a configuration error and exits 2. <code>readInput</code> doesn't exist in 1.0, so enabling that rule is a misconfiguration.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">In statement 4, why is the camel-case violation (column 27) listed before the println one (column 1)?</label>
+      <details><summary>Answer</summary><p>Violations are grouped by statement, then by rule order, and <code>camelcase</code> comes before <code>printonly</code> in the list the reader produced.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7"><code>LinterOutput</code> says <code>at 1:4</code> but the CLI says <code>línea 2, columna 5</code>. Why?</label>
+      <details><summary>Answer</summary><p>Positions are stored 0-based. Each front end converts to 1-based for display: the CLI in Spanish, the TCK adapter in English.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">How can it lint 131,072 statements in an 8 MB heap?</label>
+      <details><summary>Answer</summary><p><code>check</code> pulls one node at a time from a lazy sequence, flattens and checks that one statement, then discards it. Only violations are kept, and that run had none.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">58 tests in 5 files.</p>
+  <ul class="points tests">
+    <li><strong>RulesTests (25):</strong> each rule directly on token lists: camel and snake case, <code>containsPrintln</code>/<code>containsReadInput</code>, <code>containsExpression</code>, rule names and descriptions, and <code>checkRule</code> with several rules.</li>
+    <li><strong>LinterTests (15):</strong> reading JSON from a file, the wrong-version error, an empty output when nothing breaks, <code>BrokenRule</code> and <code>LinterOutput</code> state, txt and html content.</li>
+    <li><strong>LinterEndToEndTests (12):</strong> source through lexer, parser and linter for each rule's flagged and allowed cases, plus "check twice on the same linter does not duplicate violations".</li>
+    <li><strong>LinterStreamingTest (3):</strong> a huge source with every violation reported, a clean huge source, and streaming and eager checking agree.</li>
+    <li><strong>OutputFileManagerTest (3):</strong> empty txt and html reports, and saving to a file.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-linter-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+})();
+</script>

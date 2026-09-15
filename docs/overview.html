@@ -1,0 +1,846 @@
+<title>PrintScript Defense Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1;
+  --high:#B42318; --high-soft:#FDECEA; --med:#9A5200; --med-soft:#FDF1E2; --low:#51606F; --low-soft:#E8ECF0;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731;
+    --high:#F7877C; --high-soft:#3A1C1A; --med:#F0A95A; --med-soft:#38270F; --low:#A9B5C1; --low-soft:#222C36;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731;
+  --high:#F7877C; --high-soft:#3A1C1A; --med:#F0A95A; --med-soft:#38270F; --low:#A9B5C1; --low-soft:#222C36;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 80px}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.shell{max-width:1180px;margin-inline:auto;display:grid;grid-template-columns:210px minmax(0,1fr);gap:56px}
+@media (max-width:900px){.shell{grid-template-columns:minmax(0,1fr);gap:0}.toc{display:none}}
+
+/* index */
+.toc{position:sticky;top:0;align-self:start;padding-block:40px;max-height:100vh;overflow:auto}
+.toc p{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.toc a{display:flex;justify-content:space-between;gap:8px;text-decoration:none;color:var(--ink);font-size:14px;padding:5px 8px;border-radius:4px}
+.toc a:hover{background:var(--surface)}
+.toc a span:last-child{font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.toc .grp{margin-top:14px}
+
+main{min-width:0;padding-block:40px}
+.prose{max-width:720px}
+header.top{border-bottom:1px solid var(--rule);padding-bottom:28px;margin-bottom:8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.02em;margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,50px);line-height:1.05;letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);margin:0;max-width:640px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;margin:22px 0 0;padding:0;list-style:none;font-size:14px}
+.facts b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;margin-right:4px}
+
+section.mod{padding-top:56px}
+h2{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.15;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h2 code{font-family:var(--mono);font-size:.82em;font-weight:600;color:var(--accent);background:none;padding:0}
+.modhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:18px}
+.modhead .meta{font-family:var(--mono);font-size:12px;color:var(--muted)}
+h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:30px 0 10px}
+p{margin:0 0 14px}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:12px}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px}
+ol.steps>li::before{content:counter(s);font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);border:1px solid var(--rule);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;margin-top:1px;background:var(--surface)}
+ul.plain{margin:0 0 14px;padding-left:20px}
+ul.plain li{margin-bottom:6px}
+
+.decisions{display:grid;gap:0;border-top:1px solid var(--rule)}
+.decision{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);gap:6px 24px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.decision dt{font-weight:600;line-height:1.4}
+.decision dt small{display:block;font-weight:400;font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px}
+.decision dd{margin:0}
+@media (max-width:640px){.decision{grid-template-columns:minmax(0,1fr)}}
+
+.watch{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:4px;padding:14px 18px;margin-top:22px}
+.watch h4{margin:0 0 8px;font-size:14px;color:var(--accent)}
+.watch ul{margin:0;padding-left:18px}
+.watch li{margin-bottom:6px}
+
+pre{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre .c{color:var(--muted)}
+pre .ln{color:var(--muted);user-select:none;display:inline-block;width:2.4em}
+.tests{font-size:14px;color:var(--muted)}
+
+figure{margin:26px 0 8px}
+.figwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:18px}
+.figwrap svg{display:block;width:100%;min-width:760px;height:auto}
+figcaption{font-size:14px;color:var(--muted);margin-top:10px;max-width:720px}
+svg .n{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+svg .n.hl{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+svg .n.ext{stroke-dasharray:5 4;stroke:var(--muted)}
+svg .t{fill:var(--ink);font-family:var(--mono);font-size:14px;font-weight:600}
+svg .s{fill:var(--muted);font-family:var(--body);font-size:12px}
+svg .e{stroke:var(--ink);stroke-width:1.2;fill:none}
+svg .e.flow{stroke:var(--accent);stroke-width:1.8}
+svg .e.dash{stroke:var(--muted);stroke-dasharray:5 4}
+svg .el{fill:var(--muted);font-family:var(--mono);font-size:11.5px}
+svg .el.flow{fill:var(--accent)}
+svg .ah{fill:var(--ink)} svg .ah.flow{fill:var(--accent)} svg .ah.dash{fill:var(--muted)}
+
+.tablewrap{overflow-x:auto;margin:0 0 16px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0}
+td{border-bottom:1px solid var(--rule);padding:10px 12px 10px 0;vertical-align:top}
+td:first-child{white-space:nowrap}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+
+.challenge{padding:20px 0;border-bottom:1px solid var(--rule)}
+.challenge:first-of-type{border-top:1px solid var(--rule)}
+.challenge h4{font-size:18px;line-height:1.3;margin:0 0 2px;text-wrap:balance}
+.challenge .over{font-size:14px;color:var(--muted);margin:0 0 12px;font-style:italic}
+.challenge .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 28px}
+.challenge .cols p{margin:0;font-size:15px}
+.challenge h5{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 4px;font-weight:600}
+.challenge h5.cost{color:var(--med)}
+@media (max-width:640px){.challenge .cols{grid-template-columns:minmax(0,1fr);gap:12px}}
+.qa{border-top:1px solid var(--rule)}
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa summary{cursor:pointer;font-weight:600}
+.qa summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.qa details p{margin:10px 0 0}
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="Contents">
+  <p>Pipeline order</p>
+  <ol>
+    <li><a href="#overview"><span>Big picture</span><span></span></a></li>
+    <li><a href="#trace"><span>Example 2, traced</span><span></span></a></li>
+    <li><a href="#commons"><span>commons</span><span>242</span></a></li>
+    <li><a href="#lexer"><span>lexer</span><span>242</span></a></li>
+    <li><a href="#parser"><span>parser</span><span>727</span></a></li>
+    <li><a href="#interpreter"><span>interpreter</span><span>665</span></a></li>
+    <li><a href="#formatter"><span>formatter</span><span>427</span></a></li>
+    <li><a href="#linter"><span>linter</span><span>369</span></a></li>
+    <li><a href="#cli"><span>cli</span><span>729</span></a></li>
+  </ol>
+  <p class="grp">Across modules</p>
+  <ol>
+    <li><a href="#crosscutting"><span>Streaming · versions · errors</span><span></span></a></li>
+    <li><a href="#quality"><span>Build &amp; quality</span><span></span></a></li>
+    <li><a href="#tck"><span>TCK adapter</span><span></span></a></li>
+  </ol>
+  <p class="grp">Defending it</p>
+  <ol>
+    <li><a href="#defend"><span>Decisions under challenge</span><span>10</span></a></li>
+    <li><a href="#questions"><span>Likely questions</span><span></span></a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · main</p>
+  <h1>PrintScript defense notes</h1>
+  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
+  <ul class="facts">
+    <li><b>7</b>Gradle modules</li>
+    <li><b>3,401</b>lines of main Kotlin</li>
+    <li><b>393</b>unit tests</li>
+    <li><b>59/59</b>TCK tests passing</li>
+    <li><b>87–93%</b>instruction coverage per module</li>
+    <li><b>7 MB</b>TCK heap limit</li>
+  </ul>
+</header>
+
+<!-- ============================ OVERVIEW ============================ -->
+<section class="mod" id="overview">
+  <div class="modhead"><h2>The big picture</h2></div>
+  <div class="prose">
+    <p>PrintScript is a chain of lazy Kotlin <code>Sequence</code>s. The source is read one line at a time. The lexer turns each line into tokens, and the parser groups tokens into one statement at a time and builds one AST node per statement. Then a consumer does something with each node before the next one is read: the interpreter runs it, the linter checks it, and the CLI's validation mode just counts it. The formatter is the exception. It works on the lexer's tokens directly and never builds an AST.</p>
+  </div>
+
+  <figure>
+    <div class="figwrap">
+    <svg viewBox="0 0 1160 316" role="img" aria-label="Data flow: source lines go to the Lexer, tokens go to the Parser, AST nodes go to either the Interpreter or the Linter; the Formatter takes tokens plus their original text straight from the Lexer.">
+      <defs>
+        <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah flow" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <rect class="n" x="16" y="70" width="150" height="60" rx="5"/>
+      <text class="t" x="91" y="96" text-anchor="middle">Source file</text>
+      <text class="s" x="91" y="116" text-anchor="middle">read line by line</text>
+
+      <rect class="n" x="296" y="70" width="150" height="60" rx="5"/>
+      <text class="t" x="371" y="96" text-anchor="middle">Lexer</text>
+      <text class="s" x="371" y="116" text-anchor="middle">one regex per line</text>
+
+      <rect class="n" x="576" y="70" width="150" height="60" rx="5"/>
+      <text class="t" x="651" y="96" text-anchor="middle">Parser</text>
+      <text class="s" x="651" y="116" text-anchor="middle">splitter + factories</text>
+
+      <rect class="n" x="870" y="20" width="150" height="60" rx="5"/>
+      <text class="t" x="945" y="46" text-anchor="middle">Interpreter</text>
+      <text class="s" x="945" y="66" text-anchor="middle">evaluator per node</text>
+
+      <rect class="n" x="870" y="120" width="150" height="60" rx="5"/>
+      <text class="t" x="945" y="146" text-anchor="middle">Linter</text>
+      <text class="s" x="945" y="166" text-anchor="middle">rules per statement</text>
+
+      <rect class="n" x="576" y="240" width="150" height="60" rx="5"/>
+      <text class="t" x="651" y="266" text-anchor="middle">Formatter</text>
+      <text class="s" x="651" y="286" text-anchor="middle">rewrites token gaps</text>
+
+      <line class="e flow" x1="166" y1="100" x2="292" y2="100" marker-end="url(#f1a)"/>
+      <text class="el flow" x="229" y="90" text-anchor="middle">Sequence&lt;String&gt;</text>
+
+      <line class="e flow" x1="446" y1="100" x2="572" y2="100" marker-end="url(#f1a)"/>
+      <text class="el flow" x="509" y="90" text-anchor="middle">Sequence&lt;Token&gt;</text>
+
+      <path class="e flow" d="M726 100 H800 V50 H866" marker-end="url(#f1a)"/>
+      <path class="e flow" d="M800 100 V150 H866" marker-end="url(#f1a)"/>
+      <text class="el flow" x="808" y="104">Sequence&lt;ASTNode&gt;</text>
+
+      <line class="e flow" x1="1020" y1="50" x2="1140" y2="50" marker-end="url(#f1a)"/>
+      <text class="el" x="1080" y="40" text-anchor="middle">Printer</text>
+      <text class="el" x="1080" y="68" text-anchor="middle">stdout / TCK</text>
+
+      <line class="e flow" x1="1020" y1="150" x2="1140" y2="150" marker-end="url(#f1a)"/>
+      <text class="el" x="1080" y="140" text-anchor="middle">BrokenRule</text>
+      <text class="el" x="1080" y="168" text-anchor="middle">row, column</text>
+
+      <path class="e flow" d="M371 130 V270 H572" marker-end="url(#f1a)"/>
+      <text class="el flow" x="472" y="260" text-anchor="middle">Token + original text</text>
+
+      <line class="e flow" x1="726" y1="270" x2="846" y2="270" marker-end="url(#f1a)"/>
+      <text class="el flow" x="786" y="260" text-anchor="middle">formatted lines</text>
+      <text class="el" x="852" y="274">Writer · file · stdout</text>
+    </svg>
+    </div>
+    <figcaption>Figure 1: runtime data flow. Every arrow is a lazy <code>Sequence</code>, so no stage holds the whole program. The parser keeps only the statement it is currently building, and a whole <code>if</code> block counts as one statement.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="figwrap">
+    <svg viewBox="0 0 1160 334" role="img" aria-label="Gradle dependency graph: cli depends on all five tool modules; formatter uses lexer; every module depends on commons through api; parser and interpreter depend on nothing but commons; the TCK consumes the published artifacts.">
+      <defs>
+        <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="f2d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah dash" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <rect class="n" x="455" y="20" width="230" height="54" rx="5"/>
+      <text class="t" x="570" y="44" text-anchor="middle">cli</text>
+      <text class="s" x="570" y="63" text-anchor="middle">application · bin/printscript</text>
+
+      <rect class="n ext" x="880" y="20" width="250" height="54" rx="5"/>
+      <text class="t" x="1005" y="44" text-anchor="middle">printscript-tck</text>
+      <text class="s" x="1005" y="63" text-anchor="middle">separate repo · artifacts 1.0.0</text>
+
+      <rect class="n" x="40" y="140" width="170" height="54" rx="5"/>
+      <text class="t" x="125" y="164" text-anchor="middle">formatter</text>
+      <text class="s" x="125" y="183" text-anchor="middle">+ snakeyaml</text>
+      <rect class="n" x="262" y="140" width="170" height="54" rx="5"/>
+      <text class="t" x="347" y="164" text-anchor="middle">lexer</text>
+      <text class="s" x="347" y="183" text-anchor="middle">no external deps</text>
+      <rect class="n hl" x="484" y="140" width="170" height="54" rx="5"/>
+      <text class="t" x="569" y="164" text-anchor="middle">parser</text>
+      <text class="s" x="569" y="183" text-anchor="middle">only commons</text>
+      <rect class="n hl" x="706" y="140" width="170" height="54" rx="5"/>
+      <text class="t" x="791" y="164" text-anchor="middle">interpreter</text>
+      <text class="s" x="791" y="183" text-anchor="middle">only commons</text>
+      <rect class="n" x="928" y="140" width="170" height="54" rx="5"/>
+      <text class="t" x="1013" y="164" text-anchor="middle">linter</text>
+      <text class="s" x="1013" y="183" text-anchor="middle">+ jackson</text>
+
+      <line class="e" x1="570" y1="74" x2="129" y2="136" marker-end="url(#f2a)"/>
+      <line class="e" x1="570" y1="74" x2="350" y2="136" marker-end="url(#f2a)"/>
+      <line class="e" x1="570" y1="74" x2="569" y2="136" marker-end="url(#f2a)"/>
+      <line class="e" x1="570" y1="74" x2="788" y2="136" marker-end="url(#f2a)"/>
+      <line class="e" x1="570" y1="74" x2="1009" y2="136" marker-end="url(#f2a)"/>
+
+      <line class="e" x1="210" y1="167" x2="258" y2="167" marker-end="url(#f2a)"/>
+      <text class="el" x="234" y="159" text-anchor="middle">uses</text>
+
+      <line class="e dash" x1="1060" y1="74" x2="1060" y2="136" marker-end="url(#f2d)"/>
+      <text class="el" x="1068" y="110">jars</text>
+
+      <line class="e" x1="125" y1="194" x2="125" y2="262" marker-end="url(#f2a)"/>
+      <line class="e" x1="347" y1="194" x2="347" y2="262" marker-end="url(#f2a)"/>
+      <line class="e" x1="569" y1="194" x2="569" y2="262" marker-end="url(#f2a)"/>
+      <line class="e" x1="791" y1="194" x2="791" y2="262" marker-end="url(#f2a)"/>
+      <line class="e" x1="1013" y1="194" x2="1013" y2="262" marker-end="url(#f2a)"/>
+      <text class="el" x="133" y="232">api</text><text class="el" x="355" y="232">api</text><text class="el" x="577" y="232">api</text><text class="el" x="799" y="232">api</text><text class="el" x="1021" y="232">api</text>
+
+      <rect class="n" x="40" y="266" width="1058" height="52" rx="5"/>
+      <text class="t" x="569" y="288" text-anchor="middle">commons</text>
+      <text class="s" x="569" y="307" text-anchor="middle">Token · TokenPosition · TokenType · ASTNode · Tokenizer · PrintScriptException</text>
+    </svg>
+    </div>
+    <figcaption>Figure 2: component diagram as declared in each <code>build.gradle.kts</code>. Solid arrows from <code>cli</code> are <code>implementation</code> dependencies. The highlighted modules, parser and interpreter, compile against <code>commons</code> alone: the parser never imports the lexer, and the interpreter never imports the parser. The code that connects them lives at the edges, in <span class="ref">ParsingPipeline.kt:48</span> and in the TCK's <span class="ref">Pipeline.java:25</span>.</figcaption>
+  </figure>
+
+  <div class="prose">
+    <h3>A presentation order that works</h3>
+    <p>Open with these two figures, then walk the assignment's own Example 2 through the pipeline (next section). The graders know that program and its expected output, so every stage has something concrete to show. Streaming, versioning and error positions come up naturally along the way: name them as they appear, then cover each module in depth, and keep the "decisions under challenge" section for the questions.</p>
+  </div>
+</section>
+
+<!-- ============================ TRACE ============================ -->
+<section class="mod" id="trace">
+  <div class="modhead"><h2>Example 2, traced</h2><span class="meta">captured from the compiled jars, version 1.0</span></div>
+  <div class="prose">
+    <p>This is Example 2 from the first assignment PDF, with the blank line kept. Rows and columns below are 0-based, as stored internally. Users see them 1-based (row 4 appears as <em>línea 5</em>).</p>
+<pre><span class="ln">0</span>let a: number = 12;
+<span class="ln">1</span>let b: number = 4;
+<span class="ln">2</span>let c: number = a / b;
+<span class="ln">3</span>
+<span class="ln">4</span>println("Result: " + c);</pre>
+
+    <h3>Lexer: rows 2 and 4 become tokens</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Type</th><th>Value</th><th class="num">Row</th><th class="num">Columns</th><th>Matched by</th></tr></thead>
+      <tbody>
+        <tr><td>KEYWORD</td><td><code>let</code></td><td class="num">2</td><td class="num">0–3</td><td>reserved word, <span class="ref">TokenMapper.kt:39</span></td></tr>
+        <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">2</td><td class="num">4–5</td><td>identifier regex, :55</td></tr>
+        <tr><td>DECLARATOR</td><td><code>:</code></td><td class="num">2</td><td class="num">5–6</td><td>:51</td></tr>
+        <tr><td>DATA_TYPE</td><td><code>number</code></td><td class="num">2</td><td class="num">7–13</td><td>:53, listed before IDENTIFIER</td></tr>
+        <tr><td>ASSIGNATION</td><td><code>=</code></td><td class="num">2</td><td class="num">14–15</td><td>:52, listed before OPERATOR</td></tr>
+        <tr><td>IDENTIFIER</td><td><code>a</code></td><td class="num">2</td><td class="num">16–17</td><td>:55</td></tr>
+        <tr><td>OPERATOR</td><td><code>/</code></td><td class="num">2</td><td class="num">18–19</td><td>:54</td></tr>
+        <tr><td>IDENTIFIER</td><td><code>b</code></td><td class="num">2</td><td class="num">20–21</td><td>:55</td></tr>
+        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">2</td><td class="num">21–22</td><td>:58</td></tr>
+        <tr><td>FUNCTION</td><td><code>println</code></td><td class="num">4</td><td class="num">0–7</td><td>reserved word, :41</td></tr>
+        <tr><td>PARENTHESIS</td><td><code>(</code></td><td class="num">4</td><td class="num">7–8</td><td>:50</td></tr>
+        <tr><td>STRINGLITERAL</td><td><code>Result: </code></td><td class="num">4</td><td class="num">8–18</td><td>:56, quotes stripped by <span class="ref">Lexer.kt:110</span></td></tr>
+        <tr><td>OPERATOR</td><td><code>+</code></td><td class="num">4</td><td class="num">19–20</td><td>:54</td></tr>
+        <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">4</td><td class="num">21–22</td><td>:55</td></tr>
+        <tr><td>PARENTHESIS</td><td><code>)</code></td><td class="num">4</td><td class="num">22–23</td><td>:50</td></tr>
+        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">4</td><td class="num">23–24</td><td>:58</td></tr>
+      </tbody>
+    </table></div>
+    <p>Two things to point out. Row 3 is empty, so it produces no tokens and the parser never sees it. And the string's value is 8 characters long while its columns span 10, because the quotes are stripped from the value but the positions still cover them. That difference is why the formatter keeps each token's original text.</p>
+
+    <h3>Parser: four statements, four nodes</h3>
+    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:79–84</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:49</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:66–69</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
+<pre>DeclarationNode  id=c  let : number        <span class="c">@2:4   position = the identifier</span>
+└─ BinaryNode "/"                          <span class="c">@2:18  OperationFactory split at "/"</span>
+   ├─ LiteralNode IDENTIFIER a             <span class="c">@2:16</span>
+   └─ LiteralNode IDENTIFIER b             <span class="c">@2:20</span>
+
+PrintNode                                  <span class="c">@4:0</span>
+└─ BinaryNode "+"                          <span class="c">@4:19</span>
+   ├─ LiteralNode STRINGLITERAL "Result: " <span class="c">@4:8</span>
+   └─ LiteralNode IDENTIFIER c             <span class="c">@4:21</span></pre>
+
+    <h3>Interpreter: one node at a time</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Node</th><th>Evaluator calls</th><th>Variables after</th></tr></thead>
+      <tbody>
+        <tr><td>let a</td><td>Declaration → Literal <code>"12"</code> → <code>Int 12</code></td><td><code>{a=12}</code></td></tr>
+        <tr><td>let b</td><td>Declaration → Literal → <code>Int 4</code></td><td><code>{a=12, b=4}</code></td></tr>
+        <tr><td>let c</td><td>Declaration → Binary <code>/</code> → Literal <code>a</code> (lookup 12), Literal <code>b</code> (lookup 4) → <code>ArithmeticOperations</code> Int/Int → <code>3</code></td><td><code>{a=12, b=4, c=3}</code></td></tr>
+        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:99</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
+      </tbody>
+    </table></div>
+    <p>The printer receives <code>Result: 3</code>, which is exactly the output the PDF expects. In the CLI the printer is <code>OutputPrinter</code> writing to stdout; in the TCK it's the test's <code>PrintEmitter</code>. The interpreter code is identical in both.</p>
+
+    <h3>Linter: the same nodes, flattened</h3>
+<pre>IDENTIFIER:a@0,4   NUMBERLITERAL:12@0,16
+IDENTIFIER:b@1,4   NUMBERLITERAL:4@1,16
+IDENTIFIER:c@2,4   IDENTIFIER:a@2,16   OPERATOR:/@2,18   IDENTIFIER:b@2,20
+FUNCTION:println@4,0   STRINGLITERAL:Result: @4,8   OPERATOR:+@4,19   IDENTIFIER:c@4,21</pre>
+    <p><code>Tokenizer</code> keeps only what rules need: identifiers, literals, operators and calls. The <code>let</code> keyword and the type are dropped. With <code>snake case</code> and the println rule on, all identifiers pass. The last statement is flagged, <em>"Println must not be called with an expression"</em> at 4,0, which the user sees as línea 5, columna 1. So the assignment's own example violates that rule, and it makes a good live demo.</p>
+
+    <h3>Formatter: only what the rules govern changes</h3>
+    <p>This is a messier version of the same program, formatted with three rules on: space after the colon, spaces around <code>=</code>, spaces around operators.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Input</th><th>Output</th></tr></thead>
+      <tbody><tr>
+        <td><pre style="margin:0">let a:number=12;
+let b :number = 4;
+let c: number=a/b;
+println("Result: " + c);</pre></td>
+        <td><pre style="margin:0">let a: number = 12;
+let b : number = 4;
+let c: number = a / b;
+println("Result: " + c);</pre></td>
+      </tr></tbody>
+    </table></div>
+    <p>Row 1 keeps its space <em>before</em> the colon because no active rule governs that gap (<span class="ref">TokenFormatter.kt:150</span>). Reprinting from an AST couldn't do this, because the AST no longer knows that space was there. This one line is the evidence for the formatter's central design decision.</p>
+  </div>
+</section>
+
+<!-- ============================ COMMONS ============================ -->
+<section class="mod" id="commons">
+  <div class="modhead"><h2><code>commons</code></h2><span class="meta">no dependencies · consumed via api(project(":commons"))</span></div>
+  <div class="prose">
+    <p>This module holds the shared vocabulary: tokens, positions, the AST and the base error type. It contains no behaviour beyond <code>Tokenizer</code> and error formatting. Every other module declares it with <code>api</code>, so anything that depends on the lexer also gets <code>Token</code> without declaring it again.</p>
+
+    <h3>What's in it</h3>
+    <ol class="steps">
+      <li><div><strong>Tokens.</strong> <span class="ref">TokenType.kt:3</span> lists 16 categories (IDENTIFIER, KEYWORD, DATA_TYPE, FUNCTION, CONDITIONAL…). <span class="ref">TokenPosition.kt:3</span> is a 0-based <code>(row, column)</code>. <span class="ref">Token.kt:7–12</span> is an immutable data class carrying both a start and an end position. Having the end position is what lets errors report the full range the assignment asks for (<span class="ref">Token.kt:17–21</span>).</div></li>
+      <li><div><strong>The AST.</strong> <span class="ref">ASTNode.kt:7</span> is a <code>sealed class</code> in which every node has a <code>position</code>. There are nine node types: <code>LiteralNode</code> :11, <code>BinaryNode</code> :17, <code>PrintNode</code> :24, <code>DeclarationNode</code> :29, <code>AssignationNode</code> :39, <code>BlockNode</code> :46, <code>ConditionalNode</code> :51, <code>FunctionNode</code> :58, and <code>NilNode</code> :65, a null object used for "no value". <code>ConditionalNode.condition</code> is typed <code>LiteralNode</code>, which encodes the 1.1 rule that an <code>if</code> takes only a boolean variable or literal.</div></li>
+      <li><div><strong>Tokenizer.</strong> <span class="ref">Tokenizer.kt:9</span> flattens AST nodes back into token lists, lazily. The <code>when</code> in <span class="ref">Tokenizer.kt:26–36</span> is exhaustive over the sealed class, so adding a node type won't compile until this function handles it. Only the linter uses it.</div></li>
+      <li><div><strong>Errors.</strong> <span class="ref">PrintScriptException.kt:14–18</span> is an abstract <code>RuntimeException</code> with optional start and end positions. <code>describe()</code> at :20 converts to 1-based coordinates and prints <em>"desde línea X, columna Y hasta línea …"</em>, or a single point when start equals end (:29). <code>LexerException</code>, <code>ParserException</code> and <code>InterpreterException</code> all extend it.</div></li>
+    </ol>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>Position travels as data, not inside the message<small>PrintScriptException.kt:8–11</small></dt><dd>Tests can compare clean messages, and each front end formats the location its own way: the CLI in Spanish, the TCK adapter as-is. The CLI catches a single exception type and never needs to know which stage failed (<span class="ref">PrintScriptCli.kt:29</span>).</dd></div>
+      <div class="decision"><dt>Sealed AST<small>ASTNode.kt:7</small></dt><dd>The compiler checks every exhaustive <code>when</code>, so a new language construct can't be silently ignored by a consumer. This matters because the assignment says the language will grow.</dd></div>
+      <div class="decision"><dt>A shared module instead of duplicating types<small>*/build.gradle.kts</small></dt><dd>This gives low coupling: tools depend on a small, stable contract rather than on each other. Parser and interpreter need nothing else (Figure 2).</dd></div>
+    </dl>
+
+    <div class="watch"><h4>Trade-offs to own</h4><ul>
+      <li><strong>Why is <code>Tokenizer</code> in <code>commons</code>?</strong> It only reads <code>commons</code> types, so any future tool that needs a flat view of the AST (a highlighter, a new analyzer) can reuse it without depending on the linter. Today only the linter uses it, so arguing it belongs in <code>linter</code> is fair; say the choice favoured reuse.</li>
+      <li><strong>Why one exception type with nullable positions?</strong> Some errors have no token at hand, such as an empty program (<span class="ref">StatementSplitter.kt:97</span>). Nullable positions let those share the same hierarchy instead of needing a second error type.</li>
+    </ul></div>
+    <p class="tests" style="margin-top:18px">Tests: 26 in TokenTests, TokenizerTests, ASTNodeTests and PrintScriptExceptionTest.</p>
+  </div>
+</section>
+
+<!-- ============================ LEXER ============================ -->
+<section class="mod" id="lexer">
+  <div class="modhead"><h2><code>lexer</code></h2><span class="meta">depends on commons</span></div>
+  <div class="prose">
+    <p>The lexer turns text into a lazy stream of <code>Token</code>s, rejecting any character it can't classify and any keyword the chosen version doesn't allow, each with an exact position.</p>
+
+    <h3>Step by step</h3>
+    <ol class="steps">
+      <li><div><strong>Pick the vocabulary for the version.</strong> <span class="ref">TokenMapper.kt:10–13</span> builds a mapper from a version string, and <span class="ref">TokenMapper.kt:74–86</span> selects the regex strategies and the "disallowed" keywords. 1.0 disallows <code>const</code> with a message (:83).</div></li>
+      <li><div><strong>Compile one big regex.</strong> <span class="ref">Lexer.kt:14</span> calls <span class="ref">PatternMatcher.kt:9–17</span>, which joins every strategy's pattern into a single alternation <code>(p1)|(p2)|…</code>. Order matters here: <code>mapOf</code> preserves insertion order, so <code>let</code> is tried before IDENTIFIER and <code>=</code> (ASSIGNATION) before the general OPERATOR class.</div></li>
+      <li><div><strong>Stream the lines.</strong> <span class="ref">Lexer.kt:29–39</span> wraps the loop in <code>sequence { … yield(token) }</code>, so a line is read only when the parser asks for tokens past the previous one. The <code>InputStream</code> overload (:41–44) wraps a <code>BufferedReader.lineSequence()</code>.</div></li>
+      <li><div><strong>Match inside a line.</strong> <span class="ref">Lexer.kt:54–72</span> loops over <code>matcher.find()</code>, taking the start and end positions from the match (:58–59).</div></li>
+      <li><div><strong>Catch what the regex skipped.</strong> <code>Matcher.find</code> doesn't fail on garbage; it just jumps past it. <span class="ref">Lexer.kt:85–103</span> inspects the gap before each match (:55) and the tail of the line (:73), and any non-blank text in those gaps becomes <em>"Carácter inválido encontrado"</em> with its exact columns.</div></li>
+      <li><div><strong>Version gate, then classify.</strong> <span class="ref">Lexer.kt:62</span> asks <code>disallowedReason</code> and throws a positioned <code>LexerException</code>. <span class="ref">TokenMapper.kt:24–30</span> checks reserved words first (:35–44), then the first strategy that matches, and UNKNOWN produces an error at :65–67.</div></li>
+      <li><div><strong>Clean the value.</strong> <span class="ref">Lexer.kt:105–112</span> strips the quotes from string literals. The formatter needs those quotes back, which is why it keeps the original text (see <a href="#formatter">formatter</a>).</div></li>
+    </ol>
+
+    <h3>1.0 vs 1.1</h3>
+    <p><span class="ref">TokenMapper.kt:61–70</span> copies the 1.0 map and adds <code>if</code>/<code>else</code>, <code>const</code>, <code>readInput</code>/<code>readEnv</code>, <code>boolean</code>, <code>true</code>/<code>false</code> and the <code>{ }</code> punctuators. Because braces aren't in the 1.0 vocabulary, an <code>if</code> program under 1.0 fails right in the lexer. I checked this by running it, and it prints <code>Carácter inválido encontrado: '{'</code>.</p>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>Strategy pattern for token kinds<small>TokenClassifierStrategy.kt:3 · RegexTokenClassifier.kt:3</small></dt><dd>A new token kind is a new map entry, and <code>Lexer</code> itself doesn't change (Open/Closed). A version is just a different map.</dd></div>
+      <div class="decision"><dt>Lazy, line-granular lexing<small>Lexer.kt:29</small></dt><dd>Memory is bounded by the longest line, not by the file. This is what lets the TCK's 131,072-line test run in a 7 MB heap.</dd></div>
+      <div class="decision"><dt>The version check lives in the lexer, not in <code>classify</code><small>TokenMapper.kt:15–21</small></dt><dd>Only the lexer knows where the lexeme is, so rejecting <code>const</code> there produces an error with row and column instead of a generic one.</dd></div>
+    </dl>
+
+    <div class="watch"><h4>Trade-offs to own</h4><ul>
+      <li><strong>Order-sensitive alternation.</strong> The combined regex tries patterns in map order, so <code>=</code> must come before the general operator class and <code>number</code> before identifiers. We accept this because the map is the single place to look, and the Example 2 trace shows each case resolving correctly.</li>
+      <li><strong>Classification is a second, simple pass</strong> (<span class="ref">TokenMapper.kt:24–30</span>): reserved words first, then the first matching strategy. Reading regex group indices would be faster, but it would couple the lexer to the order in which groups were built. Clarity was worth a few extra regex tests per token.</li>
+    </ul></div>
+    <p class="tests" style="margin-top:18px">Tests: 21 in LexerTests and TokenMapperTest.</p>
+  </div>
+</section>
+
+<!-- ============================ PARSER ============================ -->
+<section class="mod" id="parser">
+  <div class="modhead"><h2><code>parser</code></h2><span class="meta">depends on commons (lexer only in tests)</span></div>
+  <div class="prose">
+    <p>The parser groups the token stream into statements and turns each one into an AST node. It does this in two parts: a state machine that decides where a statement ends, and a list of factories that each know how to build one kind of statement.</p>
+
+    <h3>Step by step</h3>
+    <ol class="steps">
+      <li><div><strong>Choose factories for the version.</strong> <span class="ref">ParserFactory.kt:20–42</span>: the 1.0 list is Println, Declaration, Assignation and Function, and 1.1 puts <code>ConditionalFactory</code> first. The language version comes down to which factories are in the list.</div></li>
+      <li><div><strong>Stay lazy.</strong> <span class="ref">Parser.kt:21</span> calls <code>StatementSplitter().split(tokens)</code> and then <code>.map { createNode(it) }</code>, so a statement is only parsed when someone asks for the next node.</div></li>
+      <li><div><strong>Cut statements (the state machine).</strong> In <span class="ref">StatementSplitter.kt:23–98</span>, <code>;</code> ends a statement (:79–84), but only outside braces: <code>openBraces</code> is counted at :45–54 so the <code>;</code>s inside a block stay together. When a block closes, the statement is held back one token in case an <code>else</code> follows (:33–42). An <code>if</code> must start a fresh statement (:73–77), a stray <code>}</code> is an error (:66), and the stream can't end mid-statement (:90–95). An empty program is rejected (:97).</div></li>
+      <li><div><strong>Pick a factory (chain of responsibility).</strong> <span class="ref">Parser.kt:49</span> takes the first factory whose <code>canHandle</code> returns true. If none does, it throws "Can't handle this sentence" with the statement's range (:39–45).</div></li>
+      <li><div><strong>Build the node.</strong> Each factory is described below.</div></li>
+    </ol>
+
+    <div class="tablewrap"><table>
+      <thead><tr><th>Factory</th><th>How it builds</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref">DeclarationFactory.kt:12</span></td><td>Finds the keyword, identifier and type (:13–21). The expression is everything after <code>=</code> (:23–26). It does a static literal-vs-type check (:60–90), skipped when the value is a <code>readInput</code>/<code>readEnv</code> call because the type isn't known until run time (:29–34). The node's position is the identifier (:43).</td></tr>
+        <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>The left side is the tokens before <code>=</code> (:61), the right side the tokens after (:59). The right side goes to FunctionFactory or OperationFactory (:63–68).</td></tr>
+        <tr><td><span class="ref">PrintlnFactory.kt:10</span></td><td>Needs at least 4 tokens (:45–46). Takes what's between the first <code>(</code> and the last <code>)</code> (:15–22) and passes it to OperationFactory (:28).</td></tr>
+        <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td><code>readInput</code>/<code>readEnv</code>: the argument is the tokens between the parentheses (:12), parsed as an expression (:16).</td></tr>
+        <tr><td><span class="ref">OperationFactory.kt:10</span></td><td>Handles precedence by splitting the expression. It tries <code>+ -</code> first (:22), then <code>* /</code> (:23), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:36–54), and fully wrapping parentheses are removed (:56–65).</td></tr>
+        <tr><td><span class="ref">ConditionalFactory.kt:16</span></td><td>Reads the condition token after <code>(</code> (:33–40), then finds the matching <code>}</code> by counting depth (:111–126). The block body goes to a <em>sub-parser</em> (:64–74), which is how nested <code>if</code>s work. The <code>else</code> must immediately follow the then-block (:82–94), and <code>else if</code> is rejected (:90–92).</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>How precedence falls out of splitting</h3>
+<pre><span class="c">// OperationFactory.kt:22–23: the lowest precedence becomes the root</span>
+return splitOnOperator(tokens, ::isAdditionOrSubtraction)
+    ?: splitOnOperator(tokens, ::isMultiplicationOrDivision)
+    ?: throw ParserException("Error in operation", …)</pre>
+    <p><code>2 + 3 * 4</code> splits at <code>+</code>, so the tree is <code>2 + (3 * 4)</code> and the result is 14. Parentheses work the same way: the operators inside them are skipped at this level, then the outer pair is removed and the inner expression is split again.</p>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>Factories + chain of responsibility<small>ASTFactory.kt:6 · Parser.kt:49</small></dt><dd>Adding a construct means adding a factory and listing it for its version, with no edits to <code>Parser</code>. Each factory has one job (SRP).</dd></div>
+      <div class="decision"><dt>Splitting separated from building<small>StatementSplitter.kt:20</small></dt><dd>The splitter only answers "where does this statement end?", and factories only see complete statements. It's also the only place memory has to be reasoned about: the current statement is all that's held (:8–11).</dd></div>
+      <div class="decision"><dt>Sub-parser injected as a provider<small>ConditionalFactory.kt:14 · ParserFactory.kt:34</small></dt><dd>A block body is parsed by a fresh parser for the same version, which gives recursion for nested blocks. Tests can inject a fake parser.</dd></div>
+      <div class="decision"><dt><code>insideBlock</code> mode<small>Parser.kt:33 · StatementSplitter.kt:58–64</small></dt><dd>In a block body, the closing <code>}</code> terminates the last statement. At top level, the same <code>}</code> is an error.</dd></div>
+    </dl>
+
+    <div class="watch"><h4>Trade-offs to own</h4><ul>
+      <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:34–38</span>).</li>
+      <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more <code>splitOnOperator</code> call in the chain.</li>
+    </ul></div>
+    <p class="tests" style="margin-top:18px">Tests: 61, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest and one test class per factory.</p>
+  </div>
+</section>
+
+<!-- ============================ INTERPRETER ============================ -->
+<section class="mod" id="interpreter">
+  <div class="modhead"><h2><code>interpreter</code></h2><span class="meta">depends on commons (lexer, parser only in tests)</span></div>
+  <div class="prose">
+    <p>The interpreter executes one AST node at a time against a symbol table. Output and input go through two one-method interfaces, so the same interpreter runs in the CLI (stdout/stdin) and in the TCK (its emitter and input provider).</p>
+
+    <h3>Step by step</h3>
+    <ol class="steps">
+      <li><div><strong>Choose evaluators for the version.</strong> <span class="ref">InterpreterFactory.kt:28–56</span>: 1.0 has no <code>ConditionalEvaluator</code> or <code>FunctionEvaluator</code>, and 1.1 uses the full list (:15–26).</div></li>
+      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:11–22</span> keeps three maps: <code>variables</code>, <code>declarationKeywords</code> (to reject reassigning a <code>const</code>) and <code>declaredTypes</code> (to type a later <code>readInput</code>).</div></li>
+      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:32–42</span> finds the evaluator that <code>canEvaluate</code> the node and runs it. Evaluators throw errors without positions; the catch at :38–40 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
+      <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:17–34</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:19). An identifier is looked up and throws "Undefined variable" if missing (:30–32).</div></li>
+      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:20–28</span> dispatches on the operator. <code>+</code> tries string concatenation first (:31–36, :92–101), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is in <span class="ref">ArithmeticOperations.kt:21–56</span>. Division by zero is checked at :103–105, and multiplying or dividing a string is rejected at :42–44 and :52–54.</div></li>
+      <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:18–42</span> rejects redeclaration (:18–20) and records the type and keyword even when there's no value (:32–33). It types an <code>ExternalInput</code> using the declared type (:36).</div></li>
+      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:17–30</span> refuses to reassign a <code>const</code> (:50–53) and refuses a value of a different PrintScript type (:57–60). Int and Double both count as <code>number</code> (:64–70).</div></li>
+      <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:16–23</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:16–29</span> requires a <code>Boolean</code> (:18–20). <span class="ref">BlockEvaluator.kt:16–18</span> runs children in order, and <code>NilEvaluator</code> returns null.</div></li>
+      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:40–49</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:51–58). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
+    </ol>
+
+    <h3>The typed-input trick</h3>
+<pre><span class="c">// ExternalInput.kt:16–27: the destination decides the type</span>
+fun asType(dataType: String): Any = when (dataType) {
+    "string"  -&gt; text
+    "number"  -&gt; text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
+    "boolean" -&gt; when (text) { "true" -&gt; true; "false" -&gt; false; else -&gt; throw cannotInterpretAs(dataType) }
+    else      -&gt; throw InterpreterException(…)
+}</pre>
+    <p>The 1.1 spec says <code>readInput</code> returns a type compatible with the variable it's assigned to, or <code>string</code> inside <code>println</code>, and that execution fails if, say, <code>"Hola"</code> arrives for a <code>boolean</code>. So the raw text travels until someone who knows the target type converts it: the declaration (:36), the assignment (<span class="ref">AssignmentEvaluator.kt:33–43</span>) or <code>println</code> (<span class="ref">PrintEvaluator.kt:20</span>). The doc comment at <span class="ref">ExternalInput.kt:3–11</span> records the earlier bug this fixed: a <code>5</code> typed into a string variable used to become a number.</p>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>One evaluator per node type<small>NodeEvaluator.kt:6 · InterpreterFactory.kt:15</small></dt><dd>This is a strategy registry: a new node type is a new evaluator plus a list entry, with no edits to <code>Interpreter</code>. The version is again just the list.</dd></div>
+      <div class="decision"><dt><code>Printer</code> / <code>Reader</code> interfaces<small>Printer.kt:3 · Reader.kt:3</small></dt><dd>Dependency inversion. The spec requires a programmatic way to provide input, which is the TCK's <code>InputProvider</code>. Being single-method interfaces, they take Java method references directly (<span class="ref">InterpreterAdapter.java:54</span>).</dd></div>
+      <div class="decision"><dt>Executes node by node<small>Interpreter.kt:32</small></dt><dd>The interpreter never sees the whole program, and the caller decides how the stream is fed. That's what lets execution interleave with parsing.</dd></div>
+    </dl>
+    <p class="tests" style="margin-top:18px">Tests: 126, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
+  </div>
+</section>
+
+<!-- ============================ FORMATTER ============================ -->
+<section class="mod" id="formatter">
+  <div class="modhead"><h2><code>formatter</code></h2><span class="meta">depends on commons, lexer · snakeyaml 2.0</span></div>
+  <div class="prose">
+    <p>The formatter rewrites the <em>gaps between tokens</em> according to a rules file and leaves everything no active rule governs exactly as it was written. It uses the lexer but never the parser.</p>
+
+    <h3>Why not reprint the AST?</h3>
+    <p>The TCK's formatter cases turn on one rule at a time and expect the rest of the file untouched. For example, two declarations can keep different spacing before <code>:</code> when only the "space after colon" rule is on. The AST has already discarded how the source was written, so reprinting from it can't do that. Token positions still carry that information. See the doc comment at <span class="ref">TokenFormatter.kt:6–15</span> and commit 2321eb3, <em>"formatear preservando el fuente en lugar de reimprimir el árbol"</em>.</p>
+
+    <h3>Step by step</h3>
+    <ol class="steps">
+      <li><div><strong>Read the rules.</strong> <span class="ref">RulesReader.kt:16–31</span> parses YAML <em>and</em> JSON with SnakeYAML, since JSON is a subset of YAML. Anything that isn't a key/value map is rejected (:26–28).</div></li>
+      <li><div><strong>Map config names to settings.</strong> <span class="ref">FormattingRules.kt:24–34</span> holds the TCK's rule names, and <code>from</code> (:36–47) builds the settings. A missing key means "don't touch" (:3–9). The two <code>=</code> rules collapse into a three-state <code>Boolean?</code> (:57–62), as do the two brace rules (:64–69).</div></li>
+      <li><div><strong>Build.</strong> <span class="ref">FormatterBuilderPS.kt:21–24</span> creates <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code>. Overloads accept a path (:10) or an <code>InputStream</code> (:16).</div></li>
+      <li><div><strong>Recover the original text.</strong> <span class="ref">SourceToken.kt:40–53</span> pairs each token with its exact source slice. It remembers only the line currently being lexed (:45–46), which works because the lexer emits all of a line's tokens before reading the next line.</div></li>
+      <li><div><strong>Walk token pairs.</strong> <span class="ref">TokenFormatter.kt:30–54</span> computes the separator between the previous and current token. If the separator contains newlines, the finished line is emitted (:40–46). Then <code>FormattingState</code> advances (:49).</div></li>
+      <li><div><strong>Decide a gap, in priority order.</strong> <span class="ref">TokenFormatter.kt:59–76</span>: brace placement (:66), then breaks after <code>;</code> (:67–71), then line breaks already in the source (:72–74), then same-line spacing (:75).</div></li>
+      <li><div><strong>Same-line spacing.</strong> <span class="ref">TokenFormatter.kt:133–151</span>: colon rules only apply inside a declaration (:138–139), then <code>=</code> (:141–143), then operators (:144). Single-space separation goes last because it's the broadest rule (:146–148). With no rule active, the original gap is preserved (:150).</div></li>
+      <li><div><strong>Indentation.</strong> <span class="ref">TokenFormatter.kt:115–125</span>: with <code>indent-inside-if</code> set, indent = n × depth, and a closing brace is one level out (:121). Otherwise the source's own column is kept. <span class="ref">FormattingState.kt:27–52</span> tracks depth, whether we're inside a declaration, and whether the current statement is a <code>println</code>.</div></li>
+      <li><div><strong>Blank lines after println.</strong> <span class="ref">TokenFormatter.kt:96–104</span>: <em>n</em> blank lines means <em>n + 1</em> line breaks.</div></li>
+    </ol>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>Preserve the source, rewrite only governed gaps<small>TokenFormatter.kt:6–15</small></dt><dd>This matches what the TCK expects rule by rule, and it's the least surprising behaviour for a user: turning on one rule changes only what that rule governs.</dd></div>
+      <div class="decision"><dt>Three-state settings<small>FormattingRules.kt:13–21</small></dt><dd><code>true</code> enforces the rule, <code>false</code> enforces the opposite, and <code>null</code> leaves the source alone. Two config keys become one field, so the two can't contradict each other.</dd></div>
+      <div class="decision"><dt>Lazy line emission<small>Formatter.kt:8–15</small></dt><dd><code>formatLines</code> is part of the <em>interface</em> so that any caller can format a file too large for memory. The CLI uses it (<span class="ref">FormattingCommand.kt:21</span>).</dd></div>
+    </dl>
+
+    <div class="watch"><h4>Trade-offs to own</h4><ul>
+      <li><strong>"Not configurable" rules became configurable.</strong> The 1.0 spec lists single spacing, spaces around operators and a break after <code>;</code> as fixed. The TCK's config names them as rules, so we implemented them as rules whose absence leaves the source unchanged. That satisfies both documents.</li>
+      <li><strong>The formatter doesn't validate syntax.</strong> Its job is layout, and validation is its own CLI operation. Needing only the lexer keeps it fast, and it can format code that's still being written.</li>
+      <li><strong>Two entry points.</strong> <code>formatLines</code> streams (used by the CLI), and <code>format(String)</code> is a convenience built on it (<span class="ref">TokenFormatter.kt:25–28</span>). The TCK hands over a whole string, so it uses the convenience method.</li>
+    </ul></div>
+    <p class="tests" style="margin-top:18px">Tests: 33 in FormatterTest10, FormatterTest11, FormatterEdgeCaseTest, FormatterStreamingTest and RulesReaderTest.</p>
+  </div>
+</section>
+
+<!-- ============================ LINTER ============================ -->
+<section class="mod" id="linter">
+  <div class="modhead"><h2><code>linter</code></h2><span class="meta">depends on commons · jackson-module-kotlin 2.15</span></div>
+  <div class="prose">
+    <p>The linter is the static code analyzer. It reads a JSON config, builds the enabled rules for the version, and checks each statement as it streams by. Every violation is reported with its position.</p>
+
+    <h3>Step by step</h3>
+    <ol class="steps">
+      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:19–22</span> passes the config to <span class="ref">RuleJsonReader.kt:29–42</span>, which uses Jackson and ignores unknown keys (:8). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (:33) and returns rule <em>names</em>, not rule objects.</div></li>
+      <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:6–21</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:19, :23–31), and asking for it under 1.0 is a configuration error.</div></li>
+      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:31–39</span> turns each statement back into tokens with <code>commons.Tokenizer</code> and runs every rule on that one statement. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
+      <li><div><strong>The rules.</strong>
+        <ul class="plain" style="margin-top:6px">
+          <li><span class="ref">CamelCaseRule.kt:10–22</span>: an identifier must start lowercase and contain no <code>_</code>.</li>
+          <li><span class="ref">SnakeCaseRule.kt:10–21</span>: only lowercase letters and <code>_</code>, with no <code>__</code>.</li>
+          <li><span class="ref">PrintOnlyRule.kt:9–18</span>: a statement that starts with <code>println</code> must not contain an operator or a nested call. The predicates are in <span class="ref">TokenPredicates.kt:9, 18</span>.</li>
+          <li><span class="ref">InputOnlyRule.kt:9–17</span>: the same check for the arguments of <code>readinput</code>. The Tokenizer lowercases function names (<span class="ref">Tokenizer.kt:86</span>), hence the lowercase match at :23.</li>
+        </ul></div></li>
+      <li><div><strong>Collect.</strong> <span class="ref">LinterOutput.kt:13–24</span> stores typed <code>BrokenRule(description, position)</code> values. <code>OutputFileManager</code> can write .txt or .html reports, but neither the CLI nor the TCK uses it.</div></li>
+    </ol>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>Rule interface + factory<small>Rule.kt:6 · RuleFactory.kt:5</small></dt><dd>A new check is a new class plus one line in the factory. The config reader doesn't know rule classes exist, so a change in config format doesn't touch the rules.</dd></div>
+      <div class="decision"><dt>Version gating in one place<small>RuleFactory.kt:23</small></dt><dd><code>readInput</code> doesn't exist in 1.0, so its rule can't be enabled there, and the CLI reports that as a configuration error (exit code 2).</dd></div>
+      <div class="decision"><dt>Rules over tokens, not over AST nodes<small>Linter.kt:33</small></dt><dd>This keeps rules simple and uniform: identifier rules just filter IDENTIFIER tokens. The trade-off is that flattening loses block structure (see below).</dd></div>
+    </dl>
+
+    <div class="watch"><h4>Trade-offs to own</h4><ul>
+      <li><strong>Flattened tokens lose structure.</strong> Rules see <code>IDENTIFIER:c IDENTIFIER:a OPERATOR:/ …</code>, not a tree. For the three rules in the spec that's enough, and each rule is about ten lines. A rule that needs nesting (say, "no <code>println</code> deeper than two blocks") would be the moment to add a tree-based rule interface next to this one.</li>
+      <li><strong>The config reader returns names, not rules.</strong> That looks like an extra step, but it keeps Jackson out of the rule classes and puts the version check in one place (<span class="ref">RuleFactory.kt:23</span>).</li>
+    </ul></div>
+    <p class="tests" style="margin-top:18px">Tests: 58 in LinterTests, RulesTests, LinterEndToEndTests, LinterStreamingTest and OutputFileManagerTest.</p>
+  </div>
+</section>
+
+<!-- ============================ CLI ============================ -->
+<section class="mod" id="cli">
+  <div class="modhead"><h2><code>cli</code></h2><span class="meta">application · depends on all six</span></div>
+  <div class="prose">
+    <p>The CLI turns <code>printscript &lt;operation&gt; &lt;file&gt; [--version] [--config] [--output]</code> into a command, runs it, and converts the outcome into an exit code. It is the only module that knows about files, the console and process exit.</p>
+
+    <h3>Step by step</h3>
+    <ol class="steps">
+      <li><div><strong>Entry point.</strong> <span class="ref">Main.kt:6–8</span>: <code>exitProcess(PrintScriptCli(ConsoleOutput()).run(args))</code>.</div></li>
+      <li><div><strong>Parse arguments.</strong> <span class="ref">ArgumentParser.kt:15–30</span> separates positional arguments from flags in a single pass (:39–55), then reads the operation (:70–76). It checks that the source file exists (:78–86) and that the version is supported, defaulting to <code>1.0</code> (:101–113). Config is required for formatting and analyzing (:88–99) via <code>Operation.requiresConfig</code> (<span class="ref">Operation.kt:14–17</span>).</div></li>
+      <li><div><strong>Build a command.</strong> <span class="ref">CommandFactory.kt:36–46</span> constructs one of four <code>Command</code>s and all of its collaborators: the pipeline, a formatter from <code>FormatterBuilder</code> (:68), a linter with its version (:78–86).</div></li>
+      <li><div><strong>Run it.</strong> <span class="ref">CliInvoker.kt:7</span> runs the command, and <span class="ref">PrintScriptCli.kt:50–56</span> maps SUCCESS/FAILURE to exit codes.</div></li>
+      <li><div><strong>Handle errors once.</strong> <span class="ref">PrintScriptCli.kt:26–48</span> is the only place that catches. <code>PrintScriptException</code> prints <code>Error: describe()</code> and exits 1. Usage errors print the usage line and exit 2. Invalid configuration exits 2, and I/O errors exit 1.</div></li>
+      <li><div><strong>Show progress while parsing.</strong> The assignment asks for this. <span class="ref">ParsingPipeline.kt:30–46</span> wraps the node stream in <code>onEach</code> and reports each statement as it's parsed (:38–41). <span class="ref">ConsoleProgressReporter.kt:14–22</span> rewrites a single stderr line using <code>\r</code>.</div></li>
+      <li><div><strong>The four operations.</strong> Validation consumes and counts nodes (<span class="ref">ValidationCommand.kt:18–23</span>). Execution runs the interpreter <em>inside</em> the stream (<span class="ref">ExecutionCommand.kt:24–29</span>). Formatting sends lines to a sink (<span class="ref">FormattingCommand.kt:20–24</span>). Analyzing returns FAILURE when there are violations (<span class="ref">AnalyzingCommand.kt:21–33</span>).</div></li>
+      <li><div><strong>I/O boundaries.</strong> <code>Output</code> has three channels: result goes to stdout, while info and error go to stderr (<span class="ref">ConsoleOutput.kt:15–19</span>). <span class="ref">OutputPrinter.kt:14</span> adapts <code>Printer</code> to the result channel. <span class="ref">ConsoleReader.kt:12–16</span> keeps one <code>BufferedReader</code> on stdin so no lines are lost between reads. <span class="ref">FileSource.kt:17</span> closes the file after the block, and <code>FileSink</code>/<code>OutputSink</code> write formatted lines.</div></li>
+    </ol>
+
+    <h3>Decisions to defend</h3>
+    <dl class="decisions">
+      <div class="decision"><dt>Command + factory + invoker<small>Command.kt:3 · CommandFactory.kt:30</small></dt><dd>Commands receive fully built collaborators and never see raw arguments. A fifth operation is one enum entry, one command and one factory branch.</dd></div>
+      <div class="decision"><dt>A single error boundary<small>PrintScriptCli.kt:16–19</small></dt><dd>Every operation reports errors identically, including the start and end row/column, and no command has its own try/catch.</dd></div>
+      <div class="decision"><dt>stdout is only the result<small>ConsoleOutput.kt:5–10</small></dt><dd><code>printscript formatting x.ps --config r.yaml &gt; out.ps</code> works because the progress bar and messages go to stderr.</dd></div>
+      <div class="decision"><dt><code>Source</code> / <code>Output</code> abstractions<small>Source.kt:10 · Output.kt:9</small></dt><dd>Tests replace them with in-memory doubles (<code>TestDoubles.kt</code>). <code>Source.useLines</code> never exposes the whole file, so a command can't accidentally load it all.</dd></div>
+    </dl>
+    <p class="tests" style="margin-top:18px">Tests: 68 in ArgumentParserTest, CommandFactoryTest, CommandTest, IoTest, PrintScriptCliTest and StreamingTest.</p>
+  </div>
+</section>
+
+<!-- ============================ CROSS-CUTTING ============================ -->
+<section class="mod" id="crosscutting">
+  <div class="modhead"><h2>Streaming, versions and errors</h2><span class="meta">requirements that touch every module</span></div>
+  <div class="prose">
+    <h3>Sources that don't fit in memory</h3>
+    <p>The first assignment says the lexer can't run to completion before parsing starts. The chain in Figure 1 is <code>FileSource.useLines</code> → <code>Lexer.convertToTokens(Sequence)</code> → <code>StatementSplitter.split</code> → <code>Parser.map</code> → <code>interpreter.execute</code> per node. What's held in memory is the current line plus the current statement.</p>
+    <p>The TCK enforces this with <code>maxHeapSize = "7m"</code> in its <code>build.gradle</code>. <span class="ref">InterpreterLargeFileTest.java:22</span> feeds 128 × 1024 = 131,072 <code>println</code> statements. <code>testWithCounter</code> must finish with no errors. <code>testWithCollector</code> keeps every printed line and so must <em>report</em> "Java heap space" instead of crashing. That second test is why the adapter reserves 256 KB and frees it before reporting (<span class="ref">InterpreterAdapter.java:36, 49, 64</span>).</p>
+
+    <h3>Where the version enters each module</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Module</th><th>What changes between 1.0 and 1.1</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td>lexer</td><td>Token vocabulary; <code>const</code> rejected with position</td><td><span class="ref">TokenMapper.kt:74–86</span></td></tr>
+        <tr><td>parser</td><td><code>ConditionalFactory</code> in the list or not</td><td><span class="ref">ParserFactory.kt:20–42</span></td></tr>
+        <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:28–56</span></td></tr>
+        <tr><td>linter</td><td><code>inputonly</code> rule allowed or not</td><td><span class="ref">RuleFactory.kt:23–31</span></td></tr>
+        <tr><td>formatter</td><td>Only via its lexer, which must accept braces</td><td><span class="ref">FormatterBuilderPS.kt:24</span></td></tr>
+        <tr><td>cli</td><td><code>--version</code>, default 1.0, validated against {1.0, 1.1}</td><td><span class="ref">ArgumentParser.kt:108–113</span></td></tr>
+      </tbody>
+    </table></div>
+    <p>The pattern is the same everywhere: the version selects <em>which pieces are in a list</em>, and no module branches on the version inside its logic. That's the answer to "how would you add 1.2?"</p>
+
+    <h3>Errors with start and end position</h3>
+    <p>Positions are 0-based everywhere internally and become 1-based only when displayed: <span class="ref">PrintScriptException.kt:29–31</span>, <span class="ref">AnalyzingCommand.kt:37–38</span>, <span class="ref">LinterAdapter.java:41</span>. The lexer and parser report full ranges. The interpreter reports a start point only, because AST nodes store one position (<span class="ref">InterpreterException.kt:9–11</span>). A real example from the CLI:</p>
+<pre>Error: las sentencias deben finalizar con ";", "}" o "{" (desde línea 1, columna 1 hasta línea 1, columna 18)</pre>
+  </div>
+</section>
+
+<!-- ============================ QUALITY ============================ -->
+<section class="mod" id="quality">
+  <div class="modhead"><h2>Build and quality gates</h2><span class="meta">buildSrc · .github/workflows · scripts/pre-commit</span></div>
+  <div class="prose">
+    <ol class="steps">
+      <li><div><strong>Convention plugins.</strong> <span class="ref">printscript.kotlin-common-conventions.gradle.kts</span> is applied to every module. It configures Kotlin JVM on toolchain 21 (:45–47), ktlint 1.5.0 (:49–53) and Detekt with <code>config/detekt/detekt.yml</code> (:55–59). JaCoCo enforces a minimum of 0.80 (:74–83) and is wired into <code>check</code> (:85–87). Publishing to GitHub Packages is configured at :12–28, with the version from <code>$VERSION</code> (:10). The library and application conventions just add <code>java-library</code> or <code>application</code>. The benefit is that each module's own build file is 3–17 lines.</div></li>
+      <li><div><strong>Pre-commit hook.</strong> <code>scripts/pre-commit</code> runs <code>./gradlew check</code> and blocks the commit if it fails. The root <span class="ref">build.gradle.kts:5–17</span> copies the hook into <code>.git/hooks</code> on every <code>build</code>, so nobody has to install it by hand.</div></li>
+      <li><div><strong>CI.</strong> <span class="ref">ci.yml:28–29</span> runs <code>./gradlew check</code> (lint, Detekt, tests, coverage) on every push and PR to main.</div></li>
+      <li><div><strong>CD.</strong> <span class="ref">cd.yml:34–41</span>: pushes to main publish <code>1.0.0-SNAPSHOT</code>, and a tag <code>v1.0.0</code> publishes <code>1.0.0</code> with the <code>v</code> stripped. <code>check</code> runs again before <code>publish</code> (:43–50). The TCK consumes those artifacts.</div></li>
+    </ol>
+    <div class="tablewrap" style="margin-top:20px"><table>
+      <thead><tr><th>Module</th><th class="num">Main LOC</th><th class="num">Tests</th><th class="num">Coverage</th></tr></thead>
+      <tbody>
+        <tr><td>commons</td><td class="num">242</td><td class="num">26</td><td class="num">90.3%</td></tr>
+        <tr><td>lexer</td><td class="num">242</td><td class="num">21</td><td class="num">90.8%</td></tr>
+        <tr><td>parser</td><td class="num">727</td><td class="num">61</td><td class="num">91.7%</td></tr>
+        <tr><td>interpreter</td><td class="num">665</td><td class="num">126</td><td class="num">87.1%</td></tr>
+        <tr><td>formatter</td><td class="num">427</td><td class="num">33</td><td class="num">93.4%</td></tr>
+        <tr><td>linter</td><td class="num">369</td><td class="num">58</td><td class="num">91.0%</td></tr>
+        <tr><td>cli</td><td class="num">729</td><td class="num">68</td><td class="num">93.1%</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tests">Coverage is instruction coverage from the latest local JaCoCo reports; re-run <code>./gradlew check</code> before quoting it.</p>
+  </div>
+</section>
+
+<!-- ============================ TCK ============================ -->
+<section class="mod" id="tck">
+  <div class="modhead"><h2>The TCK adapter</h2><span class="meta">printscript-tck/src/main/java/implementation</span></div>
+  <div class="prose">
+    <p>The TCK is a Java project that defines three interfaces and runs its test suites against them. Our side is the <em>Adapter pattern</em>: each class implements a TCK interface by delegating to our Kotlin modules, which it pulls in as Maven artifacts.</p>
+    <ol class="steps">
+      <li><div><span class="ref">CustomImplementationFactory.java:10–26</span> returns our three adapters.</div></li>
+      <li><div><span class="ref">Pipeline.java:25–28</span> connects the lexer and parser lazily, exactly as the CLI's <code>ParsingPipeline</code> does. <code>describe()</code> (:41–47) uses <code>PrintScriptException.describe()</code> when it can and falls back to the exception message, which is how "Java heap space" gets reported.</div></li>
+      <li><div><span class="ref">InterpreterAdapter.java:53–59</span> passes <code>emitter::print</code> and <code>provider::input</code> as our <code>Printer</code>/<code>Reader</code>, then executes node by node. It catches <code>Throwable</code> (:60) because the out-of-memory test expects the error to be reported, not thrown.</div></li>
+      <li><div><span class="ref">LinterAdapter.java:18–35</span> builds the linter for the version, streams nodes through it, and reports each violation 1-based.</div></li>
+      <li><div><span class="ref">FormatterAdapter.java:22–30</span> hands the config stream to <code>FormatterBuilderPS</code> untouched and writes the result.</div></li>
+    </ol>
+    <div class="tablewrap" style="margin-top:18px"><table>
+      <thead><tr><th>TCK suite</th><th class="num">Tests</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>InterpreterValidationTest</td><td class="num">23</td><td>pass</td></tr>
+        <tr><td>InterpreterPrintStatementTest</td><td class="num">14</td><td>pass</td></tr>
+        <tr><td>FormatterTest</td><td class="num">13</td><td>pass</td></tr>
+        <tr><td>LinterTest</td><td class="num">7</td><td>pass</td></tr>
+        <tr><td>InterpreterLargeFileTest</td><td class="num">2</td><td>pass</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================ DEFEND ============================ -->
+<section class="mod" id="defend">
+  <div class="modhead"><h2>Decisions under challenge</h2><span class="meta">what we chose · what we didn't · the cost we accept</span></div>
+  <div class="prose">
+    <p>Graders rarely ask "what does this do?". They ask "why this and not that?". Each entry names the alternative a grader is likely to suggest, why ours fits this project better, and the cost of our choice. Naming the cost yourself shows you weighed the options; claiming there is none invites the follow-up question.</p>
+
+    <div class="challenge">
+      <h4>Lexer: one regex strategy per token kind</h4>
+      <p class="over">instead of a hand-written, character-by-character scanner</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>Token kinds are data, not control flow. Version 1.1 is the 1.0 map plus six entries (<span class="ref">TokenMapper.kt:61–70</span>). A hand-written scanner would need version checks inside its loop.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Pattern order matters (<code>=</code> before operators, <code>number</code> before identifiers), and invalid text needs the explicit gap check at <span class="ref">Lexer.kt:85–103</span> because regex matching skips it silently.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Parser: a statement splitter plus a chain of factories</h4>
+      <p class="over">instead of one recursive-descent grammar, or a generator such as ANTLR</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>The statement is the natural unit for streaming, and the splitter is the only piece that holds tokens (<span class="ref">StatementSplitter.kt:8–11</span>). Each construct lives in its own factory, so adding one touches a single class and a list. There's no generated code or extra build step to explain.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Factories are chosen by which tokens appear, so the order of the list matters, and expressions are parsed by splitting on operators rather than by grammar rules. Both are manageable at PrintScript's size; a much larger language would push us toward a real grammar.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Streaming: a pull pipeline of Kotlin <code>Sequence</code>s</h4>
+      <p class="over">instead of reading the whole file, or a producer/consumer with threads or coroutine <code>Flow</code>s</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>The consumer drives reading: asking for the next node reads just enough lines. It's single-threaded, needs no synchronisation or extra library, composes with <code>map</code>/<code>onEach</code> (<span class="ref">ParsingPipeline.kt:38</span>), and an exception surfaces at the statement that caused it.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>A sequence over a file is only valid while the file is open, which is why <code>Source</code> exposes <code>useLines { }</code> rather than a sequence (<span class="ref">Source.kt:14</span>). And statements before an error have already executed.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Interpreter: a registry of evaluators, one per node type</h4>
+      <p class="over">instead of a Visitor, or one large <code>when</code> over the sealed class</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>A new node type is a new class plus a registration, and <code>Interpreter</code> never changes. Which constructs a version supports is visible in one list (<span class="ref">InterpreterFactory.kt:28–56</span>). A Visitor would force every visitor to change with each new node.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Dispatch happens at run time, and each evaluator casts its node (<span class="ref">BinaryEvaluator.kt:15</span>), so a missing evaluator is a run-time error instead of a compile error. The <code>Tokenizer</code>, where exhaustiveness matters more, uses the <code>when</code> instead.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Runtime values are plain Kotlin <code>Int</code>, <code>Double</code>, <code>String</code>, <code>Boolean</code></h4>
+      <p class="over">instead of a PrintScript value hierarchy (<code>NumberValue</code>, <code>StringValue</code>…)</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>There are fewer classes, arithmetic and concatenation use Kotlin's own operators, and printing is <code>toString()</code>. The mapping back to PrintScript types is one small function (<span class="ref">AssignmentEvaluator.kt:64–70</span>).</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Evaluators use <code>is</code> checks, and Int/Double promotion needs explicit handling (<span class="ref">ArithmeticOperations.kt:21–56</span>). <code>readInput</code>'s untyped text needed its own wrapper, <code>ExternalInput</code>.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Errors: exceptions that carry their position, caught at one boundary</h4>
+      <p class="over">instead of collecting a list of errors, or returning result types from every stage</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>The spec and the TCK both report an error and stop. Stages stay free of error-passing code, the position travels with the exception, and each front end catches once: <span class="ref">PrintScriptCli.kt:29</span> for the CLI and <span class="ref">InterpreterAdapter.java:60</span> for the TCK.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Only the first error is reported; a file with three syntax errors needs three runs. An IDE-style tool that lists every problem would need the parser to recover and collect errors.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Versions: assemble different components</h4>
+      <p class="over">instead of <code>if (version == "1.1")</code> inside logic, or separate modules per version</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>Each module has exactly one place where the version is read (the table in <a href="#crosscutting">Streaming, versions and errors</a>), and the logic is shared. Rejecting 1.1 features under 1.0 is simply the component not being present.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>The version string is passed through several factories, and how clear the rejection is depends on the feature. <code>const</code> under 1.0 gets an explicit message (<em>"Const declarations are not allowed in version 1.0"</em>), while an <code>if</code> is reported as an invalid <code>{</code> character: accurate and positioned, but less descriptive.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Formatter: rewrite the gaps between tokens</h4>
+      <p class="over">instead of parsing to an AST and reprinting it</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>A rule that isn't enabled must leave the source as written. The traced example keeps <code>let b :number</code> untouched while fixing the other lines (<a href="#trace">Example 2, traced</a>). It also needs only the lexer and streams line by line.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Every rule is expressed as a decision about one gap, with an explicit priority order (<span class="ref">TokenFormatter.kt:59–76</span>), and the formatter doesn't check syntax.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Linter: rules over each statement's flattened tokens</h4>
+      <p class="over">instead of visitors that walk the tree</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>Every rule gets the same simple input, and each fits in about ten lines (<span class="ref">CamelCaseRule.kt:10–14</span>). Checking statement by statement keeps the linter streaming. Rules are built from config names by one factory, which also gates them by version.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Block structure is flattened, so a future rule about nesting would need a tree-based rule interface next to this one.</p></div>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <h4>Delivery: publish versioned Maven artifacts that the TCK consumes</h4>
+      <p class="over">instead of copying code into the TCK, or a Gradle composite build</p>
+      <div class="cols">
+        <div><h5>Why</h5><p>The TCK tests exactly what was released, the way any client would use it. CD publishes a snapshot from <code>main</code> and a release from each <code>v*</code> tag, running <code>check</code> first (<span class="ref">cd.yml:34–50</span>).</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>After a change, you publish (<code>publishToMavenLocal</code> or CD) before the TCK sees it, and GitHub Packages needs credentials even for reading.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ QUESTIONS ============================ -->
+<section class="mod" id="questions">
+  <div class="modhead"><h2>Likely questions</h2><span class="meta">short answers with the line to show</span></div>
+  <div class="prose qa">
+    <details><summary>How would you add PrintScript 1.2 with a <code>while</code> loop?</summary>
+      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags <span class="ref">Tokenizer.kt:26</span> until it's handled. Add a <code>version12Strategies()</code> map with <code>while</code> (<span class="ref">TokenMapper.kt:61</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
+    <details><summary>Why doesn't the parser depend on the lexer?</summary>
+      <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:48–51</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
+    <details><summary>Where are the SOLID principles?</summary>
+      <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the strategy, factory, evaluator and rule lists, where a version is just a list. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:29</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
+    <details><summary>Which design patterns did you use?</summary>
+      <p>Strategy (token classifiers, evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:49</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
+    <details><summary>How do you know it doesn't load the whole file?</summary>
+      <p>The TCK runs 131,072 statements in a 7 MB heap (<span class="ref">InterpreterLargeFileTest.java:22</span>), and there are dedicated unit tests in each module: StreamingPipelineTest, FormatterStreamingTest, LinterStreamingTest and the CLI's StreamingTest. In the code, every stage signature takes and returns a <code>Sequence</code>.</p></details>
+    <details><summary>How does <code>readInput</code> know what type to return?</summary>
+      <p>It doesn't. It returns raw text wrapped in <code>ExternalInput</code>, and the destination converts it: the declaration, the assignment, or <code>println</code> as a string (<span class="ref">ExternalInput.kt:16–27</span>). An unparseable value fails there, positioned at the node.</p></details>
+    <details><summary>Why is the formatter not built on the AST?</summary>
+      <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
+    <details><summary>How is operator precedence handled?</summary>
+      <p>By splitting at the lowest-precedence operator first (<span class="ref">OperationFactory.kt:22–23</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">OperationFactory.kt:56–65</span>).</p></details>
+    <details><summary>Why Kotlin?</summary>
+      <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
+    <details><summary>How is it tested?</summary>
+      <p>Three layers. First, 393 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+    <details><summary>What would you change with more time?</summary>
+      <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. Move <code>Tokenizer</code> into the linter if nothing else adopts it. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
+    <details><summary>What happens when the program has an error halfway through?</summary>
+      <p>With lazy execution, the statements before the error have already run and printed, and then the error stops the run with its position. Validation mode reads the whole file without executing anything, so it's the way to check a file first.</p></details>
+  </div>
+</section>
+</main>
+</div>

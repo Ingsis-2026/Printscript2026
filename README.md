@@ -1,6 +1,9 @@
 # Printscript2026
 Proyecto Printscript - Ingeniería de Sistemas.
 
+La explicación detallada de cada módulo, con las decisiones de diseño detrás de cada parte, está
+en [`docs/index.html`](docs/index.html).
+
 ## Módulos
 
 | Módulo | Responsabilidad |

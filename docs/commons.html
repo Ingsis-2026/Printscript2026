@@ -1,0 +1,356 @@
+<title>PrintScript commons Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <span class="cur" aria-current="page">commons</span>
+  <a href="lexer.html">lexer</a><a href="parser.html">parser</a><a href="interpreter.html">interpreter</a><a href="formatter.html">formatter</a><a href="linter.html">linter</a><a href="cli.html">cli</a>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 1 of 8</p>
+  <h1><code>commons</code></h1>
+  <p class="lede">The contract between modules: what a token is, the nine kinds of AST node, and the one error type every stage throws. It has no dependencies and almost no behaviour, which is exactly why it's the right place to start.</p>
+  <ul class="meta">
+    <li><b>5</b>files</li>
+    <li><b>242</b>lines</li>
+    <li><b>26</b>tests</li>
+    <li><b>0</b>dependencies</li>
+    <li><b>~15</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#who">Who uses what</a></li>
+    <li><a href="#code">The code</a></li>
+    <li><a href="#nodes">Node catalogue</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"<code>commons</code> is the vocabulary every module shares. A <strong>token</strong> is a type, its text, and where it starts and ends in the file. The <strong>AST</strong> is a sealed class with nine node types, and every node knows its position. <strong>PrintScriptException</strong> is the single error type: the lexer, parser and interpreter each throw a subclass, and it carries the location as data. Because these types live here, the parser and the interpreter depend on <code>commons</code> and nothing else. They never import each other."</p>
+  </div>
+</section>
+
+<section id="who">
+  <h2>Who uses what</h2>
+  <p class="sub">Every other module touches <code>commons</code>, but in different roles. This table is the module's reason to exist.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Type</th><th>lexer</th><th>parser</th><th>interpreter</th><th>formatter</th><th>linter</th><th>cli</th></tr></thead>
+    <tbody>
+      <tr><td class="t">Token</td><td><span class="role creates">creates</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td><td><span class="role none">—</span></td></tr>
+      <tr><td class="t">TokenPosition</td><td><span class="role creates">creates</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">reads</span></td></tr>
+      <tr><td class="t">ASTNode ×9</td><td><span class="role none">—</span></td><td><span class="role creates">creates</span></td><td><span class="role reads">reads</span></td><td><span class="role none">—</span></td><td><span class="role reads">reads</span></td><td><span class="role reads">passes on</span></td></tr>
+      <tr><td class="t">Tokenizer</td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role reads">uses</span></td><td><span class="role none">—</span></td></tr>
+      <tr><td class="t">PrintScriptException</td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role catches">catches</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">Lexer.kt:58–70</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:29</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
+</section>
+
+<section id="code">
+  <h2>The code, file by file</h2>
+  <p class="sub">Highlighted lines are the ones worth pointing at on screen.</p>
+
+  <h3>Token.kt <span class="path">token/Token.kt</span></h3>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">package</span> token</span><span class="l"><i>2</i></span><span class="l"><i>3</i><span class="cm">/**</span></span><span class="l"><i>4</i><span class="cm"> * Los campos son inmutables: [Token] participa en `equals`/`hashCode` y se usa como</span></span><span class="l"><i>5</i><span class="cm"> * contenido de listas comparadas por igualdad, por lo que mutarlo rompería esas comparaciones.</span></span><span class="l"><i>6</i><span class="cm"> */</span></span><span class="l hl"><i>7</i><span class="kw">data</span> <span class="kw">class</span> Token(</span><span class="l hl"><i>8</i>    <span class="kw">private</span> <span class="kw">val</span> type: TokenType,</span><span class="l hl"><i>9</i>    <span class="kw">val</span> value: String,</span><span class="l hl"><i>10</i>    <span class="kw">private</span> <span class="kw">val</span> initialPosition: TokenPosition,</span><span class="l hl"><i>11</i>    <span class="kw">private</span> <span class="kw">val</span> finalPosition: TokenPosition,</span><span class="l hl"><i>12</i>) {</span><span class="l"><i>13</i>    <span class="kw">fun</span> getType(): TokenType = type</span><span class="l"><i>14</i></span><span class="l"><i>15</i>    <span class="kw">fun</span> getPosition(): TokenPosition = initialPosition</span><span class="l"><i>16</i></span><span class="l"><i>17</i><span class="cm">    /**</span></span><span class="l"><i>18</i><span class="cm">     * Posición donde termina el token. Junto con [getPosition] cubre el tramo completo, que</span></span><span class="l"><i>19</i><span class="cm">     * es lo que la consigna pide informar al ubicar un error: fila y columna de inicio y fin.</span></span><span class="l"><i>20</i><span class="cm">     */</span></span><span class="l hl"><i>21</i>    <span class="kw">fun</span> getFinalPosition(): TokenPosition = finalPosition</span><span class="l"><i>22</i></span><span class="l"><i>23</i>    <span class="kw">override</span> <span class="kw">fun</span> toString(): String =</span><span class="l"><i>24</i>        <span class="st">&quot;Token(type = &#x27;$type&#x27;, value = &#x27;$value&#x27;, &quot;</span> +</span><span class="l"><i>25</i>            <span class="st">&quot;start = &#x27;$initialPosition&#x27;, end = &#x27;$finalPosition&#x27;)&quot;</span></span><span class="l"><i>26</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>A data class</strong> (:7) gives value equality, <code>hashCode</code> and <code>copy</code>. Tests compare whole lists of tokens with <code>assertEquals</code>, and that only works because two tokens with the same fields are equal.</li>
+    <li><strong>Every field is <code>val</code>.</strong> The comment at :3–6 gives the reason: a token that changed after being put in a list would break those equality comparisons.</li>
+    <li><strong>Both a start and an end position</strong> (:10–11). The assignment requires errors to report "fila y columna de inicio y fin". The end is exposed through <code>getFinalPosition()</code> (:21) and used for every lexer and parser error range.</li>
+    <li>The <code>value</code> of a string literal has its quotes removed, but its positions still cover the quotes. In Example 2, <code>"Result: "</code> has an 8-character value and spans columns 8–18.</li>
+  </ul>
+
+  <h3>TokenPosition.kt and TokenType.kt <span class="path">token/</span></h3>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">package</span> token</span><span class="l"><i>2</i></span><span class="l hl"><i>3</i><span class="kw">data</span> <span class="kw">class</span> TokenPosition(</span><span class="l hl"><i>4</i>    <span class="kw">val</span> row: Int,</span><span class="l hl"><i>5</i>    <span class="kw">val</span> column: Int,</span><span class="l hl"><i>6</i>)</span></pre></div>
+  <ul class="points">
+    <li><strong>0-based</strong> row and column, because that's what <code>Matcher.start()</code> and list indices give. Conversion to the 1-based numbers a person reads happens only when displaying.</li>
+    <li><code>TokenType</code> is a 16-value enum: IDENTIFIER, KEYWORD, PUNCTUATOR, OPERATOR, STRINGLITERAL, NUMBERLITERAL, BOOLEANLITERAL, DECLARATOR, ASSIGNATION, PARENTHESIS, BOOLEAN, DATA_TYPE, FUNCTION, CONDITIONAL, LITERAL, UNKNOWN. <code>UNKNOWN</code> is what the lexer turns into an "invalid character" error. <code>BOOLEAN</code> and <code>LITERAL</code> aren't used by main code.</li>
+  </ul>
+
+  <h3>ASTNode.kt <span class="path">ast/ASTNode.kt</span></h3>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">package</span> ast</span><span class="l"><i>2</i></span><span class="l"><i>3</i><span class="kw">import</span> token.Token</span><span class="l"><i>4</i><span class="kw">import</span> token.TokenPosition</span><span class="l"><i>5</i><span class="kw">import</span> token.TokenType</span><span class="l"><i>6</i></span><span class="l hl"><i>7</i><span class="kw">sealed</span> <span class="kw">class</span> ASTNode {</span><span class="l hl"><i>8</i>    <span class="kw">abstract</span> <span class="kw">val</span> position: TokenPosition</span><span class="l hl"><i>9</i>}</span><span class="l"><i>10</i></span><span class="l"><i>11</i><span class="kw">data</span> <span class="kw">class</span> LiteralNode(</span><span class="l"><i>12</i>    <span class="kw">val</span> value: String,</span><span class="l"><i>13</i>    <span class="kw">val</span> type: TokenType,</span><span class="l"><i>14</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>15</i>) : ASTNode()</span><span class="l"><i>16</i></span><span class="l"><i>17</i><span class="kw">data</span> <span class="kw">class</span> BinaryNode(</span><span class="l"><i>18</i>    <span class="kw">val</span> left: ASTNode,</span><span class="l"><i>19</i>    <span class="kw">val</span> right: ASTNode,</span><span class="l"><i>20</i>    <span class="kw">val</span> operator: Token,</span><span class="l"><i>21</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>22</i>) : ASTNode()</span><span class="l"><i>23</i></span><span class="l"><i>24</i><span class="kw">data</span> <span class="kw">class</span> PrintNode(</span><span class="l"><i>25</i>    <span class="kw">val</span> expression: ASTNode,</span><span class="l"><i>26</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>27</i>) : ASTNode()</span><span class="l"><i>28</i></span><span class="l"><i>29</i><span class="kw">data</span> <span class="kw">class</span> DeclarationNode(</span><span class="l"><i>30</i>    <span class="kw">val</span> declType: TokenType,</span><span class="l"><i>31</i>    <span class="kw">val</span> declValue: String,</span><span class="l"><i>32</i>    <span class="kw">val</span> id: String,</span><span class="l"><i>33</i>    <span class="kw">val</span> dataType: TokenType,</span><span class="l"><i>34</i>    <span class="kw">val</span> dataTypeValue: String,</span><span class="l"><i>35</i>    <span class="kw">val</span> expr: ASTNode,</span><span class="l"><i>36</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>37</i>) : ASTNode()</span><span class="l"><i>38</i></span><span class="l"><i>39</i><span class="kw">data</span> <span class="kw">class</span> AssignationNode(</span><span class="l"><i>40</i>    <span class="kw">val</span> id: String,</span><span class="l"><i>41</i>    <span class="kw">val</span> expression: ASTNode,</span><span class="l"><i>42</i>    <span class="kw">val</span> valType: TokenType,</span><span class="l"><i>43</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>44</i>) : ASTNode()</span><span class="l"><i>45</i></span><span class="l"><i>46</i><span class="kw">data</span> <span class="kw">class</span> BlockNode(</span><span class="l"><i>47</i>    <span class="kw">val</span> nodes: List&lt;ASTNode&gt;,</span><span class="l"><i>48</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>49</i>) : ASTNode()</span><span class="l"><i>50</i></span><span class="l hl"><i>51</i><span class="kw">data</span> <span class="kw">class</span> ConditionalNode(</span><span class="l hl"><i>52</i>    <span class="kw">val</span> condition: LiteralNode,</span><span class="l hl"><i>53</i>    <span class="kw">val</span> thenBlock: ASTNode,</span><span class="l hl"><i>54</i>    <span class="kw">val</span> elseBlock: ASTNode? = <span class="kw">null</span>,</span><span class="l hl"><i>55</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l hl"><i>56</i>) : ASTNode()</span><span class="l"><i>57</i></span><span class="l"><i>58</i><span class="kw">data</span> <span class="kw">class</span> FunctionNode(</span><span class="l"><i>59</i>    <span class="kw">val</span> type: TokenType,</span><span class="l"><i>60</i>    <span class="kw">val</span> functionName: String,</span><span class="l"><i>61</i>    <span class="kw">val</span> expression: ASTNode,</span><span class="l"><i>62</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition,</span><span class="l"><i>63</i>) : ASTNode()</span><span class="l"><i>64</i></span><span class="l hl"><i>65</i><span class="kw">data</span> <span class="kw">object</span> NilNode : ASTNode() {</span><span class="l hl"><i>66</i>    <span class="kw">override</span> <span class="kw">val</span> position: TokenPosition</span><span class="l hl"><i>67</i>        get() = TokenPosition(0, 0)</span><span class="l hl"><i>68</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong><code>sealed class</code></strong> (:7). All subclasses must live in this module, so the compiler knows the complete list. A <code>when (node)</code> without <code>else</code> won't compile if a type is missing; the <code>Tokenizer</code> below relies on exactly that.</li>
+    <li><strong><code>abstract val position</code></strong> (:8). Every node must say where it is. That's what lets the interpreter attach a location to a run-time error without knowing which node kind failed (<span class="ref">Interpreter.kt:40</span>).</li>
+    <li><strong><code>ConditionalNode.condition</code> is a <code>LiteralNode</code></strong> (:52), not any <code>ASTNode</code>. The 1.1 spec allows only a boolean variable as the <code>if</code> argument, and the type makes <code>if (a + b)</code> impossible to represent.</li>
+    <li><strong><code>NilNode</code> is a <code>data object</code></strong> (:65), a singleton null object meaning "no value here". It stands in for <code>let x: number;</code> with no initialiser, so node fields are never <code>null</code> and code doesn't need null checks. Its position is fixed at (0, 0) because it doesn't correspond to any source text.</li>
+  </ul>
+
+  <h3>Tokenizer.kt <span class="path">ast/Tokenizer.kt</span></h3>
+  <div class="code"><pre><span class="l"><i>7</i><span class="kw">class</span> Tokenizer {</span><span class="l"><i>8</i><span class="cm">    /** Variante perezosa: re-tokeniza cada nodo a medida que se lo pide. */</span></span><span class="l hl"><i>9</i>    <span class="kw">fun</span> parseToTokens(astNodes: Sequence&lt;ASTNode&gt;): Sequence&lt;List&lt;Token&gt;&gt; = astNodes.map { extractTokensFromAST(it) }</span><span class="l"><i>10</i></span><span class="l"><i>11</i>    <span class="kw">fun</span> parseToTokens(astNodes: List&lt;ASTNode&gt;): List&lt;List&lt;Token&gt;&gt; = parseToTokens(astNodes.asSequence()).toList()</span><span class="l"><i>12</i></span><span class="l"><i>13</i>    <span class="kw">private</span> <span class="kw">fun</span> extractTokensFromAST(node: ASTNode): List&lt;Token&gt; {</span><span class="l"><i>14</i>        <span class="kw">val</span> tokens = mutableListOf&lt;Token&gt;()</span><span class="l"><i>15</i>        traverseAST(</span><span class="l"><i>16</i>            node,</span><span class="l"><i>17</i>            tokens,</span><span class="l"><i>18</i>        )</span><span class="l"><i>19</i>        <span class="kw">return</span> tokens</span><span class="l"><i>20</i>    }</span><span class="l"><i>21</i></span><span class="l"><i>22</i>    <span class="kw">private</span> <span class="kw">fun</span> traverseAST(</span><span class="l"><i>23</i>        node: ASTNode,</span><span class="l"><i>24</i>        tokens: MutableList&lt;Token&gt;,</span><span class="l"><i>25</i>    ) {</span><span class="l hl"><i>26</i>        <span class="kw">when</span> (node) {</span><span class="l hl"><i>27</i>            <span class="kw">is</span> LiteralNode -&gt; tokens.add(Token(node.type, node.value, node.position, node.position))</span><span class="l hl"><i>28</i>            <span class="kw">is</span> BinaryNode -&gt; traverseBinary(node, tokens)</span><span class="l hl"><i>29</i>            <span class="kw">is</span> PrintNode -&gt; traversePrint(node, tokens)</span><span class="l hl"><i>30</i>            <span class="kw">is</span> DeclarationNode -&gt; traverseNamed(node.id, node.position, node.expr, tokens)</span><span class="l hl"><i>31</i>            <span class="kw">is</span> AssignationNode -&gt; traverseNamed(node.id, node.position, node.expression, tokens)</span><span class="l hl"><i>32</i>            <span class="kw">is</span> BlockNode -&gt; node.nodes.forEach { traverseAST(it, tokens) }</span><span class="l hl"><i>33</i>            <span class="kw">is</span> ConditionalNode -&gt; traverseConditional(node, tokens)</span><span class="l hl"><i>34</i>            <span class="kw">is</span> FunctionNode -&gt; traverseFunction(node, tokens)</span><span class="l hl"><i>35</i>            <span class="kw">is</span> NilNode -&gt; Unit</span><span class="l hl"><i>36</i>        }</span><span class="l"><i>37</i>    }</span></pre></div>
+  <ul class="points">
+    <li>It does the <strong>reverse</strong> of the parser: it flattens a node back into a list of tokens. Only the linter uses it (<span class="ref">Linter.kt:33</span>), so lint rules can be simple filters over tokens.</li>
+    <li><strong>Lazy</strong> (:9): <code>Sequence&lt;ASTNode&gt;</code> in, <code>Sequence&lt;List&lt;Token&gt;&gt;</code> out, one statement at a time, so linting stays streaming.</li>
+    <li><strong>The exhaustive <code>when</code></strong> (:26–36) has no <code>else</code>. If a <code>WhileNode</code> is added, this line stops compiling until it's handled.</li>
+    <li>It emits only what rules need: identifiers, literals, operators, function names, <code>if</code>/<code>else</code>. Keywords, types and punctuation are dropped. The tokens it creates use the node's position as both start and end (:27, :64), since they exist for checking rules, not for reporting ranges.</li>
+  </ul>
+
+  <h3>PrintScriptException.kt <span class="path">diagnostics/PrintScriptException.kt</span></h3>
+  <div class="code"><pre><span class="l"><i>14</i><span class="kw">abstract</span> <span class="kw">class</span> PrintScriptException(</span><span class="l"><i>15</i>    message: String,</span><span class="l hl"><i>16</i>    <span class="kw">val</span> startPosition: TokenPosition? = <span class="kw">null</span>,</span><span class="l hl"><i>17</i>    <span class="kw">val</span> endPosition: TokenPosition? = <span class="kw">null</span>,</span><span class="l"><i>18</i>) : RuntimeException(message) {</span><span class="l"><i>19</i><span class="cm">    /** Mensaje con la ubicación en coordenadas 1-based, para mostrar al usuario. */</span></span><span class="l hl"><i>20</i>    <span class="kw">fun</span> describe(): String {</span><span class="l hl"><i>21</i>        <span class="kw">val</span> text = message ?: <span class="st">&quot;&quot;</span></span><span class="l hl"><i>22</i>        <span class="kw">val</span> location = locationText() ?: <span class="kw">return</span> text</span><span class="l hl"><i>23</i>        <span class="kw">return</span> <span class="st">&quot;$text ($location)&quot;</span></span><span class="l hl"><i>24</i>    }</span><span class="l"><i>25</i></span><span class="l"><i>26</i>    <span class="kw">private</span> <span class="kw">fun</span> locationText(): String? {</span><span class="l"><i>27</i>        <span class="kw">val</span> start = startPosition ?: <span class="kw">return</span> <span class="kw">null</span></span><span class="l"><i>28</i>        <span class="kw">val</span> end = endPosition ?: start</span><span class="l hl"><i>29</i>        <span class="kw">if</span> (start == end) <span class="kw">return</span> <span class="st">&quot;línea ${start.row + 1}, columna ${start.column + 1}&quot;</span></span><span class="l hl"><i>30</i>        <span class="kw">return</span> <span class="st">&quot;desde línea ${start.row + 1}, columna ${start.column + 1} &quot;</span> +</span><span class="l hl"><i>31</i>            <span class="st">&quot;hasta línea ${end.row + 1}, columna ${end.column + 1}&quot;</span></span><span class="l"><i>32</i>    }</span><span class="l"><i>33</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong><code>abstract</code></strong>: you always throw a specific stage's error, <code>LexerException</code>, <code>ParserException</code> or <code>InterpreterException</code>, each a 5-line subclass in its own module. Catching the base class catches all three.</li>
+    <li><strong>Position as data, not text</strong> (:16–17). <code>message</code> stays clean for tests, and each front end decides how to show the location.</li>
+    <li><strong><code>describe()</code></strong> (:20) is the single place that converts to 1-based coordinates. It prints one point when start equals end (:29) and a <em>"desde … hasta …"</em> range otherwise (:30–31). A missing end falls back to the start (:28), and no position at all returns just the message (:22).</li>
+    <li>What the user sees: <code>Error: Const declarations are not allowed in version 1.0 (desde línea 1, columna 1 hasta línea 1, columna 6)</code>.</li>
+  </ul>
+</section>
+
+<section id="nodes">
+  <h2>Node catalogue</h2>
+  <p class="sub">For each node: the source that produces it, which factory builds it, which position it stores, and which evaluator runs it. This is the bridge to the next two study sheets.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Node</th><th>Source example</th><th>Built by</th><th>Position stored</th><th>Run by</th></tr></thead>
+    <tbody>
+      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">OperationFactory.kt:67</span> and others</td><td>the token</td><td>LiteralEvaluator</td></tr>
+      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">OperationFactory.kt:45</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
+      <tr><td class="t">PrintNode</td><td><code>println(x)</code></td><td><span class="ref">PrintlnFactory.kt:29</span></td><td><code>println</code></td><td>PrintEvaluator</td></tr>
+      <tr><td class="t">DeclarationNode</td><td><code>let c: number = a / b</code></td><td><span class="ref">DeclarationFactory.kt:36</span></td><td>the identifier</td><td>DeclarationEvaluator</td></tr>
+      <tr><td class="t">AssignationNode</td><td><code>a = a / b</code></td><td><span class="ref">AssignationFactory.kt:41</span></td><td>the <code>=</code></td><td>AssignmentEvaluator</td></tr>
+      <tr><td class="t">BlockNode</td><td><code>{ println(x); }</code></td><td><span class="ref">ConditionalFactory.kt:70</span></td><td>first token inside</td><td>BlockEvaluator</td></tr>
+      <tr><td class="t">ConditionalNode</td><td><code>if (b) { … } else { … }</code></td><td><span class="ref">ConditionalFactory.kt:23</span></td><td>the condition</td><td>ConditionalEvaluator</td></tr>
+      <tr><td class="t">FunctionNode</td><td><code>readInput("n?")</code></td><td><span class="ref">FunctionFactory.kt:18</span></td><td>the function name</td><td>FunctionEvaluator</td></tr>
+      <tr><td class="t">NilNode</td><td><code>let x: number;</code> · no <code>else</code></td><td><span class="ref">DeclarationFactory.kt:26</span> <span class="ref">ConditionalFactory.kt:86</span></td><td>fixed (0, 0)</td><td>NilEvaluator → <code>null</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>The position each node stores is a choice about <em>where errors point</em>. A declaration points at its name (<span class="ref">DeclarationFactory.kt:43</span>), so <em>"La variable 'x' ya ha sido declarada"</em> underlines <code>x</code> rather than <code>let</code>. A binary node points at its operator, so <em>"Division by zero"</em> lands on the <code>/</code>.</p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted, because graders ask "why not the alternative?"</p>
+
+  <div class="decision">
+    <h4>A shared types module, exposed with <code>api</code> instead of <code>implementation</code></h4>
+    <p>Our public signatures mention these types, for example <code>Parser.execute(tokens: Sequence&lt;Token&gt;): Sequence&lt;ASTNode&gt;</code> (<span class="ref">Parser.kt:21</span>). Anyone calling the parser needs <code>Token</code> and <code>ASTNode</code> on their compile classpath, and <code>api</code> passes them along automatically. Without it, every consumer would have to declare <code>commons</code> again just to call the parser.</p>
+    <p class="cost"><b>Cost</b>Every module recompiles when <code>commons</code> changes, which is acceptable because it changes only when the language itself does.</p>
+  </div>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">plugins</span> {</span><span class="l"><i>2</i>    id(<span class="st">&quot;printscript.kotlin-library-conventions&quot;</span>)</span><span class="l"><i>3</i>}</span><span class="l"><i>4</i></span><span class="l"><i>5</i><span class="kw">dependencies</span> {</span><span class="l hl"><i>6</i>    api(project(<span class="st">&quot;:commons&quot;</span>))</span><span class="l"><i>7</i>    implementation(project(<span class="st">&quot;:lexer&quot;</span>))</span><span class="l"><i>8</i>    implementation(<span class="st">&quot;org.yaml:snakeyaml:2.0&quot;</span>)</span><span class="l"><i>9</i>}</span></pre></div>
+
+  <div class="decision">
+    <h4>A sealed AST</h4>
+    <p>The language is meant to grow. With a sealed class, adding a construct produces compile errors in every exhaustive <code>when</code> that must handle it, instead of silently doing nothing.</p>
+    <p class="cost"><b>Cost</b>All nodes must live in <code>commons</code>, so no module can define its own node types. For a language with one official AST, that's the point.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Immutable tokens that carry a start and an end position</h4>
+    <p>The required error format needs both ends of a range, and immutability makes tokens safe to compare, store and share between stages.</p>
+    <p class="cost"><b>Cost</b>Two more objects per token. At the TCK's 7 MB heap that's fine, because tokens are discarded statement by statement.</p>
+  </div>
+
+  <div class="decision">
+    <h4>One unchecked base exception with the position as data</h4>
+    <p>Errors surface <em>inside</em> lazy sequences (the lexer throws while the interpreter is pulling nodes), and a checked exception couldn't be declared through <code>Sequence.map</code> lambdas; Kotlin has no checked exceptions anyway. One base type means one <code>catch</code> per front end, which is the Liskov substitution principle in practice.</p>
+    <p class="cost"><b>Cost</b>Only the first error is reported, and the interpreter's errors have a start position but no end, because nodes store a single position (<span class="ref">InterpreterException.kt:9–11</span>).</p>
+  </div>
+
+  <div class="decision">
+    <h4>A null object instead of <code>ASTNode?</code></h4>
+    <p><code>NilNode</code> means "nothing here" without nullable fields spreading through the parser and interpreter. It even has its own evaluator (<span class="ref">NilEvaluator.kt:13</span>), so "no value" goes through the same dispatch as everything else.</p>
+    <p class="cost"><b>Cost</b><code>ConditionalNode.elseBlock</code> is still declared nullable (<span class="ref">ASTNode.kt:54</span>), even though the factory always supplies <code>NilNode</code>, so there are two ways to say "no else". It's harmless, but it's a fair thing to tidy.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Why does <code>Token</code> use <code>getType()</code> while <code>value</code> is a property?</summary>
+      <p>It's a style inconsistency with no effect on behaviour. A Kotlin <code>val type</code> compiles to the same <code>getType()</code> for Java callers like the TCK. Owning it is better than inventing a reason.</p></details>
+    <details><summary>If <code>declType</code> is always KEYWORD, why store it?</summary>
+      <p>The node mirrors the token's (type, value) pair, and only the value is used: <code>declValue</code> is <code>"let"</code> or <code>"const"</code>, which the interpreter reads to block reassigning a <code>const</code> (<span class="ref">DeclarationEvaluator.kt:33</span>). The same goes for <code>AssignationNode.valType</code>. Removing those fields would be a safe simplification.</p></details>
+    <details><summary>Why are positions nullable in the exception?</summary>
+      <p>Some errors have no token at hand. An empty file fails with "No valid code" (<span class="ref">StatementSplitter.kt:97</span>), and there's no position to give. <code>describe()</code> handles that case (:22).</p></details>
+    <details><summary>Why is <code>Tokenizer</code> in <code>commons</code> if only the linter uses it?</summary>
+      <p>It depends only on <code>commons</code> types, so any future tool that needs a flat view of the AST could reuse it without depending on the linter. Saying it could equally live in <code>linter</code> is a fine answer; the choice was reuse over locality.</p></details>
+    <details><summary>Why doesn't <code>commons</code> contain the lexer's token rules?</summary>
+      <p>What a token <em>is</em> is shared; how to <em>recognise</em> one is lexer behaviour and changes per version (<span class="ref">TokenMapper.kt:74</span>). Keeping behaviour out is what lets the parser depend on <code>commons</code> without depending on the lexer.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Tick the ones you could explain to a grader. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">Name the nine node types. Which one means "no value"?</label>
+      <details><summary>Answer</summary><p>Literal, Binary, Print, Declaration, Assignation, Block, Conditional, Function, and Nil. <code>NilNode</code> is the null object: it's a <code>data object</code> with position (0, 0), and it evaluates to <code>null</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2">What two positions does a <code>Token</code> carry, and why both?</label>
+      <details><summary>Answer</summary><p><code>initialPosition</code> and <code>finalPosition</code>, 0-based. The assignment requires errors to report both the start and end row and column, and <code>getFinalPosition()</code> supplies the end.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">You add a <code>WhileNode</code>. What does <code>sealed</code> do for you?</label>
+      <details><summary>Answer</summary><p>Every exhaustive <code>when</code> over <code>ASTNode</code> fails to compile until it handles the new type. The first one to break is <span class="ref">Tokenizer.kt:26</span>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">Why <code>api(project(":commons"))</code> and not <code>implementation</code>?</label>
+      <details><summary>Answer</summary><p>Public signatures such as <code>Parser.execute(Sequence&lt;Token&gt;)</code> expose <code>commons</code> types, so consumers need them on their compile classpath. <code>api</code> passes the dependency on to them.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">Which position does a DeclarationNode store? An AssignationNode? A BinaryNode?</label>
+      <details><summary>Answer</summary><p>Declaration: the identifier. Assignation: the <code>=</code> token. Binary: the operator. Each choice decides where errors about that node point.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">Start (0,4), end (0,5). What does <code>describe()</code> add to the message?</label>
+      <details><summary>Answer</summary><p><code>(desde línea 1, columna 5 hasta línea 1, columna 6)</code>. It adds 1 to each coordinate, and since start ≠ end it prints a range.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">Who uses <code>Tokenizer</code>, and what does it leave out?</label>
+      <details><summary>Answer</summary><p>Only the linter. It keeps identifiers, literals, operators, function names and <code>if</code>/<code>else</code>, and drops keywords, types and punctuation, which is what lets lint rules be simple token filters.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">Why is <code>PrintScriptException</code> unchecked, and why aren't positions in the message?</label>
+      <details><summary>Answer</summary><p>Errors are thrown inside lazy sequence lambdas, where checked exceptions can't be declared (and Kotlin has none). Positions are fields so <code>message</code> stays clean for tests and each front end can format the location its own way.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">26 tests in 4 files. Mentioning a specific one is a good answer to "how do you know?".</p>
+  <ul class="points tests">
+    <li><strong>TokenTests (4):</strong> construction, both start and end positions readable, equals/hashCode, toString.</li>
+    <li><strong>ASTNodeTests (10):</strong> one test per node type, plus a conditional with and without an else.</li>
+    <li><strong>TokenizerTests (6):</strong> flattening a literal, print, declaration, conditional, binary and function node.</li>
+    <li><strong>PrintScriptExceptionTest (6):</strong> the message stays clean, positions are exposed, and a 1-based range, a single point, a missing end and no position each format correctly.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-commons-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+})();
+</script>

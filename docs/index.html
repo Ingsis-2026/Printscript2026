@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrintScript · Documentación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 80px}
+.page{max-width:820px;margin-inline:auto}
+header{padding-block:48px 8px;border-bottom:1px solid var(--rule)}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0 0 14px}
+.lede{font-size:18px;color:var(--muted);margin:0 0 24px;max-width:62ch}
+h2{font-family:var(--display);font-weight:700;font-size:24px;margin:40px 0 6px}
+p{margin:0 0 14px;max-width:68ch}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+ul.docs{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+ul.docs li{background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+ul.docs a{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 18px;padding:14px 18px;text-decoration:none;color:var(--ink);align-items:baseline}
+ul.docs a:hover{border-color:var(--accent)}
+ul.docs .name{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--accent)}
+ul.docs .what{font-size:15px;color:var(--muted)}
+@media (max-width:560px){ul.docs a{grid-template-columns:minmax(0,1fr)}}
+.first a{border-left:3px solid var(--accent);border-radius:6px}
+.note{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 18px;margin-top:22px;font-size:15px;color:var(--muted)}
+.note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <p class="eyebrow">Ingeniería de Sistemas 2026 · Universidad Austral</p>
+  <h1>PrintScript · Documentación</h1>
+  <p class="lede">Cómo funciona el sistema, módulo por módulo, con las decisiones de diseño detrás de cada parte. Son páginas HTML: se abren con doble clic, sin conexión ni instalación.</p>
+</header>
+
+<h2>Panorama</h2>
+<ul class="docs">
+  <li class="first"><a href="overview.html"><span class="name">overview</span><span class="what">Diagrama de componentes, el flujo de datos, el Ejemplo 2 recorrido de punta a punta y las diez decisiones de diseño con su costo.</span></a></li>
+</ul>
+
+<h2>Una ficha por módulo</h2>
+<p>En orden del pipeline. Cada una trae un resumen de 30 segundos, el código comentado con números de línea, las decisiones a defender, preguntas frecuentes y un autotest.</p>
+<ul class="docs">
+  <li><a href="commons.html"><span class="name">commons</span><span class="what">Token, AST y el tipo de error que viaja con su ubicación.</span></a></li>
+  <li><a href="lexer.html"><span class="name">lexer</span><span class="what">De texto a tokens: la expresión regular combinada, 1.0 vs 1.1 y la pereza medida.</span></a></li>
+  <li><a href="parser.html"><span class="name">parser</span><span class="what">El separador de sentencias y la cadena de factories, con los árboles que producen.</span></a></li>
+  <li><a href="interpreter.html"><span class="name">interpreter</span><span class="what">El ciclo de evaluadores, con la traza real del Ejemplo 2 y el tipado de readInput.</span></a></li>
+  <li><a href="formatter.html"><span class="name">formatter</span><span class="what">Reescribir los huecos entre tokens, con un antes y después por cada regla.</span></a></li>
+  <li><a href="linter.html"><span class="name">linter</span><span class="what">De la configuración a las reglas, qué ven las reglas y cómo se reportan las violaciones.</span></a></li>
+  <li><a href="cli.html"><span class="name">cli</span><span class="what">Las cuatro operaciones y un runbook de demo con la salida real de cada comando.</span></a></li>
+  <li><a href="github.html"><span class="name">github</span><span class="what">CI, CD y cómo se publica una versión nueva de los paquetes.</span></a></li>
+</ul>
+
+<div class="note">
+  <p style="margin:0 0 8px"><b>Cómo leerlas.</b> Las fichas están enlazadas entre sí: la barra de arriba de cada una lleva a las demás y a <code>overview</code>. Para empezar de cero, el orden es el del pipeline: <code>commons</code> → <code>lexer</code> → <code>parser</code> → <code>interpreter</code>.</p>
+  <p style="margin:0"><b>Sobre el contenido.</b> Están en inglés. Las salidas, trazas y mediciones que aparecen se obtuvieron ejecutando el código de la versión 1.0.0, y las referencias <code>Archivo.kt:línea</code> corresponden a esa versión.</p>
+</div>
+</div>
+</body>
+</html>

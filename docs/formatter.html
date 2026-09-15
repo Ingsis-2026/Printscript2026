@@ -1,0 +1,535 @@
+<title>PrintScript formatter Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:600px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .chip{fill:var(--surface);stroke:var(--ink);stroke-width:1.1}
+svg .tk{font-family:var(--mono);font-size:14px;fill:var(--ink)}
+svg .gap{font-family:var(--mono);font-size:14px;fill:var(--muted)}
+svg .gap.chg{fill:var(--accent);font-weight:600}
+svg .slot.chg{fill:var(--accent-soft)}
+svg .slot{fill:none}
+svg .num{fill:var(--ground);stroke:var(--muted)}
+svg .numt{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+svg .row{font-family:var(--mono);font-size:11px;fill:var(--muted);letter-spacing:.06em}
+.cases{display:grid;gap:14px;margin:12px 0 18px}
+.case{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.case h4{margin:0;padding:8px 14px;font-family:var(--mono);font-size:12.5px;font-weight:600;border-bottom:1px solid var(--rule);background:var(--ground)}
+.case .io{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.case .io div{min-width:0}
+.case .io div+div{border-left:1px solid var(--rule)}
+.case .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 14px 0}
+.case pre{margin:0;padding:4px 14px 10px;font-family:var(--mono);font-size:12.5px;line-height:1.55;overflow-x:auto}
+.case pre .sp{color:var(--muted);opacity:.55}
+.case pre .ch{display:block;background:var(--hl);box-shadow:inset 3px 0 0 var(--accent);margin-inline:-14px;padding-inline:11px 14px}
+.case pre .ln{display:block}
+.case pre .blank{display:block;min-height:1.55em}
+.case p{margin:0;padding:8px 14px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted)}
+@media (max-width:640px){.case .io{grid-template-columns:minmax(0,1fr)}.case .io div+div{border-left:0;border-top:1px solid var(--rule)}}
+.measure{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.measure div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.measure .big{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;color:var(--accent);font-variant-numeric:tabular-nums}
+.measure p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:560px){.measure{grid-template-columns:minmax(0,1fr)}}
+td.mono{font-family:var(--mono);font-size:13px}
+td .c{color:var(--muted)}
+.flow{list-style:none;margin:10px 0 16px;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 4px;font-family:var(--mono);font-size:12.5px}
+.flow li{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:4px 9px}
+.flow li.arrow{background:none;border:0;padding:0 2px;color:var(--muted)}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <a href="lexer.html">lexer</a>
+  <a href="parser.html">parser</a>
+  <a href="interpreter.html">interpreter</a>
+  <span class="cur" aria-current="page">formatter</span>
+  <a href="linter.html">linter</a><a href="cli.html">cli</a>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 5 of 8</p>
+  <h1><code>formatter</code></h1>
+  <p class="lede">Rewrites the gaps between tokens according to a rules file and leaves everything no active rule governs exactly as written. It uses the lexer, never the parser, and it emits the result line by line.</p>
+  <ul class="meta">
+    <li><b>8</b>files</li>
+    <li><b>427</b>lines</li>
+    <li><b>33</b>tests</li>
+    <li><b>3</b>dependencies: commons, lexer, snakeyaml</li>
+    <li><b>~25</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#idea">Gaps, not trees</a></li>
+    <li><a href="#rules">Reading the rules</a></li>
+    <li><a href="#loop">The main loop</a></li>
+    <li><a href="#decide">Deciding a gap</a></li>
+    <li><a href="#blocks">Braces &amp; indentation</a></li>
+    <li><a href="#gallery">Every rule, before/after</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"The formatter never builds a tree. It lexes the source and, for <strong>every gap between two tokens</strong>, decides what should go there. If an active rule covers that gap, the rule decides: spaces around <code>=</code>, a line break after a <code>println</code>, the indent inside an <code>if</code>. If no rule does, the gap is copied from the source unchanged. That's what the TCK expects: turn on one rule and only that rule's gaps change. The config is YAML or JSON, read by one parser, and a missing rule means 'don't touch'. Output comes out one line at a time, so large files work too."</p>
+  </div>
+</section>
+
+<section id="where">
+  <h2>Where it sits</h2>
+  <p class="sub">Two callers, with the same builder and different entry points.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Caller</th><th>Builds with</th><th>Formats with</th></tr></thead>
+    <tbody>
+      <tr><td>CLI</td><td><span class="ref">CommandFactory.kt:68</span> <code>build(configPath, version)</code></td><td><code>formatLines</code>, written line by line to stdout or a file (<span class="ref">FormattingCommand.kt:21</span>)</td></tr>
+      <tr><td>TCK</td><td><span class="ref">FormatterAdapter.java:24</span> <code>build(configStream, version)</code></td><td><code>format(String)</code>, then written to the TCK's <code>Writer</code> (:25)</td></tr>
+    </tbody>
+  </table></div>
+  <ol class="flow" aria-label="Flow inside the module">
+    <li>rules file</li><li class="arrow">→</li><li>RulesReader</li><li class="arrow">→</li><li>FormattingRules</li><li class="arrow">→</li><li>FormatterBuilderPS</li><li class="arrow">→</li><li>TokenFormatter</li><li class="arrow">←</li><li>SourceScanner + Lexer</li><li class="arrow">→</li><li>lines</li>
+  </ol>
+</section>
+
+<section id="idea">
+  <h2>Gaps, not trees</h2>
+  <p class="sub">The one idea the whole module is built on.</p>
+  <p>The TCK's formatter cases enable one rule per config file and expect the rest of the source untouched. Two declarations can end up with <em>different</em> spacing before <code>:</code> when only the "space after colon" rule is on. A tree has already thrown away how the source was spaced, so reprinting from it would normalise everything. Token positions still hold that information (<span class="ref">TokenFormatter.kt:6–15</span>).</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 681 136" role="img" aria-label="The line let, two spaces, x colon number equals a plus b semicolon, shown as nine tokens with eight numbered gaps. With the after-colon, around-equals and around-operators rules on, gaps 3 to 7 become one space each; gaps 1, 2 and 8 are copied from the source unchanged, including the two spaces after let.">
+      <text class="row" x="10" y="44">IN</text><text class="row" x="10" y="114">OUT</text>
+      <rect class="chip" x="60.0" y="24" width="41.8" height="30" rx="4"/>
+      <text class="tk" x="80.9" y="44" text-anchor="middle">let</text>
+      <rect class="chip" x="60.0" y="94" width="41.8" height="30" rx="4"/>
+      <text class="tk" x="80.9" y="114" text-anchor="middle">let</text>
+      <text class="gap" x="121.8" y="44" text-anchor="middle">··</text>
+      <rect class="slot" x="104.8" y="94" width="34" height="30" rx="3"/>
+      <text class="gap" x="121.8" y="114" text-anchor="middle">··</text>
+      <circle class="num" cx="121.8" cy="74" r="9"/><text class="numt" x="121.8" y="77.5" text-anchor="middle">1</text>
+      <rect class="chip" x="141.8" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="154.1" y="44" text-anchor="middle">x</text>
+      <rect class="chip" x="141.8" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="154.1" y="114" text-anchor="middle">x</text>
+      <text class="gap" x="186.4" y="44" text-anchor="middle">∅</text>
+      <rect class="slot" x="169.4" y="94" width="34" height="30" rx="3"/>
+      <text class="gap" x="186.4" y="114" text-anchor="middle">∅</text>
+      <circle class="num" cx="186.4" cy="74" r="9"/><text class="numt" x="186.4" y="77.5" text-anchor="middle">2</text>
+      <rect class="chip" x="206.4" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="218.7" y="44" text-anchor="middle">:</text>
+      <rect class="chip" x="206.4" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="218.7" y="114" text-anchor="middle">:</text>
+      <text class="gap" x="251.0" y="44" text-anchor="middle">∅</text>
+      <rect class="slot chg" x="234.0" y="94" width="34" height="30" rx="3"/>
+      <text class="gap chg" x="251.0" y="114" text-anchor="middle">·</text>
+      <circle class="num" cx="251.0" cy="74" r="9"/><text class="numt" x="251.0" y="77.5" text-anchor="middle">3</text>
+      <rect class="chip" x="271.0" y="24" width="67.6" height="30" rx="4"/>
+      <text class="tk" x="304.8" y="44" text-anchor="middle">number</text>
+      <rect class="chip" x="271.0" y="94" width="67.6" height="30" rx="4"/>
+      <text class="tk" x="304.8" y="114" text-anchor="middle">number</text>
+      <text class="gap" x="358.6" y="44" text-anchor="middle">∅</text>
+      <rect class="slot chg" x="341.6" y="94" width="34" height="30" rx="3"/>
+      <text class="gap chg" x="358.6" y="114" text-anchor="middle">·</text>
+      <circle class="num" cx="358.6" cy="74" r="9"/><text class="numt" x="358.6" y="77.5" text-anchor="middle">4</text>
+      <rect class="chip" x="378.6" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="390.9" y="44" text-anchor="middle">=</text>
+      <rect class="chip" x="378.6" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="390.9" y="114" text-anchor="middle">=</text>
+      <text class="gap" x="423.2" y="44" text-anchor="middle">∅</text>
+      <rect class="slot chg" x="406.2" y="94" width="34" height="30" rx="3"/>
+      <text class="gap chg" x="423.2" y="114" text-anchor="middle">·</text>
+      <circle class="num" cx="423.2" cy="74" r="9"/><text class="numt" x="423.2" y="77.5" text-anchor="middle">5</text>
+      <rect class="chip" x="443.2" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="455.5" y="44" text-anchor="middle">a</text>
+      <rect class="chip" x="443.2" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="455.5" y="114" text-anchor="middle">a</text>
+      <text class="gap" x="487.8" y="44" text-anchor="middle">∅</text>
+      <rect class="slot chg" x="470.8" y="94" width="34" height="30" rx="3"/>
+      <text class="gap chg" x="487.8" y="114" text-anchor="middle">·</text>
+      <circle class="num" cx="487.8" cy="74" r="9"/><text class="numt" x="487.8" y="77.5" text-anchor="middle">6</text>
+      <rect class="chip" x="507.8" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="520.1" y="44" text-anchor="middle">+</text>
+      <rect class="chip" x="507.8" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="520.1" y="114" text-anchor="middle">+</text>
+      <text class="gap" x="552.4" y="44" text-anchor="middle">∅</text>
+      <rect class="slot chg" x="535.4" y="94" width="34" height="30" rx="3"/>
+      <text class="gap chg" x="552.4" y="114" text-anchor="middle">·</text>
+      <circle class="num" cx="552.4" cy="74" r="9"/><text class="numt" x="552.4" y="77.5" text-anchor="middle">7</text>
+      <rect class="chip" x="572.4" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="584.7" y="44" text-anchor="middle">b</text>
+      <rect class="chip" x="572.4" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="584.7" y="114" text-anchor="middle">b</text>
+      <text class="gap" x="617.0" y="44" text-anchor="middle">∅</text>
+      <rect class="slot" x="600.0" y="94" width="34" height="30" rx="3"/>
+      <text class="gap" x="617.0" y="114" text-anchor="middle">∅</text>
+      <circle class="num" cx="617.0" cy="74" r="9"/><text class="numt" x="617.0" y="77.5" text-anchor="middle">8</text>
+      <rect class="chip" x="637.0" y="24" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="649.3" y="44" text-anchor="middle">;</text>
+      <rect class="chip" x="637.0" y="94" width="24.6" height="30" rx="4"/>
+      <text class="tk" x="649.3" y="114" text-anchor="middle">;</text>
+    </svg>
+    </div>
+    <figcaption><code>let  x:number=a+b;</code> with three rules on: space after colon, spaces around <code>=</code>, spaces around operators. Real output: <code>let  x: number = a + b;</code>. The double space after <code>let</code> survives because no active rule governs that gap. <code>·</code> is a space and <code>∅</code> is an empty gap.</figcaption>
+  </figure>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Gap</th><th>Between</th><th>Decided by</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">1</td><td><code>let</code> · <code>x</code></td><td>no rule: copied from source <span class="ref">:150</span></td><td class="mono">··</td></tr>
+      <tr><td class="mono">2</td><td><code>x</code> · <code>:</code></td><td>no rule (before-colon is off) <span class="ref">:150</span></td><td class="mono">∅</td></tr>
+      <tr><td class="mono">3</td><td><code>:</code> · <code>number</code></td><td>after-colon, inside a declaration <span class="ref">:139</span></td><td class="mono">·</td></tr>
+      <tr><td class="mono">4–5</td><td>either side of <code>=</code></td><td>around-equals <span class="ref">:141–143</span></td><td class="mono">·</td></tr>
+      <tr><td class="mono">6–7</td><td>either side of <code>+</code></td><td>around-operators <span class="ref">:144</span></td><td class="mono">·</td></tr>
+      <tr><td class="mono">8</td><td><code>b</code> · <code>;</code></td><td>no rule <span class="ref">:150</span></td><td class="mono">∅</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="rules">
+  <h2>Reading the rules</h2>
+  <p class="sub">YAML or JSON in, a typed settings object out.</p>
+  <div class="code"><pre><span class="l"><i>15</i><span class="kw">class</span> RulesReader {</span><span class="l"><i>16</i>    <span class="kw">fun</span> read(content: String): FormattingRules {</span><span class="l"><i>17</i>        <span class="kw">if</span> (content.isBlank()) <span class="kw">return</span> FormattingRules()</span><span class="l"><i>18</i></span><span class="l"><i>19</i>        <span class="kw">val</span> parsed =</span><span class="l"><i>20</i>            try {</span><span class="l hl"><i>21</i>                Yaml().load&lt;Any?&gt;(content)</span><span class="l"><i>22</i>            } catch (exception: YAMLException) {</span><span class="l hl"><i>23</i>                throw IllegalArgumentException(<span class="st">&quot;el archivo de reglas no es YAML ni JSON válido: ${exception.message}&quot;</span>)</span><span class="l hl"><i>24</i>            } ?: <span class="kw">return</span> FormattingRules()</span><span class="l"><i>25</i></span><span class="l hl"><i>26</i>        <span class="kw">val</span> values =</span><span class="l hl"><i>27</i>            parsed as? Map&lt;*, *&gt;</span><span class="l hl"><i>28</i>                ?: throw IllegalArgumentException(<span class="st">&quot;el archivo de reglas debe ser un objeto con una regla por clave&quot;</span>)</span><span class="l"><i>29</i></span><span class="l hl"><i>30</i>        <span class="kw">return</span> FormattingRules.from(values.entries.associate { (key, value) -&gt; key.toString() to value })</span><span class="l"><i>31</i>    }</span><span class="l"><i>32</i></span><span class="l"><i>33</i>    <span class="kw">fun</span> read(stream: InputStream): FormattingRules = read(stream.readBytes().decodeToString())</span><span class="l"><i>34</i></span><span class="l"><i>35</i>    <span class="kw">fun</span> readFile(path: String): FormattingRules = read(File(path).readText())</span><span class="l"><i>36</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>One parser for both formats</strong> (:21). JSON is a subset of YAML, so SnakeYAML reads the TCK's JSON and a user's YAML the same way. Checked against the jar: the two formats give <em>equal</em> <code>FormattingRules</code>, and an unknown key is ignored.</li>
+    <li><strong>Two clear configuration errors</strong>: invalid syntax gives <em>"el archivo de reglas no es YAML ni JSON válido: …"</em> (:23), and a list instead of an object gives <em>"el archivo de reglas debe ser un objeto con una regla por clave"</em> (:26–28). Both are <code>IllegalArgumentException</code>s, which the CLI reports as configuration errors (exit code 2).</li>
+    <li><strong>An empty file enables nothing</strong> (:17, :24), and the source comes out unchanged.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>10</i><span class="kw">data</span> <span class="kw">class</span> FormattingRules(</span><span class="l hl"><i>11</i>    <span class="kw">val</span> spaceBeforeColon: Boolean = false,</span><span class="l hl"><i>12</i>    <span class="kw">val</span> spaceAfterColon: Boolean = false,</span><span class="l"><i>13</i><span class="cm">    /** `true` exige espacios alrededor del &quot;=&quot;; `false` los prohíbe; `null` no toca nada. */</span></span><span class="l hl"><i>14</i>    <span class="kw">val</span> spaceAroundEquals: Boolean? = <span class="kw">null</span>,</span><span class="l"><i>15</i>    <span class="kw">val</span> singleSpaceSeparation: Boolean = false,</span><span class="l"><i>16</i>    <span class="kw">val</span> spaceSurroundingOperations: Boolean = false,</span><span class="l"><i>17</i>    <span class="kw">val</span> lineBreakAfterStatement: Boolean = false,</span><span class="l hl"><i>18</i>    <span class="kw">val</span> lineBreaksAfterPrintln: Int? = <span class="kw">null</span>,</span><span class="l"><i>19</i><span class="cm">    /** `true` deja la llave en la línea del &quot;if&quot;; `false` la baja; `null` la deja donde está. */</span></span><span class="l hl"><i>20</i>    <span class="kw">val</span> braceOnSameLine: Boolean? = <span class="kw">null</span>,</span><span class="l hl"><i>21</i>    <span class="kw">val</span> indentInsideIf: Int? = <span class="kw">null</span>,</span><span class="l"><i>22</i>) {</span><span class="l"><i>23</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l hl"><i>24</i>        const <span class="kw">val</span> SPACE_BEFORE_COLON = <span class="st">&quot;enforce-spacing-before-colon-in-declaration&quot;</span></span><span class="l hl"><i>25</i>        const <span class="kw">val</span> SPACE_AFTER_COLON = <span class="st">&quot;enforce-spacing-after-colon-in-declaration&quot;</span></span><span class="l hl"><i>26</i>        const <span class="kw">val</span> SPACE_AROUND_EQUALS = <span class="st">&quot;enforce-spacing-around-equals&quot;</span></span><span class="l hl"><i>27</i>        const <span class="kw">val</span> NO_SPACE_AROUND_EQUALS = <span class="st">&quot;enforce-no-spacing-around-equals&quot;</span></span><span class="l hl"><i>28</i>        const <span class="kw">val</span> SINGLE_SPACE_SEPARATION = <span class="st">&quot;mandatory-single-space-separation&quot;</span></span><span class="l hl"><i>29</i>        const <span class="kw">val</span> SPACE_SURROUNDING_OPERATIONS = <span class="st">&quot;mandatory-space-surrounding-operations&quot;</span></span><span class="l hl"><i>30</i>        const <span class="kw">val</span> LINE_BREAK_AFTER_STATEMENT = <span class="st">&quot;mandatory-line-break-after-statement&quot;</span></span><span class="l hl"><i>31</i>        const <span class="kw">val</span> LINE_BREAKS_AFTER_PRINTLN = <span class="st">&quot;line-breaks-after-println&quot;</span></span><span class="l hl"><i>32</i>        const <span class="kw">val</span> BRACE_SAME_LINE = <span class="st">&quot;if-brace-same-line&quot;</span></span><span class="l hl"><i>33</i>        const <span class="kw">val</span> BRACE_BELOW_LINE = <span class="st">&quot;if-brace-below-line&quot;</span></span><span class="l hl"><i>34</i>        const <span class="kw">val</span> INDENT_INSIDE_IF = <span class="st">&quot;indent-inside-if&quot;</span></span><span class="l"><i>35</i></span><span class="l hl"><i>36</i>        <span class="kw">fun</span> from(values: Map&lt;String, Any?&gt;): FormattingRules =</span><span class="l hl"><i>37</i>            FormattingRules(</span><span class="l hl"><i>38</i>                spaceBeforeColon = values.flag(SPACE_BEFORE_COLON),</span><span class="l hl"><i>39</i>                spaceAfterColon = values.flag(SPACE_AFTER_COLON),</span><span class="l hl"><i>40</i>                spaceAroundEquals = values.equalsSpacing(),</span><span class="l hl"><i>41</i>                singleSpaceSeparation = values.flag(SINGLE_SPACE_SEPARATION),</span><span class="l hl"><i>42</i>                spaceSurroundingOperations = values.flag(SPACE_SURROUNDING_OPERATIONS),</span><span class="l hl"><i>43</i>                lineBreakAfterStatement = values.flag(LINE_BREAK_AFTER_STATEMENT),</span><span class="l hl"><i>44</i>                lineBreaksAfterPrintln = values.count(LINE_BREAKS_AFTER_PRINTLN),</span><span class="l hl"><i>45</i>                braceOnSameLine = values.bracePlacement(),</span><span class="l hl"><i>46</i>                indentInsideIf = values.count(INDENT_INSIDE_IF),</span><span class="l hl"><i>47</i>            )</span><span class="l"><i>48</i></span><span class="l"><i>49</i>        <span class="kw">private</span> <span class="kw">fun</span> Map&lt;String, Any?&gt;.flag(key: String): Boolean = this[key] == true</span><span class="l"><i>50</i></span><span class="l"><i>51</i>        <span class="kw">private</span> <span class="kw">fun</span> Map&lt;String, Any?&gt;.count(key: String): Int? = (this[key] as? Number)?.toInt()</span><span class="l"><i>52</i></span><span class="l"><i>53</i><span class="cm">        /**</span></span><span class="l"><i>54</i><span class="cm">         * Las dos escrituras del espaciado del &quot;=&quot; son reglas distintas en la configuración,</span></span><span class="l"><i>55</i><span class="cm">         * pero acá son el mismo ajuste con dos valores.</span></span><span class="l"><i>56</i><span class="cm">         */</span></span><span class="l hl"><i>57</i>        <span class="kw">private</span> <span class="kw">fun</span> Map&lt;String, Any?&gt;.equalsSpacing(): Boolean? =</span><span class="l hl"><i>58</i>            <span class="kw">when</span> {</span><span class="l hl"><i>59</i>                flag(SPACE_AROUND_EQUALS) -&gt; true</span><span class="l hl"><i>60</i>                flag(NO_SPACE_AROUND_EQUALS) -&gt; false</span><span class="l hl"><i>61</i>                <span class="kw">else</span> -&gt; <span class="kw">null</span></span><span class="l hl"><i>62</i>            }</span><span class="l"><i>63</i></span><span class="l"><i>64</i>        <span class="kw">private</span> <span class="kw">fun</span> Map&lt;String, Any?&gt;.bracePlacement(): Boolean? =</span><span class="l"><i>65</i>            <span class="kw">when</span> {</span><span class="l"><i>66</i>                flag(BRACE_SAME_LINE) -&gt; true</span><span class="l"><i>67</i>                flag(BRACE_BELOW_LINE) -&gt; false</span><span class="l"><i>68</i>                <span class="kw">else</span> -&gt; <span class="kw">null</span></span><span class="l"><i>69</i>            }</span><span class="l"><i>70</i>    }</span><span class="l"><i>71</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Three kinds of setting.</strong> <code>Boolean</code> flags default to <code>false</code> (off). <code>Boolean?</code> is three-state: <code>true</code> enforces, <code>false</code> enforces the opposite, <code>null</code> leaves it alone. <code>Int?</code> is a count or <code>null</code>.</li>
+    <li><strong>The TCK's rule names are constants</strong> (:24–34), so the file's vocabulary lives in one place.</li>
+    <li><strong>Two config keys, one field</strong> (:57–69): <code>enforce-spacing-around-equals</code> and <code>enforce-no-spacing-around-equals</code> both set <code>spaceAroundEquals</code>, so they can't contradict each other. If both are present, the first check (spacing) wins. Braces work the same way.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>9</i>open <span class="kw">class</span> FormatterBuilderPS : FormatterBuilder {</span><span class="l"><i>10</i>    <span class="kw">override</span> <span class="kw">fun</span> build(</span><span class="l"><i>11</i>        rulesPath: String,</span><span class="l"><i>12</i>        version: String,</span><span class="l hl"><i>13</i>    ): Formatter = build(RulesReader().readFile(rulesPath), version)</span><span class="l"><i>14</i></span><span class="l"><i>15</i><span class="cm">    /** Variante para quien ya tiene la configuración en un flujo y no en un archivo. */</span></span><span class="l"><i>16</i>    <span class="kw">fun</span> build(</span><span class="l"><i>17</i>        config: InputStream,</span><span class="l"><i>18</i>        version: String,</span><span class="l hl"><i>19</i>    ): Formatter = build(RulesReader().read(config), version)</span><span class="l"><i>20</i></span><span class="l"><i>21</i>    <span class="kw">fun</span> build(</span><span class="l"><i>22</i>        rules: FormattingRules,</span><span class="l"><i>23</i>        version: String,</span><span class="l hl"><i>24</i>    ): Formatter = TokenFormatter(rules, Lexer(TokenMapper(version)))</span><span class="l"><i>25</i>}</span></pre></div>
+  <p>Three ways to build: from a path (CLI), from a stream (TCK), or from rules already in memory (tests). They all end in <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code> (:24). The formatter gets a lexer for the chosen version, which is how 1.1 source with braces becomes formattable.</p>
+</section>
+
+<section id="loop">
+  <h2>The main loop</h2>
+  <p class="sub">Recover the original text of every token, then walk the tokens in pairs.</p>
+  <div class="code"><pre><span class="l"><i>14</i><span class="kw">internal</span> <span class="kw">data</span> <span class="kw">class</span> SourceToken(</span><span class="l"><i>15</i>    <span class="kw">private</span> <span class="kw">val</span> token: Token,</span><span class="l hl"><i>16</i>    <span class="kw">val</span> text: String,</span><span class="l"><i>17</i>) {</span><span class="l"><i>18</i>    <span class="kw">val</span> value: String get() = token.value</span><span class="l"><i>19</i>    <span class="kw">val</span> type: TokenType get() = token.getType()</span><span class="l"><i>20</i>    <span class="kw">val</span> startRow: Int get() = token.getPosition().row</span><span class="l"><i>21</i>    <span class="kw">val</span> startColumn: Int get() = token.getPosition().column</span><span class="l"><i>22</i>    <span class="kw">val</span> endRow: Int get() = token.getFinalPosition().row</span><span class="l"><i>23</i>    <span class="kw">val</span> endColumn: Int get() = token.getFinalPosition().column</span><span class="l"><i>24</i></span><span class="l"><i>25</i>    <span class="kw">val</span> isColon: Boolean get() = type == TokenType.DECLARATOR</span><span class="l"><i>26</i>    <span class="kw">val</span> isAssignation: Boolean get() = type == TokenType.ASSIGNATION</span><span class="l"><i>27</i>    <span class="kw">val</span> isOperator: Boolean get() = type == TokenType.OPERATOR</span><span class="l"><i>28</i>    <span class="kw">val</span> isSemicolon: Boolean get() = value == <span class="st">&quot;;&quot;</span></span><span class="l"><i>29</i>    <span class="kw">val</span> isOpeningBrace: Boolean get() = value == <span class="st">&quot;{&quot;</span></span><span class="l"><i>30</i>    <span class="kw">val</span> isClosingBrace: Boolean get() = value == <span class="st">&quot;}&quot;</span></span><span class="l"><i>31</i>}</span><span class="l"><i>32</i></span><span class="l"><i>33</i><span class="cm">/**</span></span><span class="l"><i>34</i><span class="cm"> * Empareja cada token con su texto original sin dejar de ser perezoso.</span></span><span class="l"><i>35</i><span class="cm"> *</span></span><span class="l"><i>36</i><span class="cm"> * El Lexer consume una línea, emite todos sus tokens y recién entonces pide la siguiente, así</span></span><span class="l"><i>37</i><span class="cm"> * que mientras se entregan los tokens de una fila la última línea leída es justamente la de</span></span><span class="l"><i>38</i><span class="cm"> * esos tokens. Alcanza con recordar esa única línea: no se retiene el fuente.</span></span><span class="l"><i>39</i><span class="cm"> */</span></span><span class="l"><i>40</i><span class="kw">internal</span> <span class="kw">class</span> SourceScanner(</span><span class="l"><i>41</i>    <span class="kw">private</span> <span class="kw">val</span> lexer: Lexer,</span><span class="l"><i>42</i>) {</span><span class="l"><i>43</i>    <span class="kw">fun</span> scan(lines: Sequence&lt;String&gt;): Sequence&lt;SourceToken&gt; =</span><span class="l"><i>44</i>        sequence {</span><span class="l hl"><i>45</i>            <span class="kw">var</span> currentLine = <span class="st">&quot;&quot;</span></span><span class="l hl"><i>46</i>            <span class="kw">val</span> recorded = lines.map { line -&gt; line.also { currentLine = it } }</span><span class="l"><i>47</i></span><span class="l hl"><i>48</i>            <span class="kw">for</span> (token <span class="kw">in</span> lexer.convertToTokens(recorded)) {</span><span class="l"><i>49</i>                <span class="kw">val</span> start = token.getPosition().column</span><span class="l hl"><i>50</i>                <span class="kw">val</span> end = token.getFinalPosition().column</span><span class="l hl"><i>51</i>                yield(SourceToken(token, currentLine.substring(start, end)))</span><span class="l"><i>52</i>            }</span><span class="l"><i>53</i>        }</span><span class="l"><i>54</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Why keep <code>text</code></strong> (:16)? The lexer strips the quotes from string values, but the formatter has to write <code>"hi"</code> back exactly as it was.</li>
+    <li><strong>Only one line is remembered</strong> (:45–46). The lexer emits all tokens of a line before reading the next one, so the most recently read line is always the line the current tokens came from. <code>substring(start, end)</code> (:51) cuts each token's original text out of it.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>25</i>    <span class="kw">override</span> <span class="kw">fun</span> format(input: String): String {</span><span class="l hl"><i>26</i>        <span class="kw">if</span> (input.isBlank()) <span class="kw">return</span> <span class="st">&quot;&quot;</span></span><span class="l hl"><i>27</i>        <span class="kw">return</span> formatLines(input.lineSequence()).joinToString(<span class="st">&quot;\n&quot;</span>)</span><span class="l"><i>28</i>    }</span><span class="l"><i>29</i></span><span class="l"><i>30</i>    <span class="kw">override</span> <span class="kw">fun</span> formatLines(lines: Sequence&lt;String&gt;): Sequence&lt;String&gt; =</span><span class="l"><i>31</i>        sequence {</span><span class="l hl"><i>32</i>            <span class="kw">val</span> state = FormattingState()</span><span class="l hl"><i>33</i>            <span class="kw">val</span> line = StringBuilder()</span><span class="l hl"><i>34</i>            <span class="kw">var</span> previous: SourceToken? = <span class="kw">null</span></span><span class="l"><i>35</i></span><span class="l"><i>36</i>            <span class="kw">for</span> (current <span class="kw">in</span> scanner.scan(lines)) {</span><span class="l hl"><i>37</i>                <span class="kw">val</span> separator = previous?.let { separatorBetween(it, current, state) } ?: leadingGap(current)</span><span class="l"><i>38</i></span><span class="l"><i>39</i><span class="cm">                // Un separador con saltos cierra la línea en curso tantas veces como saltos tenga.</span></span><span class="l hl"><i>40</i>                separator.split(<span class="st">&quot;\n&quot;</span>).forEachIndexed { index, piece -&gt;</span><span class="l hl"><i>41</i>                    <span class="kw">if</span> (index &gt; 0) {</span><span class="l hl"><i>42</i>                        yield(line.toString())</span><span class="l hl"><i>43</i>                        line.clear()</span><span class="l hl"><i>44</i>                    }</span><span class="l hl"><i>45</i>                    line.append(piece)</span><span class="l hl"><i>46</i>                }</span><span class="l"><i>47</i></span><span class="l hl"><i>48</i>                line.append(current.text)</span><span class="l hl"><i>49</i>                state.advance(current)</span><span class="l"><i>50</i>                previous = current</span><span class="l"><i>51</i>            }</span><span class="l"><i>52</i></span><span class="l hl"><i>53</i>            <span class="kw">if</span> (previous != <span class="kw">null</span>) yield(line.toString())</span><span class="l"><i>54</i>        }</span></pre></div>
+  <ul class="points">
+    <li><strong>For each token</strong>, compute the separator from the previous token (:37). The first token gets its original leading blank lines and indent.</li>
+    <li><strong>A separator can contain line breaks.</strong> Each <code>\n</code> in it finishes the current output line and <code>yield</code>s it (:40–46). That's how output leaves one line at a time.</li>
+    <li><strong>Then append the token's original text</strong> and update the state (:48–49). The last line is emitted at the end (:53).</li>
+    <li><code>format(String)</code> is the same thing joined with <code>\n</code> (:26–27).</li>
+  </ul>
+  <h3>Laziness, measured</h3>
+  <div class="measure">
+    <div><span class="big">2 lines</span><p>read before the first output line appears, from an <strong>infinite</strong> source. A line is finished only when the separator before the next token, on the next line, is known.</p></div>
+    <div><span class="big">1,001</span><p>lines read to produce 1,000 output lines. The lookahead stays at exactly one line; the source is never loaded as a whole.</p></div>
+  </div>
+</section>
+
+<section id="decide">
+  <h2>Deciding a gap</h2>
+  <p class="sub">An explicit priority order, from the most specific rules to the broadest.</p>
+  <div class="code"><pre><span class="l"><i>59</i>    <span class="kw">private</span> <span class="kw">fun</span> separatorBetween(</span><span class="l"><i>60</i>        previous: SourceToken,</span><span class="l"><i>61</i>        next: SourceToken,</span><span class="l"><i>62</i>        state: FormattingState,</span><span class="l"><i>63</i>    ): String {</span><span class="l hl"><i>64</i>        <span class="kw">val</span> brokeLine = next.startRow &gt; previous.endRow</span><span class="l"><i>65</i></span><span class="l hl"><i>66</i>        bracePlacement(next, state)?.let { <span class="kw">return</span> it }</span><span class="l hl"><i>67</i>        <span class="kw">if</span> (previous.isSemicolon) {</span><span class="l hl"><i>68</i>            breaksAfterStatement(state, brokeLine)?.let { breaks -&gt;</span><span class="l hl"><i>69</i>                <span class="kw">return</span> newline(breaks, indentFor(next, state, useOriginal = brokeLine))</span><span class="l hl"><i>70</i>            }</span><span class="l hl"><i>71</i>        }</span><span class="l hl"><i>72</i>        <span class="kw">if</span> (brokeLine) {</span><span class="l hl"><i>73</i>            <span class="kw">return</span> newline(next.startRow - previous.endRow, indentFor(next, state, useOriginal = true))</span><span class="l hl"><i>74</i>        }</span><span class="l hl"><i>75</i>        <span class="kw">return</span> spacingBetween(previous, next, state)</span><span class="l"><i>76</i>    }</span></pre></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Order</th><th>Question</th><th>Line</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">1</td><td>Is the next token a <code>{</code>, and is a brace rule active? Put it on the same line or the next.</td><td><span class="ref">:66</span></td></tr>
+      <tr><td class="mono">2</td><td>Does the gap follow a <code>;</code>, and is a line-break rule active? Use that many breaks.</td><td><span class="ref">:67–71</span></td></tr>
+      <tr><td class="mono">3</td><td>Did the source break the line here? Keep its breaks and its indent.</td><td><span class="ref">:72–74</span></td></tr>
+      <tr><td class="mono">4</td><td>Otherwise it's a gap within one line: apply the spacing rules.</td><td><span class="ref">:75</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="code"><pre><span class="l"><i>133</i>    <span class="kw">private</span> <span class="kw">fun</span> spacingBetween(</span><span class="l"><i>134</i>        previous: SourceToken,</span><span class="l"><i>135</i>        next: SourceToken,</span><span class="l"><i>136</i>        state: FormattingState,</span><span class="l"><i>137</i>    ): String {</span><span class="l hl"><i>138</i>        <span class="kw">if</span> (rules.spaceBeforeColon &amp;&amp; state.inDeclaration &amp;&amp; next.isColon) <span class="kw">return</span> <span class="st">&quot; &quot;</span></span><span class="l hl"><i>139</i>        <span class="kw">if</span> (rules.spaceAfterColon &amp;&amp; state.inDeclaration &amp;&amp; previous.isColon) <span class="kw">return</span> <span class="st">&quot; &quot;</span></span><span class="l"><i>140</i></span><span class="l hl"><i>141</i>        rules.spaceAroundEquals?.let { spaced -&gt;</span><span class="l hl"><i>142</i>            <span class="kw">if</span> (previous.isAssignation || next.isAssignation) <span class="kw">return</span> <span class="kw">if</span> (spaced) <span class="st">&quot; &quot;</span> <span class="kw">else</span> <span class="st">&quot;&quot;</span></span><span class="l hl"><i>143</i>        }</span><span class="l hl"><i>144</i>        <span class="kw">if</span> (rules.spaceSurroundingOperations &amp;&amp; (previous.isOperator || next.isOperator)) <span class="kw">return</span> <span class="st">&quot; &quot;</span></span><span class="l"><i>145</i></span><span class="l"><i>146</i><span class="cm">        // La separación uniforme es la regla más amplia, así que va última: cualquier regla</span></span><span class="l"><i>147</i><span class="cm">        // puntual sobre este hueco ya decidió antes.</span></span><span class="l hl"><i>148</i>        <span class="kw">if</span> (rules.singleSpaceSeparation) <span class="kw">return</span> <span class="kw">if</span> (next.isSemicolon) <span class="st">&quot;&quot;</span> <span class="kw">else</span> <span class="st">&quot; &quot;</span></span><span class="l"><i>149</i></span><span class="l hl"><i>150</i>        <span class="kw">return</span> <span class="st">&quot; &quot;</span>.repeat(next.startColumn - previous.endColumn)</span><span class="l"><i>151</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Colon rules only inside a declaration</strong> (:138–139). <code>FormattingState.inDeclaration</code> is true only for statements that start with <code>let</code> or <code>const</code>.</li>
+    <li><strong>Single-space separation goes last</strong> (:148) because it's the broadest: any more specific rule for this gap has already decided. It puts one space in every gap except before <code>;</code>.</li>
+    <li><strong>The fallback is the source</strong> (:150): the original column distance between the two tokens.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>91</i><span class="cm">    /**</span></span><span class="l"><i>92</i><span class="cm">     * Saltos que deben quedar después de un &quot;;&quot;, o `null` para conservar los del fuente.</span></span><span class="l"><i>93</i><span class="cm">     *</span></span><span class="l hl"><i>94</i><span class="cm">     * La regla de println pide *n* líneas en blanco, que son *n + 1* saltos.</span></span><span class="l"><i>95</i><span class="cm">     */</span></span><span class="l"><i>96</i>    <span class="kw">private</span> <span class="kw">fun</span> breaksAfterStatement(</span><span class="l"><i>97</i>        state: FormattingState,</span><span class="l"><i>98</i>        brokeLine: Boolean,</span><span class="l"><i>99</i>    ): Int? {</span><span class="l hl"><i>100</i>        rules.lineBreaksAfterPrintln?.let { blankLines -&gt;</span><span class="l hl"><i>101</i>            <span class="kw">if</span> (state.statementWasPrintln) <span class="kw">return</span> blankLines + 1</span><span class="l"><i>102</i>        }</span><span class="l hl"><i>103</i>        <span class="kw">if</span> (rules.lineBreakAfterStatement) <span class="kw">return</span> <span class="kw">if</span> (brokeLine) <span class="kw">null</span> <span class="kw">else</span> 1</span><span class="l"><i>104</i>        <span class="kw">return</span> <span class="kw">null</span></span><span class="l"><i>105</i>    }</span></pre></div>
+  <p><strong>Line breaks.</strong> "<em>n</em> blank lines after a <code>println</code>" means <em>n + 1</em> line breaks (:94, :101). "A line break after every statement" adds one only where the source had none (:103), so existing blank lines stay. This works because <code>FormattingState</code> is updated <em>after</em> the gap is decided: when looking at the gap after a <code>;</code>, the state still describes the statement that <code>;</code> just ended.</p>
+</section>
+
+<section id="blocks">
+  <h2>Braces and indentation (1.1)</h2>
+  <p class="sub">Without a parser, the formatter reconstructs just enough structure by counting.</p>
+  <div class="code"><pre><span class="l"><i>11</i><span class="kw">internal</span> <span class="kw">class</span> FormattingState {</span><span class="l hl"><i>12</i>    <span class="kw">var</span> depth: Int = 0</span><span class="l"><i>13</i>        <span class="kw">private</span> set</span><span class="l"><i>14</i></span><span class="l hl"><i>15</i>    <span class="kw">var</span> inDeclaration: Boolean = false</span><span class="l"><i>16</i>        <span class="kw">private</span> set</span><span class="l"><i>17</i></span><span class="l hl"><i>18</i>    <span class="kw">var</span> statementWasPrintln: Boolean = false</span><span class="l"><i>19</i>        <span class="kw">private</span> set</span><span class="l"><i>20</i></span><span class="l hl"><i>21</i>    <span class="kw">var</span> currentLineIndent: Int = 0</span><span class="l"><i>22</i>        <span class="kw">private</span> set</span><span class="l"><i>23</i></span><span class="l"><i>24</i>    <span class="kw">private</span> <span class="kw">var</span> atStatementStart = true</span><span class="l"><i>25</i>    <span class="kw">private</span> <span class="kw">var</span> lastRow = -1</span><span class="l"><i>26</i></span><span class="l hl"><i>27</i>    <span class="kw">fun</span> advance(token: SourceToken) {</span><span class="l hl"><i>28</i>        <span class="kw">if</span> (token.startRow != lastRow) {</span><span class="l hl"><i>29</i>            lastRow = token.startRow</span><span class="l hl"><i>30</i>            currentLineIndent = token.startColumn</span><span class="l hl"><i>31</i>        }</span><span class="l"><i>32</i></span><span class="l hl"><i>33</i>        <span class="kw">if</span> (atStatementStart) {</span><span class="l hl"><i>34</i>            statementWasPrintln = token.value == PRINTLN</span><span class="l hl"><i>35</i>            inDeclaration = token.value <span class="kw">in</span> DECLARATION_KEYWORDS</span><span class="l hl"><i>36</i>            atStatementStart = false</span><span class="l hl"><i>37</i>        }</span><span class="l"><i>38</i></span><span class="l hl"><i>39</i>        <span class="kw">when</span> {</span><span class="l hl"><i>40</i>            token.isOpeningBrace -&gt; {</span><span class="l hl"><i>41</i>                depth += 1</span><span class="l hl"><i>42</i>                startStatement()</span><span class="l hl"><i>43</i>            }</span><span class="l hl"><i>44</i></span><span class="l hl"><i>45</i>            token.isClosingBrace -&gt; {</span><span class="l hl"><i>46</i>                depth -= 1</span><span class="l hl"><i>47</i>                startStatement()</span><span class="l hl"><i>48</i>            }</span><span class="l hl"><i>49</i></span><span class="l hl"><i>50</i>            token.isSemicolon -&gt; startStatement()</span><span class="l hl"><i>51</i>        }</span><span class="l"><i>52</i>    }</span><span class="l"><i>53</i></span><span class="l"><i>54</i>    <span class="kw">private</span> <span class="kw">fun</span> startStatement() {</span><span class="l"><i>55</i>        atStatementStart = true</span><span class="l"><i>56</i>        inDeclaration = false</span><span class="l"><i>57</i>    }</span><span class="l"><i>58</i></span><span class="l"><i>59</i>    <span class="kw">private</span> <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l hl"><i>60</i>        const <span class="kw">val</span> PRINTLN = <span class="st">&quot;println&quot;</span></span><span class="l hl"><i>61</i>        <span class="kw">val</span> DECLARATION_KEYWORDS = setOf(<span class="st">&quot;let&quot;</span>, <span class="st">&quot;const&quot;</span>)</span><span class="l"><i>62</i>    }</span><span class="l"><i>63</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Four facts, no tree</strong>: the brace <code>depth</code>, whether the statement is a declaration, whether it's a <code>println</code>, and the indent of the current line.</li>
+    <li><strong>Statement starts are detected by tokens</strong> (:33–37): the first token after <code>;</code>, <code>{</code> or <code>}</code> decides <code>inDeclaration</code> and <code>statementWasPrintln</code>.</li>
+    <li><strong>Setters are private</strong> (:13, :16…): only <code>advance</code> can change the state.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>79</i>    <span class="kw">private</span> <span class="kw">fun</span> bracePlacement(</span><span class="l"><i>80</i>        next: SourceToken,</span><span class="l"><i>81</i>        state: FormattingState,</span><span class="l"><i>82</i>    ): String? {</span><span class="l hl"><i>83</i>        <span class="kw">if</span> (!next.isOpeningBrace) <span class="kw">return</span> <span class="kw">null</span></span><span class="l hl"><i>84</i>        <span class="kw">return</span> <span class="kw">when</span> (rules.braceOnSameLine) {</span><span class="l hl"><i>85</i>            true -&gt; <span class="st">&quot; &quot;</span></span><span class="l hl"><i>86</i>            false -&gt; newline(1, indentFor(next, state, useOriginal = false))</span><span class="l hl"><i>87</i>            <span class="kw">null</span> -&gt; <span class="kw">null</span></span><span class="l"><i>88</i>        }</span><span class="l"><i>89</i>    }</span><span class="l"><i>90</i></span><span class="l"><i>91</i><span class="cm">    /**</span></span><span class="l"><i>92</i><span class="cm">     * Saltos que deben quedar después de un &quot;;&quot;, o `null` para conservar los del fuente.</span></span><span class="l"><i>93</i><span class="cm">     *</span></span><span class="l"><i>94</i><span class="cm">     * La regla de println pide *n* líneas en blanco, que son *n + 1* saltos.</span></span><span class="l"><i>95</i><span class="cm">     */</span></span><span class="l"><i>96</i>    <span class="kw">private</span> <span class="kw">fun</span> breaksAfterStatement(</span><span class="l"><i>97</i>        state: FormattingState,</span><span class="l"><i>98</i>        brokeLine: Boolean,</span><span class="l"><i>99</i>    ): Int? {</span><span class="l"><i>100</i>        rules.lineBreaksAfterPrintln?.let { blankLines -&gt;</span><span class="l"><i>101</i>            <span class="kw">if</span> (state.statementWasPrintln) <span class="kw">return</span> blankLines + 1</span><span class="l"><i>102</i>        }</span><span class="l"><i>103</i>        <span class="kw">if</span> (rules.lineBreakAfterStatement) <span class="kw">return</span> <span class="kw">if</span> (brokeLine) <span class="kw">null</span> <span class="kw">else</span> 1</span><span class="l"><i>104</i>        <span class="kw">return</span> <span class="kw">null</span></span><span class="l"><i>105</i>    }</span><span class="l"><i>106</i></span><span class="l"><i>107</i><span class="cm">    /**</span></span><span class="l"><i>108</i><span class="cm">     * Sangría de la línea que empieza en [next].</span></span><span class="l"><i>109</i><span class="cm">     *</span></span><span class="l"><i>110</i><span class="cm">     * Con la regla de sangría activa se calcula por profundidad —la llave que cierra pertenece</span></span><span class="l"><i>111</i><span class="cm">     * al bloque de afuera, así que va un nivel menos—. Sin la regla se conserva la del fuente,</span></span><span class="l"><i>112</i><span class="cm">     * salvo que el salto lo esté agregando el formatter: en ese caso la columna original es la</span></span><span class="l"><i>113</i><span class="cm">     * del medio de otra línea y no sirve, y se usa la sangría de la línea que se viene cerrando.</span></span><span class="l"><i>114</i><span class="cm">     */</span></span><span class="l"><i>115</i>    <span class="kw">private</span> <span class="kw">fun</span> indentFor(</span><span class="l"><i>116</i>        next: SourceToken,</span><span class="l"><i>117</i>        state: FormattingState,</span><span class="l"><i>118</i>        useOriginal: Boolean,</span><span class="l"><i>119</i>    ): Int {</span><span class="l hl"><i>120</i>        rules.indentInsideIf?.let { size -&gt;</span><span class="l hl"><i>121</i>            <span class="kw">val</span> depth = <span class="kw">if</span> (next.isClosingBrace) state.depth - 1 <span class="kw">else</span> state.depth</span><span class="l hl"><i>122</i>            <span class="kw">return</span> size * depth.coerceAtLeast(0)</span><span class="l"><i>123</i>        }</span><span class="l hl"><i>124</i>        <span class="kw">return</span> <span class="kw">if</span> (useOriginal) next.startColumn <span class="kw">else</span> state.currentLineIndent</span><span class="l"><i>125</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Brace placement</strong> (:83–87): same line gives a single space, next line gives a break plus indent, and no rule means the gap is decided further down, like any other gap.</li>
+    <li><strong>Indent = size × depth</strong> (:120–122). A <code>}</code> belongs to the block outside it, so it's one level shallower. Without the rule, the source's own column is kept (:124).</li>
+  </ul>
+</section>
+
+<section id="gallery">
+  <h2>Every rule, before and after</h2>
+  <p class="sub">Each case turns on one rule, the way the TCK does. Output from the jar; <span style="font-family:var(--mono)">·</span> marks a space, and shaded lines changed.</p>
+  <div class="cases">
+    <div class="case"><h4>enforce-spacing-before-colon-in-declaration: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ch">let<span class="sp">·</span><span class="sp">·</span>x<span class="sp">·</span>:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>Only the first declaration changes: the second already had its space before the colon.</p></div>
+    <div class="case"><h4>enforce-spacing-after-colon-in-declaration: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ch">let<span class="sp">·</span><span class="sp">·</span>x:<span class="sp">·</span>number=a+b;</span><span class="ch">let<span class="sp">·</span>y<span class="sp">·</span>:<span class="sp">·</span>string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>Both declarations gain a space after the colon. The second keeps the space before it, because that gap isn't governed by this rule.</p></div>
+    <div class="case"><h4>enforce-spacing-around-equals: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ch">let<span class="sp">·</span><span class="sp">·</span>x:number<span class="sp">·</span>=<span class="sp">·</span>a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>Only the unspaced declaration changes.</p></div>
+    <div class="case"><h4>enforce-no-spacing-around-equals: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ch">let<span class="sp">·</span>y<span class="sp">·</span>:string=&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>The same setting with its other value removes the spaces instead.</p></div>
+    <div class="case"><h4>mandatory-space-surrounding-operations: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ch">let<span class="sp">·</span><span class="sp">·</span>x:number=a<span class="sp">·</span>+<span class="sp">·</span>b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>Only the operator's two gaps change; the declaration's gaps are left alone.</p></div>
+    <div class="case"><h4>mandatory-single-space-separation: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ch">let<span class="sp">·</span>x<span class="sp">·</span>:<span class="sp">·</span>number<span class="sp">·</span>=<span class="sp">·</span>a<span class="sp">·</span>+<span class="sp">·</span>b;</span><span class="ch">let<span class="sp">·</span>y<span class="sp">·</span>:<span class="sp">·</span>string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;<span class="sp">·</span>println<span class="sp">·</span>(<span class="sp">·</span>x<span class="sp">·</span>);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ch">println<span class="sp">·</span>(<span class="sp">·</span>y<span class="sp">·</span>);</span></pre></div></div><p>The broadest rule: one space in every gap, none before <code>;</code>, including around parentheses.</p></div>
+    <div class="case"><h4>mandatory-line-break-after-statement: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ch">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;</span><span class="ch">println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>The second line is split after its <code>;</code>. The existing blank lines stay, because this rule only adds breaks where there were none.</p></div>
+    <div class="case"><h4>line-breaks-after-println: 0</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="ln">println(y);</span></pre></div></div><p>Zero blank lines: the three blank lines collapse into a single break.</p></div>
+    <div class="case"><h4>line-breaks-after-println: 2</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div><div><div class="lab">out</div><pre><span class="ln">let<span class="sp">·</span><span class="sp">·</span>x:number=a+b;</span><span class="ln">let<span class="sp">·</span>y<span class="sp">·</span>:string<span class="sp">·</span>=<span class="sp">·</span>&quot;hi&quot;;println(x);</span><span class="blank"></span><span class="blank"></span><span class="ln">println(y);</span></pre></div></div><p>Exactly two blank lines after the first <code>println</code>. The <code>;</code> after <code>"hi"</code> isn't followed by the rule, because that statement isn't a <code>println</code>.</p></div>
+    <div class="case"><h4>if-brace-same-line: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">if(ok)</span><span class="ln">{</span><span class="ln">println(&quot;a&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div><div><div class="lab">out</div><pre><span class="ch">if(ok)<span class="sp">·</span>{</span><span class="ln">println(&quot;a&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div></div><p>The first brace moves up. Nothing else changes, and the inner block keeps its odd indentation.</p></div>
+    <div class="case"><h4>if-brace-below-line: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">if(ok)</span><span class="ln">{</span><span class="ln">println(&quot;a&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div><div><div class="lab">out</div><pre><span class="ln">if(ok)</span><span class="ln">{</span><span class="ln">println(&quot;a&quot;);</span><span class="ch"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)</span><span class="ch"><span class="sp">·</span><span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ch">}<span class="sp">·</span>else</span><span class="ch">{</span><span class="ln"><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div></div><p>Every opening brace moves down, including the <code>else</code> one, indented like its line.</p></div>
+    <div class="case"><h4>indent-inside-if: 4</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">if(ok)</span><span class="ln">{</span><span class="ln">println(&quot;a&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div><div><div class="lab">out</div><pre><span class="ln">if(ok)</span><span class="ln">{</span><span class="ch"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;a&quot;);</span><span class="ch"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ch"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ch"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div></div><p>Every level re-indented to 4 × depth, including the else block. The first brace stays where it was, because no brace rule is on.</p></div>
+    <div class="case"><h4>indent-inside-if: 2 + if-brace-same-line: true</h4><div class="io"><div><div class="lab">in</div><pre><span class="ln">if(ok)</span><span class="ln">{</span><span class="ln">println(&quot;a&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ln"><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div><div><div class="lab">out</div><pre><span class="ch">if(ok)<span class="sp">·</span>{</span><span class="ch"><span class="sp">·</span><span class="sp">·</span>println(&quot;a&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>if<span class="sp">·</span>(ok)<span class="sp">·</span>{</span><span class="ch"><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span><span class="sp">·</span>println(&quot;b&quot;);</span><span class="ln"><span class="sp">·</span><span class="sp">·</span>}</span><span class="ln">}<span class="sp">·</span>else<span class="sp">·</span>{</span><span class="ch"><span class="sp">·</span><span class="sp">·</span>println(&quot;c&quot;);</span><span class="ln">}</span></pre></div></div><p>The combination the second assignment asks for: brace on the same line, n = 2.</p></div>
+  </div>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>Rewrite the gaps between tokens instead of reprinting the AST</h4>
+    <p>A rule that isn't on must leave the source as written, and only the tokens' positions still contain that information. It also matches the TCK's one-rule-per-file cases exactly.</p>
+    <p class="cost"><b>Cost</b>Every rule must be expressed as a decision about a single gap. Structural rewrites (moving statements, splitting expressions) aren't possible, and none are required.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Depend on the lexer, not the parser</h4>
+    <p>The formatter can format code that doesn't parse yet, the way an editor would, it streams line by line, and it avoids building nodes it would throw away.</p>
+    <p class="cost"><b>Cost</b>It isn't a validator: <code>let x: number = = 5;</code> formats without complaint. <code>FormattingState</code> has to rebuild a little structure by counting braces.</p>
+  </div>
+
+  <div class="decision">
+    <h4>A missing rule means "don't touch"</h4>
+    <p>The TCK gives one rule per config and expects nothing else to change. Three-state settings also merge the two spellings of the <code>=</code> rule and of the brace rule into one field each.</p>
+    <p class="cost"><b>Cost</b>No defaults: a config has to name every rule it wants, and an empty config formats nothing.</p>
+  </div>
+
+  <div class="decision">
+    <h4>An explicit order when rules compete for the same gap</h4>
+    <p>A colon gap is covered by both the colon rule and single-space separation. Checking specific rules first and the broadest last (<span class="ref">TokenFormatter.kt:146–148</span>) makes the outcome predictable.</p>
+    <p class="cost"><b>Cost</b>Adding a rule means choosing where it goes in <code>separatorBetween</code> and <code>spacingBetween</code>. The order is part of the behaviour.</p>
+  </div>
+
+  <div class="decision">
+    <h4>One YAML parser for both YAML and JSON</h4>
+    <p>The assignment allows either format, and JSON is valid YAML, so a single library and code path handle both.</p>
+    <p class="cost"><b>Cost</b>A ".json" file with YAML-only syntax is accepted too. That's lenient, but harmless.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Stream output lines, with one line of lookahead</h4>
+    <p><code>formatLines</code> is part of the <em>interface</em> (<span class="ref">Formatter.kt:8–15</span>), so any caller can format a file larger than memory, and the CLI does.</p>
+    <p class="cost"><b>Cost</b>A line is emitted only after the next line's first token is read (2 lines read for the first output line). <code>SourceScanner</code> also relies on the lexer finishing a line before reading the next, an implicit contract documented at <span class="ref">SourceToken.kt:33–38</span>.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Why isn't the formatter built on the parser's AST?</summary>
+      <p>Because rules that aren't active must leave the source untouched, and the AST has no spacing information. Gallery case 2 shows it: only the "after colon" gaps change, and the second declaration keeps its space before the colon.</p></details>
+    <details><summary>How can it indent blocks without parsing?</summary>
+      <p>It counts <code>{</code> and <code>}</code> as tokens go by (<span class="ref">FormattingState.kt:39–51</span>). Indent is size × depth, one level less for a closing brace. For layout, depth is all it needs.</p></details>
+    <details><summary>What if a config turns on both <code>enforce-spacing-around-equals</code> and <code>enforce-no-spacing-around-equals</code>?</summary>
+      <p>They're one setting, so they can't both apply. The "spacing" check comes first and wins (<span class="ref">FormattingRules.kt:57–62</span>). Brace placement works the same way: same line wins over below.</p></details>
+    <details><summary>Why does single-space separation give <code>println ( x )</code>?</summary>
+      <p>The rule is "exactly one space between tokens", and parentheses are tokens. The only exception is before <code>;</code> (<span class="ref">TokenFormatter.kt:148</span>). In practice it's combined with other rules; on its own it applies literally.</p></details>
+    <details><summary>Why SnakeYAML here and Jackson in the linter?</summary>
+      <p>The formatter reads a free-form map of rule names, and one YAML parser covers both formats. The linter binds a fixed JSON shape to a typed class, which is what Jackson is for. Using one library for both would be a reasonable cleanup; the choice follows what each module's config needs.</p></details>
+    <details><summary>Does the formatter report syntax errors?</summary>
+      <p>Only lexical ones: an invalid character like <code>@</code> still throws a positioned <code>LexerException</code>, because the formatter uses the lexer. Grammar errors are the validation operation's job.</p></details>
+    <details><summary>How does 1.1 code with braces get formatted under version 1.0?</summary>
+      <p>It doesn't: the builder creates a lexer for the requested version (<span class="ref">FormatterBuilderPS.kt:24</span>), and the 1.0 lexer rejects <code>{</code>. The version controls the formatter the same way it controls every other tool.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">Why can't reprinting the AST keep <code>let y :string</code> unchanged when only "space after colon" is on?</label>
+      <details><summary>Answer</summary><p>The AST stores names, types and values, not spacing. Only token positions still record that <code>y</code> and <code>:</code> were one space apart, so the formatter works on the gaps between tokens.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2"><code>let  x:number=a+b;</code> with after-colon, around-equals and operators: which gaps change?</label>
+      <details><summary>Answer</summary><p>After the colon, both sides of <code>=</code>, and both sides of <code>+</code>. The two spaces after <code>let</code>, the gap before <code>:</code> and the gap before <code>;</code> are copied from the source. Result: <code>let  x: number = a + b;</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">In what order does <code>separatorBetween</code> decide?</label>
+      <details><summary>Answer</summary><p>Brace placement, then breaks after <code>;</code>, then the source's own line breaks, then same-line spacing. Within same-line spacing: colon, equals, operators, single space, and finally the source's gap.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">In <code>FormattingRules</code>, what's the difference between <code>null</code> and <code>false</code> for <code>spaceAroundEquals</code>?</label>
+      <details><summary>Answer</summary><p><code>false</code> enforces <em>no</em> spaces (that's the <code>enforce-no-spacing-around-equals</code> rule), while <code>null</code> means the config didn't mention it and the gap is copied from the source.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">Why does <code>SourceToken</code> carry <code>text</code> as well as the token?</label>
+      <details><summary>Answer</summary><p>The lexer strips quotes from string values. The formatter has to write the original <code>"hi"</code> back, so it slices each token's text out of the line it came from.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">How many source lines are read before the first output line appears, and why?</label>
+      <details><summary>Answer</summary><p>Two. An output line ends when a separator containing a line break is computed, and that happens when the first token of the next line arrives.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">With <code>indent-inside-if: 4</code>, how is a <code>}</code> at depth 2 indented?</label>
+      <details><summary>Answer</summary><p>4 spaces. A closing brace uses depth − 1, because it belongs to the block outside it: 4 × (2 − 1).</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8"><code>line-breaks-after-println: 2</code>: how many <code>\n</code> after the <code>;</code>, and after which statements?</label>
+      <details><summary>Answer</summary><p>Three, because two blank lines need three breaks. Only after statements that start with <code>println</code>, which <code>FormattingState.statementWasPrintln</code> tracks.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">33 tests in 5 files.</p>
+  <ul class="points tests">
+    <li><strong>FormatterTest10 (12):</strong> with no rules the source is untouched, then each 1.0 rule on its own. Each test name says what must <em>not</em> change, e.g. "spacing after the colon leaves the space before it as it was".</li>
+    <li><strong>FormatterTest11 (5):</strong> brace up, brace down, re-indenting every level including the else block, and no brace rule keeps the original placement.</li>
+    <li><strong>RulesReaderTest (8):</strong> the TCK's JSON, YAML, an empty config, unknown keys, the two spellings of the equals and brace rules, <code>false</code> not enabling a rule, reading from disk.</li>
+    <li><strong>FormatterEdgeCaseTest (6):</strong> empty and blank input, string quotes preserved, calls keep their argument, an identifier containing <code>if</code> isn't a conditional, an unsupported version is rejected.</li>
+    <li><strong>FormatterStreamingTest (2):</strong> the first lines don't read the whole source, and streaming and eager formatting agree.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-formatter-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+})();
+</script>

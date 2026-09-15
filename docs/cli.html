@@ -1,0 +1,641 @@
+<title>PrintScript cli Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:700px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .n{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+svg .n.src{fill:var(--ground);stroke-dasharray:5 4}
+svg .n.core{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+svg .n.err{stroke:var(--med);stroke-width:1.6;fill:var(--med-soft)}
+svg .t{fill:var(--ink);font-family:var(--mono);font-size:13px;font-weight:600}
+svg .s{fill:var(--muted);font-family:var(--body);font-size:12px}
+svg .e{stroke:var(--ink);stroke-width:1.2;fill:none}
+svg .e.err{stroke:var(--med);stroke-dasharray:5 4}
+svg .el{fill:var(--muted);font-family:var(--mono);font-size:11.5px}
+svg .el.err{fill:var(--med)}
+svg .ah{fill:var(--ink)} svg .ah.err{fill:var(--med)}
+
+.exits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 8px}
+.exits div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:12px 14px}
+.exits b{font-family:var(--display);font-size:30px;line-height:1;display:block;color:var(--accent)}
+.exits .c1 b{color:var(--med)}
+.exits .c2 b{color:var(--ink)}
+.exits p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:600px){.exits{grid-template-columns:minmax(0,1fr)}}
+
+.group{margin-top:34px}
+.group > h3{font-family:var(--display);font-size:21px;font-weight:700;margin:0 0 4px}
+.group > p.gsub{color:var(--muted);font-size:15px;margin:0 0 12px}
+.demo{background:var(--surface);border:1px solid var(--rule);border-radius:6px;margin:0 0 14px;overflow:hidden;scroll-margin-top:16px}
+.demo header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;padding:10px 14px 0}
+.demo h4{margin:0;font-size:15.5px}
+.demo .why{margin:4px 14px 10px;font-size:14px;color:var(--muted);max-width:none}
+.chip{font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 8px;border-radius:9px;white-space:nowrap}
+.chip.x0{background:var(--accent-soft);color:var(--accent)}
+.chip.x1{background:var(--med-soft);color:var(--med)}
+.chip.x2{background:var(--code-bg);color:var(--ink)}
+.cmd{display:flex;align-items:stretch;border-top:1px solid var(--rule);background:var(--ground)}
+.cmd code{flex:1;min-width:0;display:block;background:none;padding:9px 14px;font-size:12.5px;white-space:pre;overflow-x:auto}
+.cmd code::before{content:"$ ";color:var(--muted)}
+.cmd.plain code::before{content:""}
+.copy{font:inherit;font-size:12px;border:0;border-left:1px solid var(--rule);background:var(--surface);color:var(--accent);padding:0 14px;cursor:pointer;white-space:nowrap}
+.copy:hover{background:var(--accent-soft)}
+.term{margin:0;background:#11171D;color:#DCE3EA;font-family:var(--mono);font-size:12.5px;line-height:1.55;padding:10px 14px 12px;overflow-x:auto;white-space:pre}
+.term .dim{color:#8894A0}
+.note{margin:0;padding:8px 14px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted)}
+.note b{color:var(--ink);font-weight:600}
+.tip{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:4px;padding:12px 16px;margin:14px 0}
+.tip p{margin:0;font-size:15px}
+ol.plan{margin:10px 0 16px;padding-left:22px}
+ol.plan li{margin-bottom:6px}
+td.mono{font-family:var(--mono);font-size:13px}
+h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40px}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <a href="lexer.html">lexer</a>
+  <a href="parser.html">parser</a>
+  <a href="interpreter.html">interpreter</a>
+  <a href="formatter.html">formatter</a>
+  <a href="linter.html">linter</a>
+  <span class="cur" aria-current="page">cli</span>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 7 of 8</p>
+  <h1><code>cli</code></h1>
+  <p class="lede">The command-line interface that exposes the four operations the assignment asks for. It turns arguments into a command, runs it, and turns the outcome into an exit code, with every error reported in one place.</p>
+  <ul class="meta">
+    <li><b>27</b>files</li>
+    <li><b>729</b>lines</li>
+    <li><b>68</b>tests</li>
+    <li><b>6</b>dependencies: every other module</li>
+    <li><b>~25</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#demo">Demo runbook</a></li>
+    <li><a href="#flow">How a run flows</a></li>
+    <li><a href="#code">The code</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"The CLI is <code>./printscript &lt;operation&gt; &lt;file&gt;</code> with optional <code>--version</code>, <code>--config</code> and <code>--output</code>. An <strong>ArgumentParser</strong> validates everything it can before touching the source. A <strong>CommandFactory</strong> builds one of four commands with its collaborators already wired, and the command runs. There's exactly <strong>one place that catches errors</strong>, and it maps outcomes to exit codes: 0 success, 1 a problem in the source, 2 a problem with how the tool was invoked or configured. Results go to stdout and everything else, including progress, goes to stderr, so formatted code can be redirected to a file. Progress is shown statement by statement while parsing, as the assignment requires."</p>
+  </div>
+</section>
+
+<section id="demo">
+  <h2>Demo runbook</h2>
+  <p class="sub">Every command below was run against the built CLI. The output shown is what appeared in a real terminal, and the chip is the exit code.</p>
+
+  <div class="exits">
+    <div class="c0"><b>0</b><p>The operation succeeded. For analyzing: no violations.</p></div>
+    <div class="c1"><b>1</b><p>A problem in the source (lexical, syntax, run time), violations found, or an I/O error.</p></div>
+    <div class="c2"><b>2</b><p>A problem in the invocation or the configuration file. Usage errors also print the usage line.</p></div>
+  </div>
+  <p style="font-size:14px;color:var(--muted)">Check the exit code after any command with <code>echo $?</code>.</p>
+
+  <h3 class="part" style="margin-top:28px">A 5-minute demo, in order</h3>
+  <ol class="plan">
+    <li><a href="#d-setup">Build, alias and create the demo files</a> (do this before the presentation)</li>
+    <li><a href="#d-usage">No arguments</a> shows the usage line</li>
+    <li><a href="#d-validation">Validation</a> of Example 2, where the progress line appears</li>
+    <li><a href="#d-ex2quiet">Execution</a> of Example 2, printing <code>Result: 3</code></li>
+    <li><a href="#d-v11">1.1 if/else</a>, then <a href="#d-v10fail">the same file under 1.0</a>, rejected with its position</li>
+    <li><a href="#d-readinput_pipe">readInput from stdin</a></li>
+    <li><a href="#d-lexerr">A lexical error</a> with start and end columns</li>
+    <li><a href="#d-fmt">Formatting</a>, then <a href="#d-fmtout">to a file</a></li>
+    <li><a href="#d-lint">Analyzing</a> with violations and exit code 1</li>
+    <li><a href="#d-big">200,000 statements</a> validated, to show streaming</li>
+  </ol>
+
+  <div class="group" id="g-setup">
+    <h3>0 · Before you start</h3>
+    <p class="gsub">Run once, from the repository root.</p>
+    <div class="demo" id="d-setup">
+      <header><h4>Build the CLI</h4></header>
+      <p class="why"><code>installDist</code> produces <code>cli/build/install/printscript/bin/printscript</code>. The <code>./printscript</code> wrapper in the repository root runs it, and builds it first if it isn't there yet, so this step is optional.</p>
+      <div class="cmd"><code data-copy="./gradlew :cli:installDist">./gradlew :cli:installDist</code><button type="button" class="copy" id="copy-29">Copy</button></div>
+      <p class="note">Every command below uses <code>./printscript</code> from the repository root. After changing the code, run <code>./gradlew :cli:installDist</code> again so the wrapper picks up the new build. Prefer typing <code>printscript</code> with no <code>./</code>? Add the bin directory to your <code>PATH</code> in <code>~/.zshrc</code>: <code>export PATH="$PATH:/ruta/al/repo/cli/build/install/printscript/bin"</code>.</p>
+    </div>
+    <div class="demo" id="d-files">
+      <header><h4>Create the demo files</h4></header>
+      <p class="why">Seven small files in <code>/tmp/ps-demo</code>: a readInput program, a readEnv program, badly spaced code, a 1.1 block, two formatter configs, and a 200,000-line file. It all runs in a subshell, so your own shell stays in the repository root.</p>
+      <div class="cmd plain"><code data-copy="(
+  mkdir -p /tmp/ps-demo &amp;&amp; cd /tmp/ps-demo || exit 1
+  printf &#x27;let name: string = readInput(&quot;Name?&quot;);\nprintln(&quot;Hi &quot; + name);\n&#x27; &gt; greet.ps
+  printf &#x27;let who: string = readEnv(&quot;DEMO_NAME&quot;);\nprintln(&quot;Hello &quot; + who);\n&#x27; &gt; env.ps
+  printf &#x27;let  total:number=10;let label :string=&quot;Total: &quot;;\nprintln(label+total);\n&#x27; &gt; messy.ps
+  printf &#x27;const ok: boolean = true;\nif(ok)\n{\nprintln(&quot;inside&quot;);\n} else {\n        println(&quot;never&quot;);\n}\n&#x27; &gt; block.ps
+  printf &#x27;enforce-spacing-after-colon-in-declaration: true\nenforce-spacing-around-equals: true\nmandatory-space-surrounding-operations: true\nmandatory-line-break-after-statement: true\n&#x27; &gt; rules.yaml
+  printf &#x27;{\n  &quot;if-brace-same-line&quot;: true,\n  &quot;indent-inside-if&quot;: 4\n}\n&#x27; &gt; rules11.json
+  yes &#x27;println(&quot;x&quot;);&#x27; | head -n 200000 &gt; big.ps
+)">(
+  mkdir -p /tmp/ps-demo &amp;&amp; cd /tmp/ps-demo || exit 1
+  printf &#x27;let name: string = readInput(&quot;Name?&quot;);\nprintln(&quot;Hi &quot; + name);\n&#x27; &gt; greet.ps
+  printf &#x27;let who: string = readEnv(&quot;DEMO_NAME&quot;);\nprintln(&quot;Hello &quot; + who);\n&#x27; &gt; env.ps
+  printf &#x27;let  total:number=10;let label :string=&quot;Total: &quot;;\nprintln(label+total);\n&#x27; &gt; messy.ps
+  printf &#x27;const ok: boolean = true;\nif(ok)\n{\nprintln(&quot;inside&quot;);\n} else {\n        println(&quot;never&quot;);\n}\n&#x27; &gt; block.ps
+  printf &#x27;enforce-spacing-after-colon-in-declaration: true\nenforce-spacing-around-equals: true\nmandatory-space-surrounding-operations: true\nmandatory-line-break-after-statement: true\n&#x27; &gt; rules.yaml
+  printf &#x27;{\n  &quot;if-brace-same-line&quot;: true,\n  &quot;indent-inside-if&quot;: 4\n}\n&#x27; &gt; rules11.json
+  yes &#x27;println(&quot;x&quot;);&#x27; | head -n 200000 &gt; big.ps
+)</code><button type="button" class="copy" id="copy-30">Copy</button></div>
+      <p class="note"><b>If a command says <code>El archivo fuente no existe</code></b>, you're probably in another directory. The commands that use <code>cli/src/test/resources/…</code> are relative to the repository root; the <code>/tmp/ps-demo/…</code> ones work from anywhere. <code>cd</code> back to the repo and try again.</p>
+    </div>
+  </div>
+
+  <div class="group">
+    <h3>1 · Validation</h3>
+    <p class="gsub">Parses the whole file without running anything.</p>
+    <div class="demo" id="d-usage"><header><h4>No arguments</h4><span class="chip x2">exit 2</span></header><p class="why">The usage line lists the operations and options. Exit code 2: a problem with the invocation, not the source.</p><div class="cmd"><code data-copy="./printscript">./printscript</code><button type="button" class="copy" id="copy-1">Copy</button></div><pre class="term">Error: Falta la operación a realizar. Operaciones válidas: validation, execution, formatting, analyzing.
+Uso: printscript &lt;validation|execution|formatting|analyzing&gt; &lt;archivo&gt; [--version 1.0|1.1] [--config &lt;archivo&gt;] [--output &lt;archivo&gt;]</pre></div>
+    <div class="demo" id="d-validation"><header><h4>Validate Example 2</h4><span class="chip x0">exit 0</span></header><p class="why">Progress is shown while parsing (it redraws one stderr line), then a summary. The blank line in the source isn't a statement: 4, not 5.</p><div class="cmd"><code data-copy="./printscript validation cli/src/test/resources/example2.ps">./printscript validation cli/src/test/resources/example2.ps</code><button type="button" class="copy" id="copy-2">Copy</button></div><pre class="term"><span class="dim">Analizando... 4 sentencias. Listo.</span>
+Validación exitosa: 4 sentencias en example2.ps.</pre></div>
+    <div class="demo" id="d-big"><header><h4>Validate 200,000 statements</h4><span class="chip x0">exit 0</span></header><p class="why">Shows the streaming requirement live: the counter climbs as the parser pulls statements, and the file is never loaded as a whole.</p><div class="cmd"><code data-copy="./printscript validation /tmp/ps-demo/big.ps">./printscript validation /tmp/ps-demo/big.ps</code><button type="button" class="copy" id="copy-3">Copy</button></div><pre class="term"><span class="dim">Analizando... 200000 sentencias. Listo.</span>
+Validación exitosa: 200000 sentencias en big.ps.</pre></div>
+  </div>
+
+  <div class="group">
+    <h3>2 · Execution</h3>
+    <p class="gsub">Runs each statement as soon as it's parsed.</p>
+    <div class="demo" id="d-ex1"><header><h4>Example 1 from the PDF</h4><span class="chip x0">exit 0</span></header><p class="why">Prints <code>Joe Doe</code>, exactly the assignment's expected output.</p><div class="cmd"><code data-copy="./printscript execution cli/src/test/resources/example1.ps">./printscript execution cli/src/test/resources/example1.ps</code><button type="button" class="copy" id="copy-4">Copy</button></div><pre class="term"><span class="dim">Analizando... 3 sentencias</span>Joe Doe
+<span class="dim">Analizando... 3 sentencias. Listo.</span>
+Ejecución finalizada.</pre></div>
+    <div class="demo" id="d-ex2"><header><h4>Example 2 from the PDF</h4><span class="chip x0">exit 0</span></header><p class="why"><code>Result: 3</code>. The program's output appears on the same line as the progress text because both share the terminal: progress goes to stderr, the result to stdout.</p><div class="cmd"><code data-copy="./printscript execution cli/src/test/resources/example2.ps">./printscript execution cli/src/test/resources/example2.ps</code><button type="button" class="copy" id="copy-5">Copy</button></div><pre class="term"><span class="dim">Analizando... 4 sentencias</span>Result: 3
+<span class="dim">Analizando... 4 sentencias. Listo.</span>
+Ejecución finalizada.</pre></div>
+    <div class="demo" id="d-ex2quiet"><header><h4>Only the program's output</h4><span class="chip x0">exit 0</span></header><p class="why">Silencing stderr leaves just the result. It's the clean way to show output, and it demonstrates the stdout/stderr split.</p><div class="cmd"><code data-copy="./printscript execution cli/src/test/resources/example2.ps 2&gt;/dev/null">./printscript execution cli/src/test/resources/example2.ps 2&gt;/dev/null</code><button type="button" class="copy" id="copy-6">Copy</button></div><pre class="term">Result: 3</pre></div>
+    <div class="demo" id="d-ex3"><header><h4>Example 3 from the PDF</h4><span class="chip x0">exit 0</span></header><p class="why">Reassignment of a declared variable.</p><div class="cmd"><code data-copy="./printscript execution cli/src/test/resources/example3.ps">./printscript execution cli/src/test/resources/example3.ps</code><button type="button" class="copy" id="copy-7">Copy</button></div><pre class="term"><span class="dim">Analizando... 4 sentencias</span>Result: 3
+<span class="dim">Analizando... 4 sentencias. Listo.</span>
+Ejecución finalizada.</pre></div>
+    <div class="demo" id="d-v11"><header><h4>A 1.1 program: const, boolean, if/else</h4><span class="chip x0">exit 0</span></header><p class="why"><code>--version 1.1</code> enables the new constructs. Output comes from the else branch and then the statement after the block.</p><div class="cmd"><code data-copy="./printscript execution cli/src/test/resources/test19.txt --version 1.1">./printscript execution cli/src/test/resources/test19.txt --version 1.1</code><button type="button" class="copy" id="copy-8">Copy</button></div><pre class="term"><span class="dim">Analizando... 2 sentencias</span>Inside else block
+<span class="dim">Analizando... 3 sentencias</span>Outside of conditional
+<span class="dim">Analizando... 3 sentencias. Listo.</span>
+Ejecución finalizada.</pre></div>
+    <div class="demo" id="d-v10fail"><header><h4>The same file under the default 1.0</h4><span class="chip x1">exit 1</span></header><p class="why">Rejected before running, with the exact span of <code>const</code>. The spec asks for exactly this when a feature isn't in the selected version.</p><div class="cmd"><code data-copy="./printscript execution cli/src/test/resources/test19.txt">./printscript execution cli/src/test/resources/test19.txt</code><button type="button" class="copy" id="copy-9">Copy</button></div><pre class="term">Error: Const declarations are not allowed in version 1.0 (desde línea 1, columna 1 hasta línea 1, columna 6)</pre></div>
+    <div class="demo" id="d-readinput_pipe"><header><h4>readInput from standard input</h4><span class="chip x0">exit 0</span></header><p class="why">The prompt <code>Name?</code> is printed, then a line is read from stdin. Typing the name interactively works too: drop <code>echo Ada |</code>.</p><div class="cmd"><code data-copy="echo Ada | ./printscript execution /tmp/ps-demo/greet.ps --version 1.1">echo Ada | ./printscript execution /tmp/ps-demo/greet.ps --version 1.1</code><button type="button" class="copy" id="copy-10">Copy</button></div><pre class="term"><span class="dim">Analizando... 1 sentencias</span>Name?
+<span class="dim">Analizando... 2 sentencias</span>Hi Ada
+<span class="dim">Analizando... 2 sentencias. Listo.</span>
+Ejecución finalizada.</pre></div>
+    <div class="demo" id="d-readenv"><header><h4>readEnv from an environment variable</h4><span class="chip x0">exit 0</span></header><p class="why">The variable is set just for this command.</p><div class="cmd"><code data-copy="DEMO_NAME=Ada ./printscript execution /tmp/ps-demo/env.ps --version 1.1">DEMO_NAME=Ada ./printscript execution /tmp/ps-demo/env.ps --version 1.1</code><button type="button" class="copy" id="copy-11">Copy</button></div><pre class="term"><span class="dim">Analizando... 2 sentencias</span>Hello Ada
+<span class="dim">Analizando... 2 sentencias. Listo.</span>
+Ejecución finalizada.</pre></div>
+    <div class="demo" id="d-readenv_missing"><header><h4>readEnv when the variable doesn't exist</h4><span class="chip x1">exit 1</span></header><p class="why">A run-time error, positioned at the <code>readEnv</code> call, with exit code 1.</p><div class="cmd"><code data-copy="./printscript execution /tmp/ps-demo/env.ps --version 1.1">./printscript execution /tmp/ps-demo/env.ps --version 1.1</code><button type="button" class="copy" id="copy-12">Copy</button></div><pre class="term"><span class="dim">Analizando... 1 sentencias</span>Error: La variable de entorno &#x27;DEMO_NAME&#x27; no está definida (línea 1, columna 19)</pre></div>
+  </div>
+
+  <div class="group">
+    <h3>3 · Errors in the source</h3>
+    <p class="gsub">Each shows the start and end row and column, as the assignment requires.</p>
+    <div class="demo" id="d-lexerr"><header><h4>Lexical error</h4><span class="chip x1">exit 1</span></header><p class="why"><code>let x : number = 8 @;</code>: the invalid character and its exact columns.</p><div class="cmd"><code data-copy="./printscript validation cli/src/test/resources/invalidCharacter.ps">./printscript validation cli/src/test/resources/invalidCharacter.ps</code><button type="button" class="copy" id="copy-13">Copy</button></div><pre class="term">Error: Carácter inválido encontrado: &#x27;@&#x27; (desde línea 1, columna 20 hasta línea 1, columna 21)</pre></div>
+    <div class="demo" id="d-parseerr"><header><h4>Syntax error</h4><span class="chip x1">exit 1</span></header><p class="why"><code>println(5)</code> without <code>;</code>: the span covers the whole unterminated statement.</p><div class="cmd"><code data-copy="./printscript validation cli/src/test/resources/testWithoutSemicolon.txt">./printscript validation cli/src/test/resources/testWithoutSemicolon.txt</code><button type="button" class="copy" id="copy-14">Copy</button></div><pre class="term">Error: las sentencias deben finalizar con &quot;;&quot;, &quot;}&quot; o &quot;{&quot; (desde línea 1, columna 1 hasta línea 1, columna 11)</pre></div>
+  </div>
+
+  <div class="group">
+    <h3>4 · Formatting</h3>
+    <p class="gsub">Needs <code>--config</code> (YAML or JSON). The formatted code goes to stdout or to <code>--output</code>.</p>
+    <div class="demo" id="d-fmt"><header><h4>Format badly spaced code to stdout</h4><span class="chip x0">exit 0</span></header><p class="why">Source: <code>let  total:number=10;let label :string="Total: ";</code> then <code>println(label+total);</code>. The rules add spaces after colons and around <code>=</code> and <code>+</code>, and a break after each statement. The double space after <code>let</code> and the space before the second colon are kept, because no active rule covers those gaps.</p><div class="cmd"><code data-copy="./printscript formatting /tmp/ps-demo/messy.ps --config /tmp/ps-demo/rules.yaml">./printscript formatting /tmp/ps-demo/messy.ps --config /tmp/ps-demo/rules.yaml</code><button type="button" class="copy" id="copy-15">Copy</button></div><pre class="term">let  total: number = 10;
+let label : string = &quot;Total: &quot;;
+println(label + total);
+Formateo finalizado.</pre></div>
+    <div class="demo" id="d-fmt11"><header><h4>Format a 1.1 block with a JSON config</h4><span class="chip x0">exit 0</span></header><p class="why">Brace moved to the <code>if</code> line, and every level indented by 4, including the else block.</p><div class="cmd"><code data-copy="./printscript formatting /tmp/ps-demo/block.ps --config /tmp/ps-demo/rules11.json --version 1.1">./printscript formatting /tmp/ps-demo/block.ps --config /tmp/ps-demo/rules11.json --version 1.1</code><button type="button" class="copy" id="copy-16">Copy</button></div><pre class="term">const ok: boolean = true;
+if(ok) {
+    println(&quot;inside&quot;);
+} else {
+    println(&quot;never&quot;);
+}
+Formateo finalizado.</pre></div>
+    <div class="demo" id="d-fmtout"><header><h4>Write the result to a file</h4><span class="chip x0">exit 0</span></header><p class="why">With <code>--output</code>, only the "done" message appears on screen.</p><div class="cmd"><code data-copy="./printscript formatting /tmp/ps-demo/messy.ps --config /tmp/ps-demo/rules.yaml --output /tmp/ps-demo/formatted.ps">./printscript formatting /tmp/ps-demo/messy.ps --config /tmp/ps-demo/rules.yaml --output /tmp/ps-demo/formatted.ps</code><button type="button" class="copy" id="copy-17">Copy</button></div><pre class="term">Formateo finalizado.</pre></div>
+    <div class="demo" id="d-catout"><header><h4>Check the file</h4><span class="chip x0">exit 0</span></header><p class="why">The formatted code, exactly as it was sent to stdout before.</p><div class="cmd"><code data-copy="cat /tmp/ps-demo/formatted.ps">cat /tmp/ps-demo/formatted.ps</code><button type="button" class="copy" id="copy-18">Copy</button></div><pre class="term">let  total: number = 10;
+let label : string = &quot;Total: &quot;;
+println(label + total);</pre></div>
+    <div class="demo" id="d-fmtredirect"><header><h4>Redirect stdout instead</h4><span class="chip x0">exit 0</span></header><p class="why">Also works: stdout holds only the code, and the message still shows because it goes to stderr.</p><div class="cmd"><code data-copy="./printscript formatting /tmp/ps-demo/messy.ps --config /tmp/ps-demo/rules.yaml &gt; /tmp/ps-demo/redirected.ps">./printscript formatting /tmp/ps-demo/messy.ps --config /tmp/ps-demo/rules.yaml &gt; /tmp/ps-demo/redirected.ps</code><button type="button" class="copy" id="copy-19">Copy</button></div><pre class="term">Formateo finalizado.</pre></div>
+  </div>
+
+  <div class="group">
+    <h3>5 · Analyzing</h3>
+    <p class="gsub">Needs a JSON <code>--config</code>. Violations give exit code 1; the report goes to stderr.</p>
+    <div class="demo" id="d-lint"><header><h4>camelcase rule on a snake_case name</h4><span class="chip x1">exit 1</span></header><p class="why"><code>let my_number : number = 10;</code> and <code>println (my_number);</code>: both uses are reported, with 1-based positions.</p><div class="cmd"><code data-copy="./printscript analyzing cli/src/test/resources/test03.txt --config cli/src/test/resources/linterRules.json">./printscript analyzing cli/src/test/resources/test03.txt --config cli/src/test/resources/linterRules.json</code><button type="button" class="copy" id="copy-20">Copy</button></div><pre class="term"><span class="dim">Analizando... 2 sentencias. Listo.</span>
+Se encontraron 2 problemas en test03.txt:
+The following identifier must be in camel case (línea 1, columna 5)
+The following identifier must be in camel case (línea 2, columna 10)</pre></div>
+    <div class="demo" id="d-lintexpr"><header><h4>println with an expression</h4><span class="chip x1">exit 1</span></header><p class="why"><code>println (x + y);</code> breaks the "identifier or literal only" rule.</p><div class="cmd"><code data-copy="./printscript analyzing cli/src/test/resources/test04.txt --config cli/src/test/resources/linterRules.json">./printscript analyzing cli/src/test/resources/test04.txt --config cli/src/test/resources/linterRules.json</code><button type="button" class="copy" id="copy-21">Copy</button></div><pre class="term"><span class="dim">Analizando... 3 sentencias. Listo.</span>
+Se encontraron 1 problema en test04.txt:
+Println must not be called with an expression (línea 3, columna 1)</pre></div>
+    <div class="demo" id="d-lintclean"><header><h4>A file that follows the rules</h4><span class="chip x0">exit 0</span></header><p class="why">Exit code 0.</p><div class="cmd"><code data-copy="./printscript analyzing cli/src/test/resources/test01.txt --config cli/src/test/resources/linterRules.json">./printscript analyzing cli/src/test/resources/test01.txt --config cli/src/test/resources/linterRules.json</code><button type="button" class="copy" id="copy-22">Copy</button></div><pre class="term"><span class="dim">Analizando... 1 sentencias. Listo.</span>
+No se encontraron problemas en test01.txt.</pre></div>
+    <div class="demo" id="d-lint11on10"><header><h4>A 1.1-only rule under 1.0</h4><span class="chip x2">exit 2</span></header><p class="why"><code>linterRules11.json</code> enables the readInput rule, which doesn't exist in 1.0. That's a configuration error, exit code 2, and no usage line.</p><div class="cmd"><code data-copy="./printscript analyzing cli/src/test/resources/test03.txt --config cli/src/test/resources/linterRules11.json">./printscript analyzing cli/src/test/resources/test03.txt --config cli/src/test/resources/linterRules11.json</code><button type="button" class="copy" id="copy-23">Copy</button></div><pre class="term">Error de configuración: Rule not available for this version</pre></div>
+  </div>
+
+  <div class="group">
+    <h3>6 · Invocation and configuration errors</h3>
+    <p class="gsub">All exit with code 2. Invocation errors also print the usage line.</p>
+    <div class="demo" id="d-noconfig"><header><h4>Formatting without --config</h4><span class="chip x2">exit 2</span></header><p class="why">Caught by the argument parser before the source is opened.</p><div class="cmd"><code data-copy="./printscript formatting /tmp/ps-demo/messy.ps">./printscript formatting /tmp/ps-demo/messy.ps</code><button type="button" class="copy" id="copy-24">Copy</button></div><pre class="term">Error: La operación formatting necesita un archivo de configuración (--config).
+Uso: printscript &lt;validation|execution|formatting|analyzing&gt; &lt;archivo&gt; [--version 1.0|1.1] [--config &lt;archivo&gt;] [--output &lt;archivo&gt;]</pre></div>
+    <div class="demo" id="d-badversion"><header><h4>An unsupported version</h4><span class="chip x2">exit 2</span></header><p class="why">Lists the valid versions.</p><div class="cmd"><code data-copy="./printscript validation cli/src/test/resources/example2.ps --version 2.0">./printscript validation cli/src/test/resources/example2.ps --version 2.0</code><button type="button" class="copy" id="copy-25">Copy</button></div><pre class="term">Error: Versión no soportada: 2.0. Versiones válidas: 1.0, 1.1.
+Uso: printscript &lt;validation|execution|formatting|analyzing&gt; &lt;archivo&gt; [--version 1.0|1.1] [--config &lt;archivo&gt;] [--output &lt;archivo&gt;]</pre></div>
+    <div class="demo" id="d-nofile"><header><h4>A source file that doesn't exist</h4><span class="chip x2">exit 2</span></header><p class="why">Also caught before anything runs.</p><div class="cmd"><code data-copy="./printscript validation missing.ps">./printscript validation missing.ps</code><button type="button" class="copy" id="copy-26">Copy</button></div><pre class="term">Error: El archivo fuente no existe: missing.ps
+Uso: printscript &lt;validation|execution|formatting|analyzing&gt; &lt;archivo&gt; [--version 1.0|1.1] [--config &lt;archivo&gt;] [--output &lt;archivo&gt;]</pre></div>
+    <div class="demo" id="d-badop"><header><h4>An unknown operation</h4><span class="chip x2">exit 2</span></header><p class="why">Lists the valid operations.</p><div class="cmd"><code data-copy="./printscript compile cli/src/test/resources/example2.ps">./printscript compile cli/src/test/resources/example2.ps</code><button type="button" class="copy" id="copy-27">Copy</button></div><pre class="term">Error: Operación desconocida: compile. Operaciones válidas: validation, execution, formatting, analyzing.
+Uso: printscript &lt;validation|execution|formatting|analyzing&gt; &lt;archivo&gt; [--version 1.0|1.1] [--config &lt;archivo&gt;] [--output &lt;archivo&gt;]</pre></div>
+    <div class="demo" id="d-badyaml"><header><h4>A broken rules file</h4><span class="chip x2">exit 2</span></header><p class="why">The YAML parser's message is passed along, pointing at the line and column in the config.</p><div class="cmd"><code data-copy="./printscript formatting /tmp/ps-demo/messy.ps --config cli/src/test/resources/badFormatterRules.yaml">./printscript formatting /tmp/ps-demo/messy.ps --config cli/src/test/resources/badFormatterRules.yaml</code><button type="button" class="copy" id="copy-28">Copy</button></div><pre class="term">Error de configuración: el archivo de reglas no es YAML ni JSON válido: while parsing a flow sequence
+ in &#x27;string&#x27;, line 3, column 36:
+    mandatory-single-space-separation: [true
+                                       ^
+expected &#x27;,&#x27; or &#x27;]&#x27;, but got &lt;stream end&gt;
+ in &#x27;string&#x27;, line 4, column 1:
+    
+    ^</pre></div>
+  </div>
+
+  <div class="tip"><p><strong>Other commands you may be asked for.</strong> <code>./gradlew check</code> runs Ktlint, Detekt, all tests and the 80% coverage check. <code>./gradlew :cli:test</code> runs just the CLI's 68 tests.</p></div>
+</section>
+
+<section id="flow">
+  <h2>How a run flows</h2>
+  <p class="sub">The success path along the top; every failure falls down to the same catch.</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 900 250" role="img" aria-label="Arguments go to ArgumentParser, which produces CliArguments, then to CommandFactory, which builds a Command, which executes and returns a CommandStatus mapped to exit 0 or 1. ArgumentParser, CommandFactory and the Command can all throw; PrintScriptCli.run catches every exception in one place and maps it to exit 1 or 2.">
+      <defs>
+        <marker id="ca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="cb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah err" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <rect class="n src" x="20" y="40" width="90" height="56" rx="5"/>
+      <text class="t" x="65" y="73" text-anchor="middle">args</text>
+      <line class="e" x1="110" y1="68" x2="156" y2="68" marker-end="url(#ca)"/>
+      <rect class="n" x="160" y="40" width="150" height="56" rx="5"/>
+      <text class="t" x="235" y="64" text-anchor="middle">ArgumentParser</text>
+      <text class="s" x="235" y="83" text-anchor="middle">→ CliArguments</text>
+      <line class="e" x1="310" y1="68" x2="346" y2="68" marker-end="url(#ca)"/>
+      <rect class="n" x="350" y="40" width="150" height="56" rx="5"/>
+      <text class="t" x="425" y="64" text-anchor="middle">CommandFactory</text>
+      <text class="s" x="425" y="83" text-anchor="middle">→ Command</text>
+      <line class="e" x1="500" y1="68" x2="536" y2="68" marker-end="url(#ca)"/>
+      <rect class="n core" x="540" y="40" width="150" height="56" rx="5"/>
+      <text class="t" x="615" y="64" text-anchor="middle">execute()</text>
+      <text class="s" x="615" y="83" text-anchor="middle">→ CommandStatus</text>
+      <line class="e" x1="690" y1="68" x2="736" y2="68" marker-end="url(#ca)"/>
+      <rect class="n" x="740" y="40" width="140" height="56" rx="5"/>
+      <text class="t" x="810" y="64" text-anchor="middle">exit 0 / 1</text>
+      <text class="s" x="810" y="83" text-anchor="middle">SUCCESS / FAILURE</text>
+
+      <line class="e err" x1="235" y1="96" x2="400" y2="168" marker-end="url(#cb)"/>
+      <line class="e err" x1="425" y1="96" x2="470" y2="168" marker-end="url(#cb)"/>
+      <line class="e err" x1="615" y1="96" x2="540" y2="168" marker-end="url(#cb)"/>
+      <text class="el err" x="300" y="146" text-anchor="middle">throws</text>
+
+      <rect class="n err" x="350" y="172" width="330" height="60" rx="5"/>
+      <text class="t" x="515" y="197" text-anchor="middle">PrintScriptCli.run — one catch</text>
+      <text class="s" x="515" y="218" text-anchor="middle">source error → 1 · usage / config → 2 · I/O → 1</text>
+      <line class="e" x1="680" y1="202" x2="736" y2="202" marker-end="url(#ca)"/>
+      <rect class="n" x="740" y="174" width="140" height="56" rx="5"/>
+      <text class="t" x="810" y="198" text-anchor="middle">exit 1 / 2</text>
+      <text class="s" x="810" y="217" text-anchor="middle">+ message on stderr</text>
+    </svg>
+    </div>
+    <figcaption>Commands never catch. Violations found by analyzing aren't an exception: they come back as <code>FAILURE</code> along the top path.</figcaption>
+  </figure>
+
+  <h3>Which output goes where</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>stdout: the result</th><th>stderr: everything else</th></tr></thead>
+    <tbody>
+      <tr><td>What a program prints with <code>println</code>, and <code>readInput</code> prompts</td><td>The progress line <code>Analizando... N sentencias</code></td></tr>
+      <tr><td>Formatted code (unless <code>--output</code> is used)</td><td>"Validación exitosa", "Ejecución finalizada", "Formateo finalizado"</td></tr>
+      <tr><td></td><td>The analyzing report, every error, and the usage line</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="code">
+  <h2>The code</h2>
+  <p class="sub">Entry point, arguments, commands, pipeline and I/O.</p>
+
+  <h3 class="part">Entry point and the single catch</h3>
+  <div class="code"><pre><span class="l"><i>6</i><span class="kw">fun</span> main(args: Array&lt;String&gt;) {</span><span class="l hl"><i>7</i>    exitProcess(PrintScriptCli(ConsoleOutput()).<span class="kw">run</span>(args.toList()))</span><span class="l"><i>8</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>20</i><span class="kw">class</span> PrintScriptCli(</span><span class="l hl"><i>21</i>    <span class="kw">private</span> <span class="kw">val</span> output: Output,</span><span class="l hl"><i>22</i>    <span class="kw">private</span> <span class="kw">val</span> argumentParser: ArgumentParser = ArgumentParser(),</span><span class="l hl"><i>23</i>    <span class="kw">private</span> <span class="kw">val</span> invoker: CliInvoker = CliInvoker(),</span><span class="l hl"><i>24</i>    <span class="kw">private</span> <span class="kw">val</span> commandFactory: CommandFactory = CommandFactory(output, ConsoleProgressReporter()),</span><span class="l"><i>25</i>) {</span><span class="l"><i>26</i>    <span class="kw">fun</span> <span class="kw">run</span>(arguments: List&lt;String&gt;): Int =</span><span class="l"><i>27</i>        try {</span><span class="l"><i>28</i>            execute(arguments)</span><span class="l hl"><i>29</i>        } catch (exception: PrintScriptException) {</span><span class="l hl"><i>30</i><span class="cm">            // describe() incluye fila y columna de inicio y de fin del problema.</span></span><span class="l hl"><i>31</i>            output.error(<span class="st">&quot;Error: ${exception.describe()}&quot;</span>)</span><span class="l hl"><i>32</i>            EXIT_ERROR</span><span class="l hl"><i>33</i>        } catch (exception: CliUsageException) {</span><span class="l hl"><i>34</i>            reportUsage(exception.message)</span><span class="l hl"><i>35</i>            EXIT_USAGE</span><span class="l hl"><i>36</i>        } catch (exception: IllegalArgumentException) {</span><span class="l hl"><i>37</i><span class="cm">            // Configuración inválida para la versión elegida: el problema está en el archivo</span></span><span class="l hl"><i>38</i><span class="cm">            // de reglas, no en cómo se invocó la CLI, así que no se muestra el uso.</span></span><span class="l hl"><i>39</i>            output.error(<span class="st">&quot;Error de configuración: ${exception.message}&quot;</span>)</span><span class="l hl"><i>40</i>            EXIT_USAGE</span><span class="l"><i>41</i>        } catch (exception: IllegalStateException) {</span><span class="l"><i>42</i><span class="cm">            // Reglas mal formadas: RulesReader informa el problema con error().</span></span><span class="l"><i>43</i>            output.error(<span class="st">&quot;Error de configuración: ${exception.message}&quot;</span>)</span><span class="l"><i>44</i>            EXIT_USAGE</span><span class="l hl"><i>45</i>        } catch (exception: IOException) {</span><span class="l hl"><i>46</i>            output.error(<span class="st">&quot;Error de entrada/salida: ${exception.message}&quot;</span>)</span><span class="l hl"><i>47</i>            EXIT_ERROR</span><span class="l"><i>48</i>        }</span><span class="l"><i>49</i></span><span class="l hl"><i>50</i>    <span class="kw">private</span> <span class="kw">fun</span> execute(arguments: List&lt;String&gt;): Int {</span><span class="l hl"><i>51</i>        <span class="kw">val</span> command = commandFactory.create(argumentParser.parse(arguments))</span><span class="l hl"><i>52</i>        <span class="kw">return</span> <span class="kw">when</span> (invoker.runCommand(command)) {</span><span class="l hl"><i>53</i>            CommandStatus.SUCCESS -&gt; EXIT_SUCCESS</span><span class="l hl"><i>54</i>            CommandStatus.FAILURE -&gt; EXIT_ERROR</span><span class="l hl"><i>55</i>        }</span><span class="l hl"><i>56</i>    }</span><span class="l"><i>57</i></span><span class="l"><i>58</i>    <span class="kw">private</span> <span class="kw">fun</span> reportUsage(message: String?) {</span><span class="l"><i>59</i>        output.error(<span class="st">&quot;Error: ${message ?: &quot;</span>argumentos inválidos<span class="st">&quot;}&quot;</span>)</span><span class="l"><i>60</i>        output.error(ArgumentParser.usage())</span><span class="l"><i>61</i>    }</span><span class="l"><i>62</i></span><span class="l hl"><i>63</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l hl"><i>64</i>        const <span class="kw">val</span> EXIT_SUCCESS = 0</span><span class="l hl"><i>65</i>        const <span class="kw">val</span> EXIT_ERROR = 1</span><span class="l hl"><i>66</i>        const <span class="kw">val</span> EXIT_USAGE = 2</span><span class="l"><i>67</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Constructor injection with defaults</strong> (:21–24): tests pass their own output, parser and factory; <code>main</code> uses the real ones.</li>
+    <li><strong>The happy path is four lines</strong> (:50–56): parse arguments, create the command, run it, and map the status to an exit code.</li>
+    <li><strong>Each catch is one outcome</strong>: a source error prints <code>describe()</code> with the position (:29–32); a usage error prints the usage line too (:33–35); configuration errors skip the usage line (:36–44); I/O errors exit 1 (:45–47).</li>
+  </ul>
+
+  <h3 class="part">Arguments</h3>
+  <div class="code"><pre><span class="l"><i>15</i>    <span class="kw">fun</span> parse(arguments: List&lt;String&gt;): CliArguments {</span><span class="l hl"><i>16</i>        <span class="kw">val</span> (positional, flags) = split(arguments)</span><span class="l"><i>17</i></span><span class="l hl"><i>18</i>        <span class="kw">val</span> operation = readOperation(positional)</span><span class="l hl"><i>19</i>        <span class="kw">val</span> sourcePath = readSourcePath(positional)</span><span class="l hl"><i>20</i>        <span class="kw">val</span> version = flags[VERSION_FLAG] ?: DEFAULT_VERSION</span><span class="l hl"><i>21</i>        requireSupported(version)</span><span class="l"><i>22</i></span><span class="l"><i>23</i>        <span class="kw">return</span> CliArguments(</span><span class="l"><i>24</i>            operation = operation,</span><span class="l"><i>25</i>            sourcePath = sourcePath,</span><span class="l"><i>26</i>            version = version,</span><span class="l hl"><i>27</i>            configPath = readConfigPath(operation, flags),</span><span class="l hl"><i>28</i>            outputPath = flags[OUTPUT_FLAG],</span><span class="l"><i>29</i>        )</span><span class="l"><i>30</i>    }</span><span class="l"><i>31</i></span><span class="l"><i>32</i><span class="cm">    /**</span></span><span class="l"><i>33</i><span class="cm">     * Separa los argumentos en posicionales y opciones en un solo recorrido.</span></span><span class="l"><i>34</i><span class="cm">     *</span></span><span class="l"><i>35</i><span class="cm">     * Tiene que ser un recorrido único: el valor de una opción no es un argumento posicional, y</span></span><span class="l"><i>36</i><span class="cm">     * distinguirlos exige saber qué opción lo precede. Como efecto, un valor que empiece con</span></span><span class="l"><i>37</i><span class="cm">     * `--` tampoco se confunde con otra opción.</span></span><span class="l"><i>38</i><span class="cm">     */</span></span><span class="l hl"><i>39</i>    <span class="kw">private</span> <span class="kw">fun</span> split(arguments: List&lt;String&gt;): Pair&lt;List&lt;String&gt;, Map&lt;String, String&gt;&gt; {</span><span class="l hl"><i>40</i>        <span class="kw">val</span> positional = mutableListOf&lt;String&gt;()</span><span class="l hl"><i>41</i>        <span class="kw">val</span> flags = mutableMapOf&lt;String, String&gt;()</span><span class="l hl"><i>42</i>        <span class="kw">var</span> index = 0</span><span class="l hl"><i>43</i>        while (index &lt; arguments.size) {</span><span class="l hl"><i>44</i>            <span class="kw">val</span> argument = arguments[index]</span><span class="l hl"><i>45</i>            <span class="kw">if</span> (argument.startsWith(<span class="st">&quot;--&quot;</span>)) {</span><span class="l hl"><i>46</i>                requireKnown(argument)</span><span class="l hl"><i>47</i>                flags[argument] = readFlagValue(arguments, index)</span><span class="l hl"><i>48</i>                index += 2</span><span class="l hl"><i>49</i>            } <span class="kw">else</span> {</span><span class="l hl"><i>50</i>                positional.add(argument)</span><span class="l hl"><i>51</i>                index += 1</span><span class="l hl"><i>52</i>            }</span><span class="l hl"><i>53</i>        }</span><span class="l hl"><i>54</i>        <span class="kw">return</span> positional to flags</span><span class="l hl"><i>55</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Validate everything that doesn't need the source</strong> (doc :5–11): a known operation, a supported version, an existing file, and a config when the operation needs one. Commands then receive a consistent <code>CliArguments</code>.</li>
+    <li><strong>One pass splits flags from positional arguments</strong> (:39–55). A flag's value is taken with the flag (:47), so flags can come in any order and a value is never mistaken for the source path.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>88</i>    <span class="kw">private</span> <span class="kw">fun</span> readConfigPath(</span><span class="l"><i>89</i>        operation: Operation,</span><span class="l"><i>90</i>        flags: Map&lt;String, String&gt;,</span><span class="l"><i>91</i>    ): String? {</span><span class="l"><i>92</i>        <span class="kw">val</span> path = flags[CONFIG_FLAG]</span><span class="l hl"><i>93</i>        <span class="kw">if</span> (!operation.requiresConfig) <span class="kw">return</span> path</span><span class="l hl"><i>94</i>        <span class="kw">if</span> (path == <span class="kw">null</span>) {</span><span class="l hl"><i>95</i>            throw CliUsageException(<span class="st">&quot;La operación ${operation.argument} necesita un archivo de configuración ($CONFIG_FLAG).&quot;</span>)</span><span class="l hl"><i>96</i>        }</span><span class="l hl"><i>97</i>        <span class="kw">if</span> (!File(path).isFile) throw CliUsageException(<span class="st">&quot;El archivo de configuración no existe: $path&quot;</span>)</span><span class="l hl"><i>98</i>        <span class="kw">return</span> path</span><span class="l"><i>99</i>    }</span><span class="l"><i>100</i></span><span class="l"><i>101</i>    <span class="kw">private</span> <span class="kw">fun</span> requireSupported(version: String) {</span><span class="l"><i>102</i>        <span class="kw">if</span> (version !<span class="kw">in</span> supportedVersions) {</span><span class="l"><i>103</i>            throw CliUsageException(<span class="st">&quot;Versión no soportada: $version. Versiones válidas: ${supportedVersions.joinToString(&quot;</span>, <span class="st">&quot;)}.&quot;</span>)</span><span class="l"><i>104</i>        }</span><span class="l"><i>105</i>    }</span><span class="l"><i>106</i></span><span class="l"><i>107</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l hl"><i>108</i>        const <span class="kw">val</span> DEFAULT_VERSION = <span class="st">&quot;1.0&quot;</span></span><span class="l hl"><i>109</i>        const <span class="kw">val</span> VERSION_FLAG = <span class="st">&quot;--version&quot;</span></span><span class="l hl"><i>110</i>        const <span class="kw">val</span> CONFIG_FLAG = <span class="st">&quot;--config&quot;</span></span><span class="l hl"><i>111</i>        const <span class="kw">val</span> OUTPUT_FLAG = <span class="st">&quot;--output&quot;</span></span><span class="l hl"><i>112</i></span><span class="l hl"><i>113</i>        <span class="kw">val</span> SUPPORTED_VERSIONS = setOf(<span class="st">&quot;1.0&quot;</span>, <span class="st">&quot;1.1&quot;</span>)</span><span class="l hl"><i>114</i>        <span class="kw">val</span> KNOWN_FLAGS = listOf(VERSION_FLAG, CONFIG_FLAG, OUTPUT_FLAG)</span><span class="l"><i>115</i></span><span class="l"><i>116</i><span class="cm">        /** Línea de uso que la CLI muestra cuando la invocación no es válida. */</span></span><span class="l"><i>117</i>        <span class="kw">fun</span> usage(): String =</span><span class="l"><i>118</i>            <span class="st">&quot;Uso: printscript &lt;${Operation.supportedArguments().replace(&quot;</span>, <span class="st">&quot;, &quot;</span>|<span class="st">&quot;)}&gt; &lt;archivo&gt; &quot;</span> +</span><span class="l"><i>119</i>                <span class="st">&quot;[$VERSION_FLAG ${SUPPORTED_VERSIONS.joinToString(&quot;</span>|<span class="st">&quot;)}] [$CONFIG_FLAG &lt;archivo&gt;] [$OUTPUT_FLAG &lt;archivo&gt;]&quot;</span></span><span class="l"><i>120</i>    }</span></pre></div>
+  <div class="code"><pre><span class="l"><i>10</i><span class="kw">enum</span> <span class="kw">class</span> Operation(</span><span class="l"><i>11</i>    <span class="kw">val</span> argument: String,</span><span class="l"><i>12</i>    <span class="kw">val</span> requiresConfig: Boolean,</span><span class="l"><i>13</i>) {</span><span class="l hl"><i>14</i>    VALIDATION(<span class="st">&quot;validation&quot;</span>, requiresConfig = false),</span><span class="l hl"><i>15</i>    EXECUTION(<span class="st">&quot;execution&quot;</span>, requiresConfig = false),</span><span class="l hl"><i>16</i>    FORMATTING(<span class="st">&quot;formatting&quot;</span>, requiresConfig = true),</span><span class="l hl"><i>17</i>    ANALYZING(<span class="st">&quot;analyzing&quot;</span>, requiresConfig = true),</span><span class="l"><i>18</i>    ;</span><span class="l"><i>19</i></span><span class="l"><i>20</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l hl"><i>21</i>        <span class="kw">fun</span> fromArgument(argument: String): Operation? = entries.find { it.argument == argument.lowercase() }</span><span class="l"><i>22</i></span><span class="l"><i>23</i>        <span class="kw">fun</span> supportedArguments(): String = entries.joinToString(<span class="st">&quot;, &quot;</span>) { it.argument }</span><span class="l"><i>24</i>    }</span><span class="l"><i>25</i>}</span></pre></div>
+  <p><strong><code>requiresConfig</code> is data on the enum</strong> (:14–17), so the parser checks it without a <code>when</code> per operation. Operation names are matched case-insensitively (:21). A config passed to an operation that doesn't need one is simply ignored (<span class="ref">ArgumentParser.kt:93</span>).</p>
+
+  <h3 class="part">Commands</h3>
+  <div class="code"><pre><span class="l"><i>30</i><span class="kw">class</span> CommandFactory(</span><span class="l"><i>31</i>    <span class="kw">private</span> <span class="kw">val</span> output: Output,</span><span class="l hl"><i>32</i>    <span class="kw">private</span> <span class="kw">val</span> progressReporter: ProgressReporter = NoOpProgressReporter,</span><span class="l hl"><i>33</i>    <span class="kw">private</span> <span class="kw">val</span> reader: Reader = ConsoleReader(),</span><span class="l hl"><i>34</i>    <span class="kw">private</span> <span class="kw">val</span> formatterBuilder: FormatterBuilder = FormatterBuilderPS(),</span><span class="l"><i>35</i>) {</span><span class="l hl"><i>36</i>    <span class="kw">fun</span> create(arguments: CliArguments): Command {</span><span class="l hl"><i>37</i>        <span class="kw">val</span> source = FileSource(arguments.sourcePath)</span><span class="l hl"><i>38</i>        <span class="kw">val</span> pipeline = ParsingPipeline(arguments.version, progressReporter)</span><span class="l hl"><i>39</i></span><span class="l hl"><i>40</i>        <span class="kw">return</span> <span class="kw">when</span> (arguments.operation) {</span><span class="l hl"><i>41</i>            Operation.VALIDATION -&gt; ValidationCommand(source, pipeline, output)</span><span class="l hl"><i>42</i>            Operation.EXECUTION -&gt; executionCommand(source, pipeline, arguments)</span><span class="l hl"><i>43</i>            Operation.FORMATTING -&gt; formattingCommand(source, arguments)</span><span class="l hl"><i>44</i>            Operation.ANALYZING -&gt; AnalyzingCommand(source, pipeline, buildLinter(arguments), output)</span><span class="l hl"><i>45</i>        }</span><span class="l hl"><i>46</i>    }</span><span class="l"><i>47</i></span><span class="l"><i>48</i>    <span class="kw">private</span> <span class="kw">fun</span> executionCommand(</span><span class="l"><i>49</i>        source: Source,</span><span class="l"><i>50</i>        pipeline: ParsingPipeline,</span><span class="l"><i>51</i>        arguments: CliArguments,</span><span class="l"><i>52</i>    ): Command =</span><span class="l"><i>53</i>        ExecutionCommand(</span><span class="l"><i>54</i>            source = source,</span><span class="l"><i>55</i>            pipeline = pipeline,</span><span class="l"><i>56</i>            version = arguments.version,</span><span class="l"><i>57</i>            printer = OutputPrinter(output),</span><span class="l"><i>58</i>            reader = reader,</span><span class="l"><i>59</i>            output = output,</span><span class="l"><i>60</i>        )</span><span class="l"><i>61</i></span><span class="l"><i>62</i>    <span class="kw">private</span> <span class="kw">fun</span> formattingCommand(</span><span class="l"><i>63</i>        source: Source,</span><span class="l"><i>64</i>        arguments: CliArguments,</span><span class="l"><i>65</i>    ): Command =</span><span class="l"><i>66</i>        FormattingCommand(</span><span class="l"><i>67</i>            source = source,</span><span class="l"><i>68</i>            formatter = formatterBuilder.build(configPathOf(arguments), arguments.version),</span><span class="l"><i>69</i>            sink = sinkFor(arguments),</span><span class="l"><i>70</i>            output = output,</span><span class="l"><i>71</i>        )</span><span class="l"><i>72</i></span><span class="l hl"><i>73</i>    <span class="kw">private</span> <span class="kw">fun</span> sinkFor(arguments: CliArguments): FormattedSink {</span><span class="l hl"><i>74</i>        <span class="kw">val</span> outputPath = arguments.outputPath ?: <span class="kw">return</span> OutputSink(output)</span><span class="l hl"><i>75</i>        <span class="kw">return</span> FileSink(outputPath)</span><span class="l hl"><i>76</i>    }</span><span class="l"><i>77</i></span><span class="l hl"><i>78</i>    <span class="kw">private</span> <span class="kw">fun</span> buildLinter(arguments: CliArguments): Linter {</span><span class="l hl"><i>79</i>        <span class="kw">val</span> linterVersion =</span><span class="l hl"><i>80</i>            requireNotNull(LinterVersion.fromString(arguments.version)) {</span><span class="l hl"><i>81</i>                <span class="st">&quot;El linter no soporta la versión ${arguments.version}.&quot;</span></span><span class="l hl"><i>82</i>            }</span><span class="l hl"><i>83</i>        <span class="kw">val</span> linter = Linter(linterVersion)</span><span class="l hl"><i>84</i>        linter.readJson(File(configPathOf(arguments)).readText())</span><span class="l hl"><i>85</i>        <span class="kw">return</span> linter</span><span class="l hl"><i>86</i>    }</span><span class="l"><i>87</i></span><span class="l"><i>88</i><span class="cm">    /** El parseo de argumentos ya exigió la configuración para las operaciones que la piden. */</span></span><span class="l"><i>89</i>    <span class="kw">private</span> <span class="kw">fun</span> configPathOf(arguments: CliArguments): String =</span><span class="l"><i>90</i>        requireNotNull(arguments.configPath) {</span><span class="l"><i>91</i>            <span class="st">&quot;La operación ${arguments.operation.argument} necesita un archivo de configuración.&quot;</span></span><span class="l"><i>92</i>        }</span><span class="l"><i>93</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>All wiring lives here</strong> (doc :23–29): the pipeline for the version, the printer and reader, the formatter with its rules, the linter with its version.</li>
+    <li><strong>Defaults can be replaced</strong> (:32–34): a progress reporter, a stdin reader and a formatter builder, which tests swap for fakes.</li>
+    <li><strong>The output destination</strong> (:73–76): <code>--output</code> selects a <code>FileSink</code>, otherwise stdout.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>16</i><span class="kw">class</span> ExecutionCommand(</span><span class="l"><i>17</i>    <span class="kw">private</span> <span class="kw">val</span> source: Source,</span><span class="l"><i>18</i>    <span class="kw">private</span> <span class="kw">val</span> pipeline: ParsingPipeline,</span><span class="l"><i>19</i>    <span class="kw">private</span> <span class="kw">val</span> version: String,</span><span class="l"><i>20</i>    <span class="kw">private</span> <span class="kw">val</span> printer: Printer,</span><span class="l"><i>21</i>    <span class="kw">private</span> <span class="kw">val</span> reader: Reader,</span><span class="l"><i>22</i>    <span class="kw">private</span> <span class="kw">val</span> output: Output,</span><span class="l"><i>23</i>) : Command {</span><span class="l"><i>24</i>    <span class="kw">override</span> <span class="kw">fun</span> execute(): CommandStatus {</span><span class="l hl"><i>25</i>        <span class="kw">val</span> interpreter = Interpreter.forVersion(version, printer, reader)</span><span class="l hl"><i>26</i>        pipeline.consume(source) { nodes -&gt; nodes.forEach { interpreter.execute(it) } }</span><span class="l"><i>27</i>        output.info(<span class="st">&quot;Ejecución finalizada.&quot;</span>)</span><span class="l"><i>28</i>        <span class="kw">return</span> CommandStatus.SUCCESS</span><span class="l"><i>29</i>    }</span><span class="l"><i>30</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>13</i><span class="kw">class</span> ValidationCommand(</span><span class="l"><i>14</i>    <span class="kw">private</span> <span class="kw">val</span> source: Source,</span><span class="l"><i>15</i>    <span class="kw">private</span> <span class="kw">val</span> pipeline: ParsingPipeline,</span><span class="l"><i>16</i>    <span class="kw">private</span> <span class="kw">val</span> output: Output,</span><span class="l"><i>17</i>) : Command {</span><span class="l"><i>18</i>    <span class="kw">override</span> <span class="kw">fun</span> execute(): CommandStatus {</span><span class="l hl"><i>19</i>        <span class="kw">val</span> result = pipeline.consume(source) { nodes -&gt; nodes.count() }</span><span class="l"><i>20</i>        <span class="kw">val</span> statements = pluralize(result.statements, <span class="st">&quot;sentencia&quot;</span>, <span class="st">&quot;sentencias&quot;</span>)</span><span class="l hl"><i>21</i>        output.info(<span class="st">&quot;Validación exitosa: ${result.statements} $statements en ${source.name}.&quot;</span>)</span><span class="l"><i>22</i>        <span class="kw">return</span> CommandStatus.SUCCESS</span><span class="l"><i>23</i>    }</span><span class="l"><i>24</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>14</i><span class="kw">class</span> FormattingCommand(</span><span class="l"><i>15</i>    <span class="kw">private</span> <span class="kw">val</span> source: Source,</span><span class="l"><i>16</i>    <span class="kw">private</span> <span class="kw">val</span> formatter: Formatter,</span><span class="l"><i>17</i>    <span class="kw">private</span> <span class="kw">val</span> sink: FormattedSink,</span><span class="l"><i>18</i>    <span class="kw">private</span> <span class="kw">val</span> output: Output,</span><span class="l"><i>19</i>) : Command {</span><span class="l"><i>20</i>    <span class="kw">override</span> <span class="kw">fun</span> execute(): CommandStatus {</span><span class="l hl"><i>21</i>        source.useLines { lines -&gt; sink.write(formatter.formatLines(lines)) }</span><span class="l"><i>22</i>        output.info(<span class="st">&quot;Formateo finalizado.&quot;</span>)</span><span class="l"><i>23</i>        <span class="kw">return</span> CommandStatus.SUCCESS</span><span class="l"><i>24</i>    }</span><span class="l"><i>25</i>}</span></pre></div>
+  <p>Each command is a few lines, because everything was built for it. Validation just counts the nodes: parsing them is the validation. Execution runs the interpreter on each node as it's parsed. Formatting connects the source's lines to the sink through <code>formatLines</code>. Analyzing is on the <a href="linter.html#report">linter sheet</a>.</p>
+  <div class="code"><pre><span class="l"><i>3</i><span class="cm">/**</span></span><span class="l"><i>4</i><span class="cm"> * Desenlace de una operación.</span></span><span class="l"><i>5</i><span class="cm"> *</span></span><span class="l hl"><i>6</i><span class="cm"> * Distingue &quot;la herramienta funcionó&quot; de &quot;el fuente cumplió&quot;: el Analyzing termina bien</span></span><span class="l hl"><i>7</i><span class="cm"> * habiendo encontrado violaciones, y eso igual debe reflejarse en el código de salida.</span></span><span class="l"><i>8</i><span class="cm"> */</span></span><span class="l"><i>9</i><span class="kw">enum</span> <span class="kw">class</span> CommandStatus {</span><span class="l"><i>10</i>    SUCCESS,</span><span class="l"><i>11</i>    FAILURE,</span><span class="l"><i>12</i>}</span></pre></div>
+
+  <h3 class="part">The shared parsing pipeline and progress</h3>
+  <div class="code"><pre><span class="l"><i>26</i><span class="kw">class</span> ParsingPipeline(</span><span class="l"><i>27</i>    <span class="kw">private</span> <span class="kw">val</span> version: String,</span><span class="l"><i>28</i>    <span class="kw">private</span> <span class="kw">val</span> progressReporter: ProgressReporter = NoOpProgressReporter,</span><span class="l"><i>29</i>) {</span><span class="l"><i>30</i>    <span class="kw">fun</span> &lt;T&gt; consume(</span><span class="l"><i>31</i>        source: Source,</span><span class="l"><i>32</i>        block: (Sequence&lt;ASTNode&gt;) -&gt; T,</span><span class="l"><i>33</i>    ): PipelineResult&lt;T&gt; {</span><span class="l"><i>34</i>        <span class="kw">var</span> parsed = 0</span><span class="l"><i>35</i>        <span class="kw">val</span> value =</span><span class="l hl"><i>36</i>            source.useLines { lines -&gt;</span><span class="l hl"><i>37</i>                <span class="kw">val</span> nodes =</span><span class="l hl"><i>38</i>                    nodesFrom(lines).onEach {</span><span class="l hl"><i>39</i>                        parsed += 1</span><span class="l hl"><i>40</i>                        progressReporter.onStatementParsed(parsed)</span><span class="l hl"><i>41</i>                    }</span><span class="l hl"><i>42</i>                block(nodes)</span><span class="l hl"><i>43</i>            }</span><span class="l hl"><i>44</i>        progressReporter.onFinished(parsed)</span><span class="l"><i>45</i>        <span class="kw">return</span> PipelineResult(value, parsed)</span><span class="l"><i>46</i>    }</span><span class="l"><i>47</i></span><span class="l hl"><i>48</i>    <span class="kw">private</span> <span class="kw">fun</span> nodesFrom(lines: Sequence&lt;String&gt;): Sequence&lt;ASTNode&gt; {</span><span class="l hl"><i>49</i>        <span class="kw">val</span> tokens = Lexer(TokenMapper(version)).convertToTokens(lines)</span><span class="l hl"><i>50</i>        <span class="kw">return</span> Parser.forVersion(version).execute(tokens)</span><span class="l hl"><i>51</i>    }</span><span class="l"><i>52</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Shared by three commands</strong>: validation, execution and analyzing all need lexer plus parser for the chosen version (:48–51).</li>
+    <li><strong>Progress without knowing the total</strong> (:38–41): <code>onEach</code> counts statements as the consumer pulls them. The count is reported while parsing, not after, as the assignment asks.</li>
+    <li><strong><code>useLines</code> keeps the file open only for the block</strong> (:36): the whole consumption happens inside it.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>11</i><span class="kw">class</span> ConsoleProgressReporter(</span><span class="l"><i>12</i>    <span class="kw">private</span> <span class="kw">val</span> err: PrintStream = System.err,</span><span class="l"><i>13</i>) : ProgressReporter {</span><span class="l"><i>14</i>    <span class="kw">override</span> <span class="kw">fun</span> onStatementParsed(count: Int) {</span><span class="l hl"><i>15</i>        err.print(<span class="st">&quot;\rAnalizando... $count sentencias&quot;</span>)</span><span class="l"><i>16</i>        err.flush()</span><span class="l"><i>17</i>    }</span><span class="l"><i>18</i></span><span class="l"><i>19</i>    <span class="kw">override</span> <span class="kw">fun</span> onFinished(total: Int) {</span><span class="l hl"><i>20</i>        err.print(<span class="st">&quot;\rAnalizando... $total sentencias. Listo.\n&quot;</span>)</span><span class="l"><i>21</i>        err.flush()</span><span class="l"><i>22</i>    }</span><span class="l"><i>23</i>}</span></pre></div>
+  <p><code>\r</code> returns to the start of the same stderr line (:15), so a 200,000-statement file shows one updating counter instead of 200,000 lines. <code>NoOpProgressReporter</code> is the null object used by tests.</p>
+
+  <h3 class="part">Input and output</h3>
+  <div class="code"><pre><span class="l"><i>9</i>interface Output {</span><span class="l"><i>10</i><span class="cm">    /** Mensajes de avance dirigidos a la persona (no forman parte del resultado). */</span></span><span class="l hl"><i>11</i>    <span class="kw">fun</span> info(message: String)</span><span class="l"><i>12</i></span><span class="l"><i>13</i><span class="cm">    /** El resultado de la operación: lo único que se puede canalizar a otro proceso. */</span></span><span class="l hl"><i>14</i>    <span class="kw">fun</span> result(message: String)</span><span class="l"><i>15</i></span><span class="l"><i>16</i><span class="cm">    /** Errores. */</span></span><span class="l hl"><i>17</i>    <span class="kw">fun</span> error(message: String)</span><span class="l"><i>18</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>11</i><span class="kw">class</span> ConsoleOutput(</span><span class="l"><i>12</i>    <span class="kw">private</span> <span class="kw">val</span> out: PrintStream = System.out,</span><span class="l"><i>13</i>    <span class="kw">private</span> <span class="kw">val</span> err: PrintStream = System.err,</span><span class="l"><i>14</i>) : Output {</span><span class="l hl"><i>15</i>    <span class="kw">override</span> <span class="kw">fun</span> info(message: String) = err.println(message)</span><span class="l"><i>16</i></span><span class="l hl"><i>17</i>    <span class="kw">override</span> <span class="kw">fun</span> result(message: String) = out.println(message)</span><span class="l"><i>18</i></span><span class="l hl"><i>19</i>    <span class="kw">override</span> <span class="kw">fun</span> error(message: String) = err.println(message)</span><span class="l"><i>20</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>10</i>interface Source {</span><span class="l"><i>11</i><span class="cm">    /** Nombre legible del fuente, para los mensajes de la CLI. */</span></span><span class="l"><i>12</i>    <span class="kw">val</span> <span class="kw">name</span>: String</span><span class="l"><i>13</i></span><span class="l hl"><i>14</i>    <span class="kw">fun</span> &lt;T&gt; useLines(block: (Sequence&lt;String&gt;) -&gt; T): T</span><span class="l"><i>15</i>}</span></pre></div>
+  <div class="code"><pre><span class="l"><i>12</i><span class="kw">class</span> ConsoleReader(</span><span class="l hl"><i>13</i>    <span class="kw">private</span> <span class="kw">val</span> reader: BufferedReader = System.`<span class="kw">in</span>`.bufferedReader(),</span><span class="l"><i>14</i>) : Reader {</span><span class="l hl"><i>15</i>    <span class="kw">override</span> <span class="kw">fun</span> input(message: String): String = reader.readLine() ?: <span class="st">&quot;&quot;</span></span><span class="l"><i>16</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Three output channels</strong>: <code>info</code> and <code>error</code> go to stderr, <code>result</code> to stdout. Commands never touch <code>System.out</code>.</li>
+    <li><strong><code>Source</code> only offers <code>useLines</code></strong> (<span class="ref">Source.kt:14</span>), with no "read everything", so no command can accidentally load a whole file.</li>
+    <li><strong>One reader on stdin</strong> (<span class="ref">ConsoleReader.kt:13</span>). Creating a new reader per <code>readInput</code> would discard what the previous one had buffered, and piped input would lose lines.</li>
+    <li><code>OutputPrinter</code> adapts the interpreter's <code>Printer</code> to the result channel; <code>FileSink</code> writes formatted lines to a file.</li>
+  </ul>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>Command + factory + invoker instead of a big <code>when</code> in <code>main</code></h4>
+    <p>Each operation is a small class that receives ready-made collaborators. A fifth operation is an enum entry, a command and a factory branch.</p>
+    <p class="cost"><b>Cost</b>More files (27) than a single-file CLI. Each is small and tested in isolation.</p>
+  </div>
+
+  <div class="decision">
+    <h4>One error boundary, with three exit codes</h4>
+    <p>Every operation reports errors identically, with the position from <code>describe()</code>. Codes separate "your program has a problem" (1) from "you invoked me wrong" (2), which scripts can act on.</p>
+    <p class="cost"><b>Cost</b>The mapping depends on exception types, so a new kind of failure needs a deliberate choice of code.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Validate arguments before opening the source</h4>
+    <p>A missing config, a wrong version or a missing file fails immediately with the usage line, and commands never check arguments again.</p>
+    <p class="cost"><b>Cost</b>Some validation needs the file's contents, such as which linter rules the version allows. That arrives later, as a configuration error.</p>
+  </div>
+
+  <div class="decision">
+    <h4>stdout is only the result</h4>
+    <p><code>formatting … &gt; out.ps</code> produces a clean file, and a program's output can be piped. Progress and messages never pollute the result.</p>
+    <p class="cost"><b>Cost</b>In a terminal both streams share the screen, so program output can appear right after the progress text on one line. <code>2&gt;/dev/null</code> shows only the result.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Progress by statements, on one line</h4>
+    <p>Parsing is lazy, so the total isn't known in advance. Counting statements as they're parsed is the honest measure, and <code>\r</code> keeps it to one line.</p>
+    <p class="cost"><b>Cost</b>No percentage or time estimate, just a running count.</p>
+  </div>
+
+  <div class="decision">
+    <h4><code>Source</code>, <code>Output</code> and <code>ProgressReporter</code> as interfaces</h4>
+    <p>Tests run every command against in-memory doubles (<code>TestDoubles.kt</code>), and <code>Source</code>'s shape enforces streaming.</p>
+    <p class="cost"><b>Cost</b>An extra layer of small classes between the commands and the console.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Show me the CLI validating a file, running it, and failing.</summary>
+      <p>Use the 5-minute order above: validation of <code>example2.ps</code>, execution with <code>2&gt;/dev/null</code>, <code>test19.txt</code> with and without <code>--version 1.1</code>, then <code>invalidCharacter.ps</code>. Finish with <code>echo $?</code> to show the exit codes.</p></details>
+    <details><summary>How do exit codes 1 and 2 differ?</summary>
+      <p>1 means something is wrong with the <em>source</em>: a lexical, syntax or run-time error, violations, or I/O. 2 means something is wrong with the <em>invocation or configuration</em>: missing arguments, unknown options, an unsupported version, bad rules. It's decided in <span class="ref">PrintScriptCli.kt:26–48</span>.</p></details>
+    <details><summary>Where is the progress the assignment asks for?</summary>
+      <p><span class="ref">ParsingPipeline.kt:38–41</span> calls the reporter for every statement as it's parsed, and <span class="ref">ConsoleProgressReporter.kt:15</span> redraws the line on stderr. The 200,000-statement demo shows it counting.</p></details>
+    <details><summary>How does <code>readInput</code> read from the console?</summary>
+      <p><code>CommandFactory</code> gives the interpreter a <code>ConsoleReader</code> with one <code>BufferedReader</code> on stdin, which reads a line per call. The prompt goes through the same printer as <code>println</code>.</p></details>
+    <details><summary>Why doesn't validation need the interpreter?</summary>
+      <p>Lexer and parser errors are thrown while nodes are pulled, so consuming all the nodes is enough (<span class="ref">ValidationCommand.kt:19</span>). Nothing runs and nothing is written to stdout.</p></details>
+    <details><summary>How would you add an operation, say one that prints tokens?</summary>
+      <p>Add <code>TOKENS("tokens", requiresConfig = false)</code> to <code>Operation</code>, write a <code>TokensCommand</code>, and add a branch to <code>CommandFactory.create</code>. The argument parser, error handling and exit codes already work.</p></details>
+    <details><summary>Why is the analyzing report on stderr?</summary>
+      <p>Violations are diagnostics about the source, like errors, not a product of the operation. The exit code carries the pass/fail result for scripts.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">Exit code for: violations found, a missing <code>--config</code>, a lexical error, <code>--version 2.0</code>?</label>
+      <details><summary>Answer</summary><p>1, 2, 1, 2.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2">Type the commands to show a 1.1 <code>if</code>/<code>else</code> and then 1.0 rejecting it.</label>
+      <details><summary>Answer</summary><p><code>./printscript execution cli/src/test/resources/test19.txt --version 1.1</code>, then the same without <code>--version</code>. The second prints the <code>const</code> error with columns 1–6 and exits 1.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">Which channel gets <code>Result: 3</code>, and which gets "Ejecución finalizada."?</label>
+      <details><summary>Answer</summary><p><code>Result: 3</code> is the program's output, so stdout, through <code>OutputPrinter</code>. The message is info, so stderr. That's why <code>2&gt;/dev/null</code> leaves only the result.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">What happens between <code>main(args)</code> and the exit code?</label>
+      <details><summary>Answer</summary><p><code>ArgumentParser</code> builds <code>CliArguments</code>, <code>CommandFactory</code> builds the command, <code>CliInvoker</code> runs it, and <code>CommandStatus</code> maps to 0 or 1. Any exception goes to the single catch in <code>PrintScriptCli.run</code>, which maps to 1 or 2.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">How do you write formatted code to a file? Give two ways.</label>
+      <details><summary>Answer</summary><p><code>--output /tmp/ps-demo/formatted.ps</code> (a <code>FileSink</code>), or redirect stdout with <code>&gt; file</code>. Both give a clean file, because messages go to stderr.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">How does the progress counter work without knowing the total number of statements?</label>
+      <details><summary>Answer</summary><p><code>ParsingPipeline</code> wraps the lazy node sequence in <code>onEach</code>, reporting a count each time the consumer pulls a statement. <code>ConsoleProgressReporter</code> redraws one line with <code>\r</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">Why one <code>BufferedReader</code> for all <code>readInput</code> calls?</label>
+      <details><summary>Answer</summary><p>A new reader per call would lose whatever the previous one had already buffered from stdin, so piped lines would go missing between reads.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">Why does analyzing return <code>FAILURE</code> instead of throwing when it finds violations?</label>
+      <details><summary>Answer</summary><p>The tool worked correctly and the source didn't meet the rules. That's an outcome, not an error: the full report is printed, and the exit code 1 tells scripts the result.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">68 tests in 7 files (test names are in Spanish).</p>
+  <ul class="points tests">
+    <li><strong>ArgumentParserTest (18):</strong> operation and source, default and explicit version, config and output, flags in any order, and every rejection (missing or unknown operation, missing or non-file source, unsupported version, missing config, unknown option, option without value). The usage line names everything.</li>
+    <li><strong>PrintScriptCliTest (15):</strong> end to end with exit codes: validation success and positioned syntax/lexical errors, the PDF's expected output, formatting to stdout and to a file, analyzing pass and fail, 1.1 on request, a 1.1 word rejected in 1.0, usage vs configuration errors, malformed rules, an unreachable output file.</li>
+    <li><strong>CommandTest (12):</strong> each command against test doubles, including "execution resuelve los tres ejemplos de la consigna" and readInput in 1.1.</li>
+    <li><strong>IoTest (10):</strong> result to stdout and the rest to stderr, sources and sinks, stdin one line per read, progress on the same stderr line.</li>
+    <li><strong>OperationTest (5)</strong>, <strong>CommandFactoryTest (4)</strong>, and <strong>StreamingTest (4)</strong>: the first statements don't read the whole source, and progress keeps pace with parsing.</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-cli-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+
+  document.querySelectorAll(".copy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var code = btn.parentNode.querySelector("code");
+      var value = code.getAttribute("data-copy") || code.textContent;
+      function done(label){ btn.textContent = label; setTimeout(function(){ btn.textContent = "Copy"; }, 1600); }
+      function selectFallback(){
+        try {
+          var range = document.createRange(); range.selectNodeContents(code);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+          done(document.execCommand && document.execCommand("copy") ? "Copied" : "Selected");
+        } catch (e) { done("Select to copy"); }
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(function(){ done("Copied"); }, selectFallback);
+        } else { selectFallback(); }
+      } catch (e) { selectFallback(); }
+    });
+  });
+})();
+</script>

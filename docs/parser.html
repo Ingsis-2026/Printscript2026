@@ -1,0 +1,601 @@
+<title>PrintScript parser Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:680px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .n{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+svg .n.ext{stroke-dasharray:5 4}
+svg .n.op{fill:var(--ground)}
+svg .t{fill:var(--ink);font-family:var(--mono);font-size:13px;font-weight:600}
+svg .s{fill:var(--muted);font-family:var(--body);font-size:12px}
+svg .e{stroke:var(--ink);stroke-width:1.2;fill:none}
+svg .e.acc{stroke:var(--accent);stroke-width:1.6}
+svg .el{fill:var(--muted);font-family:var(--mono);font-size:11.5px}
+svg .el.acc{fill:var(--accent)}
+svg .ah{fill:var(--ink)} svg .ah.acc{fill:var(--accent)}
+.stmts{list-style:none;margin:10px 0 16px;padding:0;border-top:1px solid var(--rule)}
+.stmts li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.stmts .k{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.stmts code{background:none;padding:0;font-size:13px;overflow-wrap:anywhere}
+.matrix td.y,.matrix td.n,.matrix td.w{text-align:center;font-family:var(--mono);font-size:12.5px}
+.matrix td.y{color:var(--ink)}
+.matrix td.n{color:var(--muted);opacity:.55}
+.matrix td.w{color:var(--surface);background:var(--accent);font-weight:600;border-radius:3px}
+.matrix th.f{text-align:center}
+.tree{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:12px 16px;overflow-x:auto;white-space:pre;margin:8px 0 14px}
+.tree .c{color:var(--muted)}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pair .tree{margin:0}
+.pair h5{font-family:var(--mono);font-size:12.5px;margin:0 0 6px;font-weight:600}
+@media (max-width:640px){.pair{grid-template-columns:minmax(0,1fr)}}
+.measure{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 16px}
+.measure div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.measure .big{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.measure p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:560px){.measure{grid-template-columns:minmax(0,1fr)}}
+td.mono{font-family:var(--mono);font-size:13px}
+td .c{color:var(--muted)}
+h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40px}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <a href="lexer.html">lexer</a>
+  <span class="cur" aria-current="page">parser</span>
+  <a href="interpreter.html">interpreter</a><a href="formatter.html">formatter</a><a href="linter.html">linter</a><a href="cli.html">cli</a>
+  <a href="github.html">github</a>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 3 of 8</p>
+  <h1><code>parser</code></h1>
+  <p class="lede">Groups the token stream into statements and turns each statement into an AST node, lazily. It has two halves: a state machine that decides where a statement ends, and a chain of factories that each know how to build one kind of statement.</p>
+  <ul class="meta">
+    <li><b>11</b>files</li>
+    <li><b>727</b>lines</li>
+    <li><b>61</b>tests</li>
+    <li><b>1</b>dependency: commons</li>
+    <li><b>~30</b>minutes to study</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#shape">The shape</a></li>
+    <li><a href="#splitter">Splitting statements</a></li>
+    <li><a href="#chain">Choosing a factory</a></li>
+    <li><a href="#factories">The factories</a></li>
+    <li><a href="#errors">Errors</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"The parser works in two steps. First, the <strong>StatementSplitter</strong> reads tokens and cuts them into statements: at a <code>;</code>, or when a block closes. It counts braces so a whole <code>if</code>/<code>else</code> stays together. Then, for each statement, the parser asks a <strong>list of factories</strong>, in order, "can you handle this?", and the first one that says yes builds the node. The version decides which factories are in the list: 1.0 has no <code>ConditionalFactory</code>. Blocks are parsed recursively by a fresh sub-parser. Everything is a <code>Sequence</code>, so only the statement being built is ever held in memory."</p>
+  </div>
+</section>
+
+<section id="shape">
+  <h2>The shape</h2>
+  <p class="sub">Parsing one statement, from tokens to node.</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 860 330" role="img" aria-label="Tokens enter the StatementSplitter, which emits one list of tokens per statement to the Parser. The Parser asks five factories in order: Conditional, Println, Declaration, Assignation and Function; the first that can handle the statement builds the node. Println, Declaration, Assignation and Function delegate expressions to OperationFactory. ConditionalFactory parses block bodies with a new Parser. Nodes leave as a Sequence of ASTNode.">
+      <defs>
+        <marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="pb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah acc" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <text class="el acc" x="120" y="56" text-anchor="middle">Sequence&lt;Token&gt;</text>
+      <line class="e acc" x1="120" y1="64" x2="120" y2="130" marker-end="url(#pb)"/>
+      <rect class="n" x="40" y="134" width="160" height="64" rx="5"/>
+      <text class="t" x="120" y="160" text-anchor="middle">StatementSplitter</text>
+      <text class="s" x="120" y="182" text-anchor="middle">cuts statements</text>
+
+      <line class="e acc" x1="200" y1="166" x2="286" y2="166" marker-end="url(#pb)"/>
+      <text class="el acc" x="243" y="156" text-anchor="middle">List&lt;Token&gt;</text>
+
+      <rect class="n" x="290" y="134" width="150" height="64" rx="5"/>
+      <text class="t" x="365" y="160" text-anchor="middle">Parser</text>
+      <text class="s" x="365" y="182" text-anchor="middle">first canHandle wins</text>
+
+      <line class="e" x1="440" y1="166" x2="516" y2="61" marker-end="url(#pa)"/>
+      <line class="e" x1="440" y1="166" x2="516" y2="105" marker-end="url(#pa)"/>
+      <line class="e" x1="440" y1="166" x2="516" y2="149" marker-end="url(#pa)"/>
+      <line class="e" x1="440" y1="166" x2="516" y2="193" marker-end="url(#pa)"/>
+      <line class="e" x1="440" y1="166" x2="516" y2="237" marker-end="url(#pa)"/>
+
+      <rect class="n ext" x="520" y="44" width="200" height="34" rx="4"/>
+      <text class="t" x="534" y="66">1 ConditionalFactory</text>
+      <rect class="n" x="520" y="88" width="200" height="34" rx="4"/>
+      <text class="t" x="534" y="110">2 PrintlnFactory</text>
+      <rect class="n" x="520" y="132" width="200" height="34" rx="4"/>
+      <text class="t" x="534" y="154">3 DeclarationFactory</text>
+      <rect class="n" x="520" y="176" width="200" height="34" rx="4"/>
+      <text class="t" x="534" y="198">4 AssignationFactory</text>
+      <rect class="n" x="520" y="220" width="200" height="34" rx="4"/>
+      <text class="t" x="534" y="242">5 FunctionFactory</text>
+
+      <path class="e" d="M620 44 V20 H365 V130" marker-end="url(#pa)"/>
+      <text class="el" x="492" y="14" text-anchor="middle">block body → new Parser</text>
+
+      <line class="e" x1="720" y1="105" x2="748" y2="105"/>
+      <line class="e" x1="720" y1="149" x2="748" y2="149"/>
+      <line class="e" x1="720" y1="193" x2="748" y2="193"/>
+      <line class="e" x1="720" y1="237" x2="748" y2="237"/>
+      <path class="e" d="M748 105 V297 H724" marker-end="url(#pa)"/>
+      <text class="el" x="756" y="175">expressions</text>
+
+      <rect class="n op" x="520" y="280" width="200" height="34" rx="4"/>
+      <text class="t" x="534" y="302">OperationFactory</text>
+
+      <line class="e acc" x1="365" y1="198" x2="365" y2="272" marker-end="url(#pb)"/>
+      <text class="el acc" x="373" y="244">Sequence&lt;ASTNode&gt;</text>
+      <text class="s" x="365" y="296" text-anchor="middle">to interpreter · linter · validation</text>
+    </svg>
+    </div>
+    <figcaption>Numbers are the order in which factories are asked. The dashed box exists only in the 1.1 list. <code>OperationFactory</code> isn't in the chain: it's a helper the four statement factories call to turn an expression into a tree.</figcaption>
+  </figure>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Who calls it</th><th>Where</th><th>What consumes the nodes</th></tr></thead>
+    <tbody>
+      <tr><td>CLI</td><td><span class="ref">ParsingPipeline.kt:50</span></td><td>validation (counts), execution (interpreter), analyzing (linter)</td></tr>
+      <tr><td>TCK</td><td><span class="ref">Pipeline.java:27</span></td><td>interpreter and linter adapters</td></tr>
+    </tbody>
+  </table></div>
+  <p>The parser receives a <code>Sequence&lt;Token&gt;</code> and never imports the lexer. Its only production dependency is <code>commons</code>; the lexer appears only as a <code>testImplementation</code>.</p>
+</section>
+
+<section id="splitter">
+  <h2>Part 1 · Splitting statements</h2>
+  <p class="sub"><code>StatementSplitter</code> is a state machine over the token stream. Its only job is to decide where a statement ends.</p>
+
+  <h3>The rules, in the order the code checks them</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Situation</th><th>What happens</th><th>Line</th></tr></thead>
+    <tbody>
+      <tr><td>A block just closed</td><td>If the token is <code>else</code>, keep building the same statement. Otherwise emit the held statement first.</td><td><span class="ref">:33–42</span></td></tr>
+      <tr><td><code>{</code></td><td>Depth + 1, add the token</td><td><span class="ref">:45–48</span></td></tr>
+      <tr><td><code>}</code> with depth &gt; 0</td><td>Depth − 1, add; at depth 0 hold the statement (an <code>else</code> may follow)</td><td><span class="ref">:50–54</span></td></tr>
+      <tr><td><code>}</code> in a block body</td><td>It closes the enclosing block: emit the last statement, even without <code>;</code></td><td><span class="ref">:58–64</span></td></tr>
+      <tr><td><code>}</code> otherwise</td><td>Error: <em>se encontró un "}" que no cierra ningún bloque</em></td><td><span class="ref">:66</span></td></tr>
+      <tr><td>Anything while depth &gt; 0</td><td>Add as-is: inner <code>;</code>s belong to the block body</td><td><span class="ref">:71</span></td></tr>
+      <tr><td><code>if</code></td><td>Must start a new statement; a pending one is unterminated</td><td><span class="ref">:73–77</span></td></tr>
+      <tr><td><code>;</code></td><td>Emit the statement (the <code>;</code> itself isn't kept)</td><td><span class="ref">:79–84</span></td></tr>
+      <tr><td>Any other token</td><td>Add</td><td><span class="ref">:86</span></td></tr>
+      <tr><td>End of input</td><td>Leftovers must end in <code>}</code> or <code>{</code>; an empty program is an error</td><td><span class="ref">:90–97</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="code"><pre><span class="l"><i>20</i><span class="kw">internal</span> <span class="kw">class</span> StatementSplitter(</span><span class="l hl"><i>21</i>    <span class="kw">private</span> <span class="kw">val</span> insideBlock: Boolean = false,</span><span class="l"><i>22</i>) {</span><span class="l"><i>23</i>    <span class="kw">fun</span> split(tokens: Sequence&lt;Token&gt;): Sequence&lt;List&lt;Token&gt;&gt; =</span><span class="l"><i>24</i>        sequence {</span><span class="l"><i>25</i>            <span class="kw">val</span> current = mutableListOf&lt;Token&gt;()</span><span class="l hl"><i>26</i>            <span class="kw">var</span> openBraces = 0</span><span class="l hl"><i>27</i>            <span class="kw">var</span> blockJustClosed = false</span><span class="l"><i>28</i>            <span class="kw">var</span> emittedAny = false</span><span class="l"><i>29</i></span><span class="l"><i>30</i>            <span class="kw">for</span> (token <span class="kw">in</span> tokens) {</span><span class="l"><i>31</i><span class="cm">                // Un &quot;}&quot; que cerró el bloque puede continuar con &quot;else&quot;: la sentencia quedó</span></span><span class="l"><i>32</i><span class="cm">                // retenida hasta poder mirar este token.</span></span><span class="l hl"><i>33</i>                <span class="kw">if</span> (blockJustClosed) {</span><span class="l hl"><i>34</i>                    blockJustClosed = false</span><span class="l hl"><i>35</i>                    <span class="kw">if</span> (token.value == <span class="st">&quot;else&quot;</span>) {</span><span class="l hl"><i>36</i>                        current.add(token)</span><span class="l hl"><i>37</i>                        continue</span><span class="l hl"><i>38</i>                    }</span><span class="l hl"><i>39</i>                    yield(current.toList())</span><span class="l hl"><i>40</i>                    emittedAny = true</span><span class="l hl"><i>41</i>                    current.clear()</span><span class="l hl"><i>42</i>                }</span><span class="l"><i>43</i></span><span class="l"><i>44</i>                <span class="kw">when</span> {</span><span class="l hl"><i>45</i>                    token.value == <span class="st">&quot;{&quot;</span> -&gt; {</span><span class="l hl"><i>46</i>                        openBraces++</span><span class="l hl"><i>47</i>                        current.add(token)</span><span class="l hl"><i>48</i>                    }</span><span class="l hl"><i>49</i></span><span class="l hl"><i>50</i>                    token.value == <span class="st">&quot;}&quot;</span> &amp;&amp; openBraces &gt; 0 -&gt; {</span><span class="l hl"><i>51</i>                        openBraces--</span><span class="l hl"><i>52</i>                        current.add(token)</span><span class="l hl"><i>53</i>                        <span class="kw">if</span> (openBraces == 0) blockJustClosed = true</span><span class="l hl"><i>54</i>                    }</span><span class="l"><i>55</i></span><span class="l"><i>56</i><span class="cm">                    // El &quot;}&quot; que cierra el bloque que envuelve a este cuerpo no forma parte de</span></span><span class="l"><i>57</i><span class="cm">                    // la última sentencia: la termina. Por eso esa sentencia puede omitir el &quot;;&quot;.</span></span><span class="l hl"><i>58</i>                    token.value == <span class="st">&quot;}&quot;</span> &amp;&amp; insideBlock -&gt; {</span><span class="l hl"><i>59</i>                        <span class="kw">if</span> (current.isNotEmpty()) {</span><span class="l hl"><i>60</i>                            yield(current.toList())</span><span class="l hl"><i>61</i>                            emittedAny = true</span><span class="l hl"><i>62</i>                            current.clear()</span><span class="l hl"><i>63</i>                        }</span><span class="l hl"><i>64</i>                    }</span><span class="l"><i>65</i></span><span class="l"><i>66</i>                    token.value == <span class="st">&quot;}&quot;</span> -&gt; throw unmatchedBrace(token)</span><span class="l"><i>67</i></span><span class="l"><i>68</i><span class="cm">                    // Dentro de un bloque los tokens se acumulan tal cual: el &quot;;&quot; que separa</span></span><span class="l"><i>69</i><span class="cm">                    // sus sentencias lo necesita quien parsee el cuerpo, y un &quot;if&quot; anidado no</span></span><span class="l"><i>70</i><span class="cm">                    // abre una sentencia nueva en este nivel.</span></span><span class="l"><i>71</i>                    openBraces &gt; 0 -&gt; current.add(token)</span><span class="l"><i>72</i></span><span class="l"><i>73</i>                    token.value == <span class="st">&quot;if&quot;</span> -&gt; {</span><span class="l"><i>74</i><span class="cm">                        // Una sentencia pendiente antes de un &quot;if&quot; quedó sin terminador.</span></span><span class="l"><i>75</i>                        <span class="kw">if</span> (current.isNotEmpty()) throw unterminatedStatement(current)</span><span class="l"><i>76</i>                        current.add(token)</span><span class="l"><i>77</i>                    }</span><span class="l"><i>78</i></span><span class="l hl"><i>79</i>                    token.value == <span class="st">&quot;;&quot;</span> -&gt;</span><span class="l hl"><i>80</i>                        <span class="kw">if</span> (current.isNotEmpty()) {</span><span class="l hl"><i>81</i>                            yield(current.toList())</span><span class="l hl"><i>82</i>                            emittedAny = true</span><span class="l hl"><i>83</i>                            current.clear()</span><span class="l hl"><i>84</i>                        }</span><span class="l"><i>85</i></span><span class="l"><i>86</i>                    <span class="kw">else</span> -&gt; current.add(token)</span><span class="l"><i>87</i>                }</span><span class="l"><i>88</i>            }</span><span class="l"><i>89</i></span><span class="l"><i>90</i>            <span class="kw">if</span> (current.isNotEmpty()) {</span><span class="l"><i>91</i>                <span class="kw">val</span> last = current.last()</span><span class="l"><i>92</i>                <span class="kw">if</span> (last.value != <span class="st">&quot;}&quot;</span> &amp;&amp; last.value != <span class="st">&quot;{&quot;</span>) throw unterminatedStatement(current)</span><span class="l"><i>93</i>                yield(current.toList())</span><span class="l"><i>94</i>                emittedAny = true</span><span class="l"><i>95</i>            }</span><span class="l"><i>96</i></span><span class="l hl"><i>97</i>            <span class="kw">if</span> (!emittedAny) throw ParserException(<span class="st">&quot;Error: No valid code.&quot;</span>)</span><span class="l"><i>98</i>        }</span></pre></div>
+
+  <h3>What it emits for a nested program (1.1)</h3>
+<pre class="tree">let b: boolean = true;
+if (b) {
+  let x: number = 1;
+  if (b) { println(x); }
+  println("after")
+} else {
+  x = 2;
+}
+println("done");</pre>
+  <ol class="stmts">
+    <li><span class="k">S1</span><code>let b : boolean = true</code></li>
+    <li><span class="k">S2</span><code>if ( b ) { let x : number = 1 ; if ( b ) { println ( x ) ; } println ( after ) } else { x = 2 ; }</code></li>
+    <li><span class="k">S3</span><code>println ( done )</code></li>
+  </ol>
+  <p>Three statements, printed by running the real splitter. S2 spans seven lines and contains its own <code>;</code>s and a nested <code>if</code>. The splitter doesn't care what's inside; it just counts braces. <code>println("after")</code> has no <code>;</code>, and that's fine: the <code>}</code> after it ends it once the block body is parsed.</p>
+
+  <h3>Laziness, measured</h3>
+  <div class="measure">
+    <div><span class="big">3 lines</span><p>read to get 3 nodes from an <strong>infinite</strong> source of <code>let x: number = 1;</code>. Each statement is parsed only when asked for.</p></div>
+    <div><span class="big">7 lines</span><p>read to get an <code>if</code>/<code>else</code> that ends on line 6. After the final <code>}</code> the splitter must see one more token to know whether an <code>else</code> follows.</p></div>
+  </div>
+</section>
+
+<section id="chain">
+  <h2>Part 2 · Choosing a factory</h2>
+  <p class="sub">For each statement, <code>Parser</code> uses the first factory whose <code>canHandle</code> returns true.</p>
+  <div class="code"><pre><span class="l hl"><i>21</i>    <span class="kw">fun</span> execute(tokens: Sequence&lt;Token&gt;): Sequence&lt;ASTNode&gt; = nodesOf(StatementSplitter().split(tokens))</span><span class="l"><i>22</i></span><span class="l"><i>23</i><span class="cm">    /** Variante que materializa el resultado, para los usos que ya tienen todo en memoria. */</span></span><span class="l"><i>24</i>    <span class="kw">fun</span> execute(tokens: List&lt;Token&gt;): List&lt;ASTNode&gt; = execute(tokens.asSequence()).toList()</span><span class="l"><i>25</i></span><span class="l"><i>26</i><span class="cm">    /**</span></span><span class="l"><i>27</i><span class="cm">     * Parsea el cuerpo de un bloque, que llega con el `}` que lo cierra.</span></span><span class="l"><i>28</i><span class="cm">     *</span></span><span class="l"><i>29</i><span class="cm">     * Se distingue de [execute] porque en el nivel superior un `}` sin bloque abierto es un</span></span><span class="l"><i>30</i><span class="cm">     * error, mientras que acá es el cierre del bloque que envuelve al cuerpo: termina la</span></span><span class="l"><i>31</i><span class="cm">     * última sentencia, que por eso puede omitir el `;`.</span></span><span class="l"><i>32</i><span class="cm">     */</span></span><span class="l hl"><i>33</i>    <span class="kw">fun</span> executeBlockBody(tokens: List&lt;Token&gt;): List&lt;ASTNode&gt; =</span><span class="l hl"><i>34</i>        nodesOf(StatementSplitter(insideBlock = true).split(tokens.asSequence())).toList()</span><span class="l"><i>35</i></span><span class="l hl"><i>36</i>    <span class="kw">private</span> <span class="kw">fun</span> nodesOf(statements: Sequence&lt;List&lt;Token&gt;&gt;): Sequence&lt;ASTNode&gt; = statements.map { createNode(it) }</span><span class="l"><i>37</i></span><span class="l"><i>38</i>    <span class="kw">private</span> <span class="kw">fun</span> createNode(statement: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>39</i>        <span class="kw">val</span> astFactory =</span><span class="l hl"><i>40</i>            determineFactory(statement)</span><span class="l hl"><i>41</i>                ?: throw ParserException(</span><span class="l hl"><i>42</i>                    <span class="st">&quot;Can&#x27;t handle this sentence&quot;</span>,</span><span class="l hl"><i>43</i>                    statement.firstOrNull()?.getPosition(),</span><span class="l hl"><i>44</i>                    statement.lastOrNull()?.getFinalPosition(),</span><span class="l hl"><i>45</i>                )</span><span class="l hl"><i>46</i>        <span class="kw">return</span> astFactory.createAST(statement)</span><span class="l"><i>47</i>    }</span><span class="l"><i>48</i></span><span class="l hl"><i>49</i>    <span class="kw">private</span> <span class="kw">fun</span> determineFactory(tokens: List&lt;Token&gt;): ASTFactory? = factories.find { it.canHandle(tokens) }</span></pre></div>
+  <ul class="points">
+    <li><strong><code>execute(Sequence)</code></strong> (:21) is the real entry point. <code>execute(List)</code> (:24) just wraps it for callers that already have everything in memory.</li>
+    <li><strong><code>executeBlockBody</code></strong> (:33–34) is the same thing with <code>insideBlock = true</code>. <code>ConditionalFactory</code> calls it for block bodies.</li>
+    <li><strong>Nothing matches</strong> → <em>"Can't handle this sentence"</em>, spanning the whole statement (:41–45).</li>
+  </ul>
+
+  <h3>Why the order matters: real <code>canHandle</code> answers</h3>
+  <div class="tablewrap"><table class="matrix">
+    <thead><tr><th>Statement (1.1)</th><th class="f">Cond.</th><th class="f">Println</th><th class="f">Decl.</th><th class="f">Assig.</th><th class="f">Func.</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">if (b) { let x: number = 1; } else { x = 2; }</td><td class="w">yes</td><td class="n">no</td><td class="y">yes</td><td class="y">yes</td><td class="n">no</td></tr>
+      <tr><td class="mono">println("Result: " + c);</td><td class="n">no</td><td class="w">yes</td><td class="n">no</td><td class="n">no</td><td class="y">yes</td></tr>
+      <tr><td class="mono">let c: number = a / b;</td><td class="n">no</td><td class="n">no</td><td class="w">yes</td><td class="y">yes</td><td class="n">no</td></tr>
+      <tr><td class="mono">let n: number = readInput("n?");</td><td class="n">no</td><td class="n">no</td><td class="w">yes</td><td class="y">yes</td><td class="y">yes</td></tr>
+      <tr><td class="mono">a = a / b;</td><td class="n">no</td><td class="n">no</td><td class="n">no</td><td class="w">yes</td><td class="n">no</td></tr>
+      <tr><td class="mono">x = readEnv("HOME");</td><td class="n">no</td><td class="n">no</td><td class="n">no</td><td class="w">yes</td><td class="y">yes</td></tr>
+      <tr><td class="mono">5;</td><td class="n">no</td><td class="n">no</td><td class="n">no</td><td class="n">no</td><td class="n">no</td></tr>
+    </tbody>
+  </table></div>
+  <p>Shaded cells are the factory that actually builds the node. Each <code>canHandle</code> is a one-line check for the presence of a token (<code>if</code>, a leading <code>println</code>, a KEYWORD, a <code>=</code>, a FUNCTION), so several factories often say yes, and the list order breaks the tie:</p>
+  <ul class="points">
+    <li><strong>Conditional first:</strong> an <code>if</code> statement contains declarations and assignments in its blocks.</li>
+    <li><strong>Println before Function:</strong> <code>println</code> is itself a FUNCTION token.</li>
+    <li><strong>Declaration before Assignation:</strong> <code>let c: number = …</code> contains a <code>=</code>.</li>
+    <li><strong>Function last:</strong> a <code>readInput</code> call nested in a declaration or assignment must go to that factory. <code>FunctionFactory</code> only builds a call that stands alone.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>20</i>    <span class="kw">fun</span> forVersion(version: String): Parser =</span><span class="l hl"><i>21</i>        <span class="kw">when</span> (version) {</span><span class="l hl"><i>22</i>            <span class="st">&quot;1.0&quot;</span> -&gt;</span><span class="l hl"><i>23</i>                Parser(</span><span class="l hl"><i>24</i>                    listOf(</span><span class="l hl"><i>25</i>                        PrintlnFactory(),</span><span class="l hl"><i>26</i>                        DeclarationFactory(),</span><span class="l hl"><i>27</i>                        AssignationFactory(),</span><span class="l hl"><i>28</i>                        FunctionFactory(),</span><span class="l hl"><i>29</i>                    ),</span><span class="l hl"><i>30</i>                )</span><span class="l hl"><i>31</i>            <span class="st">&quot;1.1&quot;</span> -&gt;</span><span class="l hl"><i>32</i>                Parser(</span><span class="l hl"><i>33</i>                    listOf(</span><span class="l hl"><i>34</i>                        ConditionalFactory { forVersion(<span class="st">&quot;1.1&quot;</span>) },</span><span class="l hl"><i>35</i>                        PrintlnFactory(),</span><span class="l hl"><i>36</i>                        DeclarationFactory(),</span><span class="l hl"><i>37</i>                        AssignationFactory(),</span><span class="l hl"><i>38</i>                        FunctionFactory(),</span><span class="l hl"><i>39</i>                    ),</span><span class="l hl"><i>40</i>                )</span><span class="l"><i>41</i>            <span class="kw">else</span> -&gt; throw IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l"><i>42</i>        }</span></pre></div>
+  <p>The version is nothing more than which list you get. 1.0 is the same list without <code>ConditionalFactory</code>, so an <code>if</code> reaching the 1.0 parser has no factory to build it.</p>
+</section>
+
+<section id="factories">
+  <h2>Part 3 · The factories</h2>
+  <p class="sub">Each receives one complete statement, without its <code>;</code>. The trees below were printed from the jar; <code>@row:col</code> is the stored position.</p>
+
+  <h3 class="part">DeclarationFactory</h3>
+  <div class="code"><pre><span class="l"><i>12</i>    <span class="kw">override</span> <span class="kw">fun</span> createAST(tokens: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>13</i>        <span class="kw">val</span> keywordToken =</span><span class="l hl"><i>14</i>            tokens.find { it.getType() == TokenType.KEYWORD }</span><span class="l hl"><i>15</i>                ?: throw error(tokens, <span class="st">&quot;Expected a KEYWORD token but found none.&quot;</span>)</span><span class="l hl"><i>16</i>        <span class="kw">val</span> identifierToken =</span><span class="l hl"><i>17</i>            tokens.find { it.getType() == TokenType.IDENTIFIER }</span><span class="l hl"><i>18</i>                ?: throw error(tokens, <span class="st">&quot;Expected an IDENTIFIER token but found none.&quot;</span>)</span><span class="l hl"><i>19</i>        <span class="kw">val</span> dataTypeToken =</span><span class="l hl"><i>20</i>            tokens.find { it.getType() == TokenType.DATA_TYPE }</span><span class="l hl"><i>21</i>                ?: throw error(tokens, <span class="st">&quot;Expected a DATA_TYPE or DATA_TYPE token but found none.&quot;</span>)</span><span class="l"><i>22</i></span><span class="l hl"><i>23</i>        <span class="kw">val</span> initialPositionExpression = tokens.indexOfFirst { it.value == <span class="st">&quot;=&quot;</span> } + 1</span><span class="l hl"><i>24</i>        <span class="kw">val</span> expressionTokens: List&lt;Token&gt;? = findExpressionTokens(initialPositionExpression, tokens)</span><span class="l hl"><i>25</i></span><span class="l hl"><i>26</i>        <span class="kw">val</span> expressionNode: ASTNode = <span class="kw">if</span> (expressionTokens == <span class="kw">null</span>) NilNode <span class="kw">else</span> findExpressionNode(expressionTokens)</span><span class="l"><i>27</i>        <span class="kw">val</span> dataTypeValue = dataTypeToken.value</span><span class="l"><i>28</i></span><span class="l"><i>29</i><span class="cm">        // Una llamada a readInput/readEnv no se puede chequear acá: sus tokens son los del</span></span><span class="l"><i>30</i><span class="cm">        // argumento —un string— y no dicen nada del tipo que devuelve, que se resuelve contra</span></span><span class="l"><i>31</i><span class="cm">        // el tipo declarado recién al ejecutar. Chequearla rechazaba &quot;let b: boolean = readInput(...)&quot;.</span></span><span class="l hl"><i>32</i>        <span class="kw">if</span> (expressionTokens != <span class="kw">null</span> &amp;&amp; !isFunctionCall(expressionTokens)) {</span><span class="l hl"><i>33</i>            checkConsistencyOfExpressionWithDataType(dataTypeValue, expressionTokens)</span><span class="l hl"><i>34</i>        }</span><span class="l"><i>35</i></span><span class="l"><i>36</i>        <span class="kw">return</span> DeclarationNode(</span><span class="l"><i>37</i>            declType = keywordToken.getType(),</span><span class="l"><i>38</i>            declValue = keywordToken.value,</span><span class="l"><i>39</i>            id = identifierToken.value,</span><span class="l"><i>40</i>            dataType = dataTypeToken.getType(),</span><span class="l"><i>41</i>            dataTypeValue = dataTypeValue,</span><span class="l"><i>42</i>            expr = expressionNode,</span><span class="l hl"><i>43</i>            position = identifierToken.getPosition(),</span><span class="l"><i>44</i><span class="cm">            // Cambiado aquí  keywordToken.getPosition(),</span></span><span class="l"><i>45</i>        )</span><span class="l"><i>46</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Find by type, not by index</strong> (:13–21): the keyword, identifier and data type are located with <code>find</code>. A missing one gives a specific message.</li>
+    <li><strong>The expression is everything after <code>=</code></strong> (:23–24). With no <code>=</code>, the expression is <code>NilNode</code> (:26), which is how <code>let x: number;</code> is represented.</li>
+    <li><strong>Position = the identifier</strong> (:43), so errors about the declaration point at the variable's name.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>60</i>    <span class="kw">private</span> <span class="kw">fun</span> checkConsistencyOfExpressionWithDataType(</span><span class="l"><i>61</i>        dataTypeValue: String,</span><span class="l"><i>62</i>        expressionTokens: List&lt;Token&gt;,</span><span class="l"><i>63</i>    ) {</span><span class="l"><i>64</i>        <span class="kw">val</span> isInconsistent =</span><span class="l"><i>65</i>            <span class="kw">when</span> (dataTypeValue) {</span><span class="l hl"><i>66</i>                <span class="st">&quot;number&quot;</span> -&gt;</span><span class="l hl"><i>67</i>                    expressionTokens.any {</span><span class="l hl"><i>68</i>                        it.getType() == TokenType.BOOLEANLITERAL || it.getType() == TokenType.STRINGLITERAL</span><span class="l hl"><i>69</i>                    }</span><span class="l"><i>70</i><span class="cm">                // Un &quot;string&quot; admite concatenar variables (sin literales a la vista) y también</span></span><span class="l"><i>71</i><span class="cm">                // mezclar con &quot;number&quot;, porque el resultado sigue siendo &quot;string&quot;. Sólo es</span></span><span class="l"><i>72</i><span class="cm">                // inconsistente si no hay ningún literal de texto y sí hay literales de otro tipo.</span></span><span class="l hl"><i>73</i>                <span class="st">&quot;string&quot;</span> -&gt;</span><span class="l hl"><i>74</i>                    expressionTokens.none { it.getType() == TokenType.STRINGLITERAL } &amp;&amp;</span><span class="l hl"><i>75</i>                        expressionTokens.any {</span><span class="l hl"><i>76</i>                            it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.BOOLEANLITERAL</span><span class="l hl"><i>77</i>                        }</span><span class="l hl"><i>78</i>                <span class="st">&quot;boolean&quot;</span> -&gt;</span><span class="l hl"><i>79</i>                    expressionTokens.any {</span><span class="l hl"><i>80</i>                        it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.STRINGLITERAL</span><span class="l hl"><i>81</i>                    }</span><span class="l"><i>82</i>                <span class="kw">else</span> -&gt; false</span><span class="l"><i>83</i>            }</span><span class="l hl"><i>84</i>        <span class="kw">if</span> (isInconsistent) {</span><span class="l hl"><i>85</i>            throw error(</span><span class="l hl"><i>86</i>                expressionTokens,</span><span class="l hl"><i>87</i>                <span class="st">&quot;declared data type $dataTypeValue is inconsistent with the expression&quot;</span>,</span><span class="l hl"><i>88</i>            )</span><span class="l"><i>89</i>        }</span><span class="l"><i>90</i>    }</span></pre></div>
+  <p><strong>The static type check only looks at literals.</strong> A <code>number</code> can't contain a string or boolean literal. A <code>string</code> is inconsistent only if it has no string literal but does have number or boolean literals, because <code>"a" + 1</code> is still a string. The types of identifiers aren't known until run time, so the interpreter checks those. Calls to <code>readInput</code>/<code>readEnv</code> are skipped entirely (:29–34), since their type comes from the variable they're assigned to.</p>
+<div class="pair">
+<div><h5>let c: number = a / b;</h5><pre class="tree">Declaration let c: number <span class="c">@0:4</span>
+  Binary '/' <span class="c">@0:18</span>
+    Literal IDENTIFIER a <span class="c">@0:16</span>
+    Literal IDENTIFIER b <span class="c">@0:20</span></pre></div>
+<div><h5>let n: number = readInput("n?");</h5><pre class="tree">Declaration let n: number <span class="c">@0:4</span>
+  Function readInput <span class="c">@0:16</span>
+    Literal STRINGLITERAL n? <span class="c">@0:26</span>
+
+<span class="c">let x: number;  →  Declaration … NilNode</span></pre></div>
+</div>
+
+  <h3 class="part">AssignationFactory</h3>
+  <div class="code"><pre><span class="l"><i>12</i>    <span class="kw">override</span> <span class="kw">fun</span> createAST(tokens: List&lt;Token&gt;): ASTNode {</span><span class="l"><i>13</i>        <span class="kw">val</span> assignationToken =</span><span class="l"><i>14</i>            tokens.find { it.getType() == TokenType.ASSIGNATION }</span><span class="l"><i>15</i>                ?: throw error(tokens, <span class="st">&quot;Assignation token not found&quot;</span>)</span><span class="l"><i>16</i></span><span class="l hl"><i>17</i>        <span class="kw">val</span> leftTokens = getLeftTokens(tokens)</span><span class="l hl"><i>18</i>        <span class="kw">val</span> rightTokens = getRightTokens(tokens, leftTokens)</span><span class="l"><i>19</i></span><span class="l"><i>20</i>        <span class="kw">val</span> leftNode =</span><span class="l"><i>21</i>            <span class="kw">when</span> {</span><span class="l"><i>22</i>                leftTokens.size &gt; 1 -&gt; variableDeclaration(leftTokens)</span><span class="l"><i>23</i>                leftTokens.isNotEmpty() -&gt; createLiteralNode(leftTokens[0])</span><span class="l"><i>24</i>                <span class="kw">else</span> -&gt; throw error(tokens, <span class="st">&quot;Invalid left side of assignment&quot;</span>)</span><span class="l"><i>25</i>            }</span><span class="l"><i>26</i></span><span class="l hl"><i>27</i>        <span class="kw">val</span> rightNode =</span><span class="l hl"><i>28</i>            <span class="kw">when</span> {</span><span class="l hl"><i>29</i>                rightTokens.isEmpty() -&gt; NilNode</span><span class="l hl"><i>30</i>                rightTokens.size &gt; 1 -&gt; createAssignedTree(rightTokens)</span><span class="l hl"><i>31</i>                <span class="kw">else</span> -&gt; createLiteralNode(rightTokens[0])</span><span class="l hl"><i>32</i>            }</span><span class="l"><i>33</i></span><span class="l"><i>34</i>        <span class="kw">val</span> leftNodeId =</span><span class="l"><i>35</i>            <span class="kw">if</span> (leftNode <span class="kw">is</span> LiteralNode) {</span><span class="l"><i>36</i>                leftNode.value</span><span class="l"><i>37</i>            } <span class="kw">else</span> {</span><span class="l"><i>38</i>                throw error(tokens, <span class="st">&quot;Left side of assignment must be a literal or identifier&quot;</span>)</span><span class="l"><i>39</i>            }</span><span class="l"><i>40</i></span><span class="l hl"><i>41</i>        <span class="kw">return</span> AssignationNode(</span><span class="l hl"><i>42</i>            id = leftNodeId,</span><span class="l hl"><i>43</i>            expression = rightNode,</span><span class="l hl"><i>44</i>            valType = assignationToken.getType(),</span><span class="l hl"><i>45</i>            position = assignationToken.getPosition(),</span><span class="l hl"><i>46</i>        )</span><span class="l"><i>47</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Left side:</strong> the tokens before <code>=</code> (<code>takeWhile</code>, :61). <strong>Right side:</strong> the rest (:59).</li>
+    <li><strong>Right side by size</strong> (:27–32): one token is a literal; more than one goes to <code>FunctionFactory</code> if a call is present, otherwise to <code>OperationFactory</code> (:63–68).</li>
+    <li><strong>Position = the <code>=</code> token</strong> (:45). <code>a = 5;</code> gives <code>Assignation a @0:2</code>.</li>
+  </ul>
+
+  <h3 class="part">PrintlnFactory</h3>
+  <div class="code"><pre><span class="l"><i>10</i>    <span class="kw">override</span> <span class="kw">fun</span> createAST(tokens: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>11</i>        <span class="kw">if</span> (tokens.size &lt; MIN_PRINTLN_TOKENS) {</span><span class="l hl"><i>12</i>            throw error(tokens, <span class="st">&quot;Invalid token structure for println: Too few tokens&quot;</span>)</span><span class="l hl"><i>13</i>        }</span><span class="l"><i>14</i></span><span class="l hl"><i>15</i>        <span class="kw">val</span> openParenIndex = tokens.indexOfFirst { it.getType() == TokenType.PARENTHESIS &amp;&amp; it.value == <span class="st">&quot;(&quot;</span> }</span><span class="l hl"><i>16</i>        <span class="kw">val</span> closeParenIndex = tokens.indexOfLast { it.getType() == TokenType.PARENTHESIS &amp;&amp; it.value == <span class="st">&quot;)&quot;</span> }</span><span class="l"><i>17</i></span><span class="l"><i>18</i>        <span class="kw">if</span> (openParenIndex == -1 || closeParenIndex == -1 || openParenIndex &gt;= closeParenIndex) {</span><span class="l"><i>19</i>            throw error(tokens, <span class="st">&quot;Invalid token structure for println: Missing or misordered parentheses&quot;</span>)</span><span class="l"><i>20</i>        }</span><span class="l"><i>21</i></span><span class="l hl"><i>22</i>        <span class="kw">val</span> expressionTokens = tokens.subList(openParenIndex + 1, closeParenIndex)</span><span class="l"><i>23</i></span><span class="l"><i>24</i>        <span class="kw">if</span> (expressionTokens.isEmpty()) {</span><span class="l"><i>25</i>            throw error(tokens, <span class="st">&quot;Cannot create AST for println from an empty expression&quot;</span>)</span><span class="l"><i>26</i>        }</span><span class="l"><i>27</i></span><span class="l hl"><i>28</i>        <span class="kw">val</span> expressionNode = OperationFactory().createAST(expressionTokens)</span><span class="l hl"><i>29</i>        <span class="kw">return</span> PrintNode(expressionNode, tokens[0].getPosition())</span><span class="l"><i>30</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>At least 4 tokens</strong> (:11–13): <code>println</code>, <code>(</code>, something, <code>)</code>.</li>
+    <li><strong>First <code>(</code>, last <code>)</code></strong> (:15–16), so parentheses inside the argument, like <code>println((2 + 3) * 4)</code>, stay part of the expression.</li>
+    <li>The argument goes to <code>OperationFactory</code> (:28), and the node's position is <code>println</code> itself (:29).</li>
+  </ul>
+
+  <h3 class="part">FunctionFactory</h3>
+  <div class="code"><pre><span class="l"><i>9</i>    <span class="kw">override</span> <span class="kw">fun</span> createAST(tokens: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>10</i>        <span class="kw">val</span> indexFunctionToken = tokens.indexOfFirst { it.getType() == TokenType.FUNCTION }</span><span class="l hl"><i>11</i>        <span class="kw">val</span> functionToken = tokens.get(indexFunctionToken)</span><span class="l hl"><i>12</i>        <span class="kw">val</span> expressionToken = tokens.subList(indexFunctionToken + 2, tokens.size - 1)</span><span class="l"><i>13</i></span><span class="l"><i>14</i><span class="cm">        // El argumento puede ser una expresión completa, no un único token:</span></span><span class="l"><i>15</i><span class="cm">        // en readInput(&quot;a&quot; + &quot;b&quot;) el nodo resultante es el BinaryNode de la concatenación.</span></span><span class="l hl"><i>16</i>        <span class="kw">val</span> expressionNode = OperationFactory().createAST(expressionToken)</span><span class="l"><i>17</i></span><span class="l hl"><i>18</i>        <span class="kw">return</span> FunctionNode(</span><span class="l hl"><i>19</i>            type = functionToken.getType(),</span><span class="l hl"><i>20</i>            functionName = functionToken.value,</span><span class="l hl"><i>21</i>            expression = expressionNode,</span><span class="l hl"><i>22</i>            position = functionToken.getPosition(),</span><span class="l hl"><i>23</i>        )</span><span class="l"><i>24</i>    }</span><span class="l"><i>25</i></span><span class="l"><i>26</i>    <span class="kw">override</span> <span class="kw">fun</span> canHandle(tokens: List&lt;Token&gt;): Boolean = tokens.any { it.getType() == TokenType.FUNCTION }</span></pre></div>
+  <p>It skips the name and <code>(</code> and drops the final <code>)</code> (:12). The argument can be a full expression (:14–16). The <code>FunctionNode</code> keeps the function's name, and the interpreter decides what it does.</p>
+
+  <h3 class="part">OperationFactory</h3>
+  <div class="code"><pre><span class="l"><i>10</i>    <span class="kw">fun</span> createAST(listTokens: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>11</i>        <span class="kw">if</span> (listTokens.size == 1) {</span><span class="l hl"><i>12</i>            <span class="kw">return</span> createLiteralNode(listTokens[0])</span><span class="l hl"><i>13</i>        }</span><span class="l"><i>14</i>        <span class="kw">val</span> tokens =</span><span class="l hl"><i>15</i>            <span class="kw">if</span> (listTokens.first().value == <span class="st">&quot;(&quot;</span> &amp;&amp; listTokens.last().value == <span class="st">&quot;)&quot;</span>) {</span><span class="l hl"><i>16</i>                removeFirstAndLastParentheses(</span><span class="l hl"><i>17</i>                    listTokens,</span><span class="l hl"><i>18</i>                )</span><span class="l hl"><i>19</i>            } <span class="kw">else</span> {</span><span class="l hl"><i>20</i>                listTokens</span><span class="l hl"><i>21</i>            }</span><span class="l hl"><i>22</i>        <span class="kw">return</span> splitOnOperator(tokens, ::isAdditionOrSubtraction)</span><span class="l hl"><i>23</i>            ?: splitOnOperator(tokens, ::isMultiplicationOrDivision)</span><span class="l"><i>24</i>            ?: throw ParserException(</span><span class="l"><i>25</i>                <span class="st">&quot;Error in operation&quot;</span>,</span><span class="l"><i>26</i>                tokens.firstOrNull()?.getPosition(),</span><span class="l"><i>27</i>                tokens.lastOrNull()?.getFinalPosition(),</span><span class="l"><i>28</i>            )</span><span class="l"><i>29</i>    }</span><span class="l"><i>30</i></span><span class="l"><i>31</i><span class="cm">    /**</span></span><span class="l"><i>32</i><span class="cm">     * Parte la lista por el primer token que cumpla [isOperator] fuera de todo</span></span><span class="l"><i>33</i><span class="cm">     * paréntesis, y construye el nodo binario correspondiente. Devuelve `null`</span></span><span class="l"><i>34</i><span class="cm">     * si no hay ningún operador de ese tipo en el nivel más externo.</span></span><span class="l"><i>35</i><span class="cm">     */</span></span><span class="l"><i>36</i>    <span class="kw">private</span> <span class="kw">fun</span> splitOnOperator(</span><span class="l"><i>37</i>        tokens: List&lt;Token&gt;,</span><span class="l"><i>38</i>        isOperator: (Token) -&gt; Boolean,</span><span class="l"><i>39</i>    ): ASTNode? {</span><span class="l hl"><i>40</i>        <span class="kw">val</span> openParentheses = emptyList&lt;Token&gt;().toMutableList()</span><span class="l hl"><i>41</i>        <span class="kw">for</span> (token <span class="kw">in</span> tokens) {</span><span class="l hl"><i>42</i>            <span class="kw">if</span> (token.value == <span class="st">&quot;(&quot;</span>) openParentheses.add(token)</span><span class="l hl"><i>43</i>            <span class="kw">if</span> (token.value == <span class="st">&quot;)&quot;</span>) openParentheses.removeLast()</span><span class="l hl"><i>44</i>            <span class="kw">if</span> (isOperator(token) &amp;&amp; openParentheses.isEmpty()) {</span><span class="l hl"><i>45</i>                <span class="kw">return</span> BinaryNode(</span><span class="l hl"><i>46</i>                    left = createAST(tokens.subList(0, tokens.indexOf(token))),</span><span class="l hl"><i>47</i>                    right = createAST(tokens.subList(tokens.indexOf(token) + 1, tokens.size)),</span><span class="l hl"><i>48</i>                    operator = token,</span><span class="l hl"><i>49</i>                    position = token.getPosition(),</span><span class="l hl"><i>50</i>                )</span><span class="l"><i>51</i>            }</span><span class="l"><i>52</i>        }</span><span class="l"><i>53</i>        <span class="kw">return</span> <span class="kw">null</span></span><span class="l"><i>54</i>    }</span><span class="l"><i>55</i></span><span class="l hl"><i>56</i>    <span class="kw">private</span> <span class="kw">fun</span> removeFirstAndLastParentheses(tokens: List&lt;Token&gt;): List&lt;Token&gt; {</span><span class="l hl"><i>57</i>        <span class="kw">val</span> parentheses = emptyList&lt;String&gt;().toMutableList()</span><span class="l hl"><i>58</i>        <span class="kw">if</span> (tokens.first().value == <span class="st">&quot;(&quot;</span>) parentheses.add(<span class="st">&quot;(&quot;</span>)</span><span class="l hl"><i>59</i>        <span class="kw">for</span> (token <span class="kw">in</span> tokens.subList(1, tokens.size - 1)) {</span><span class="l hl"><i>60</i>            <span class="kw">if</span> (token.value == <span class="st">&quot;(&quot;</span>) parentheses.add(<span class="st">&quot;(&quot;</span>)</span><span class="l hl"><i>61</i>            <span class="kw">if</span> (token.value == <span class="st">&quot;)&quot;</span>) parentheses.removeLast()</span><span class="l hl"><i>62</i>            <span class="kw">if</span> (parentheses.isEmpty()) <span class="kw">return</span> tokens</span><span class="l hl"><i>63</i>        }</span><span class="l hl"><i>64</i>        <span class="kw">return</span> tokens.subList(1, tokens.size - 1)</span><span class="l"><i>65</i>    }</span></pre></div>
+  <ul class="points">
+    <li><strong>Base case</strong> (:11–13): a single token is a literal.</li>
+    <li><strong>Precedence by splitting</strong> (:22–23): split at a <code>+</code> or <code>-</code> first; only if there is none, split at <code>*</code> or <code>/</code>. The operator you split at becomes the root, so it's evaluated <em>last</em>, which is exactly lower precedence.</li>
+    <li><strong>Parentheses shield operators</strong> (:40–44): <code>openParentheses</code> tracks depth, and only operators at depth 0 are split points.</li>
+    <li><strong>Outer parentheses are removed only if they wrap everything</strong> (:56–64). <code>(2 + 3)</code> loses them. <code>(2 + 3) * (4 + 5)</code> keeps them, because the depth returns to 0 before the end.</li>
+    <li>Both halves are parsed with a recursive <code>createAST</code> (:46–47).</li>
+  </ul>
+<div class="pair">
+<div><h5>println(2 + 3 * 4);</h5><pre class="tree">Print <span class="c">@0:0</span>
+  Binary '+' <span class="c">@0:10</span>   <span class="c">← root</span>
+    Literal NUMBERLITERAL 2
+    Binary '*' <span class="c">@0:14</span>
+      Literal NUMBERLITERAL 3
+      Literal NUMBERLITERAL 4</pre></div>
+<div><h5>println((2 + 3) * 4);</h5><pre class="tree">Print <span class="c">@0:0</span>
+  Binary '*' <span class="c">@0:16</span>   <span class="c">← root</span>
+    Binary '+' <span class="c">@0:11</span>
+      Literal NUMBERLITERAL 2
+      Literal NUMBERLITERAL 3
+    Literal NUMBERLITERAL 4</pre></div>
+</div>
+
+  <h3 class="part">ConditionalFactory</h3>
+  <div class="code"><pre><span class="l"><i>13</i><span class="kw">class</span> ConditionalFactory(</span><span class="l hl"><i>14</i>    <span class="kw">private</span> <span class="kw">val</span> subParserProvider: () -&gt; Parser = { Parser() },</span><span class="l"><i>15</i>) : ASTFactory {</span><span class="l"><i>16</i>    <span class="kw">override</span> <span class="kw">fun</span> createAST(tokens: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>17</i>        <span class="kw">val</span> closeParen = readConditionEnd(tokens)</span><span class="l hl"><i>18</i>        <span class="kw">val</span> conditionNode = readCondition(tokens)</span><span class="l"><i>19</i></span><span class="l hl"><i>20</i>        <span class="kw">val</span> thenOpen = openingBraceFrom(tokens, closeParen)</span><span class="l hl"><i>21</i>        <span class="kw">val</span> thenClose = matchingBrace(tokens, thenOpen)</span><span class="l"><i>22</i></span><span class="l hl"><i>23</i>        <span class="kw">return</span> ConditionalNode(</span><span class="l hl"><i>24</i>            condition = conditionNode,</span><span class="l hl"><i>25</i>            thenBlock = blockOf(tokens, thenOpen, thenClose),</span><span class="l hl"><i>26</i>            elseBlock = readElseBlock(tokens, thenClose),</span><span class="l hl"><i>27</i>            position = conditionNode.position,</span><span class="l hl"><i>28</i>        )</span><span class="l"><i>29</i>    }</span></pre></div>
+  <ol class="stmts">
+    <li><span class="k">1</span><span>Find the <code>)</code> that closes the condition (:43–48) and read the single token after <code>(</code> as a <code>LiteralNode</code> (:33–40).</span></li>
+    <li><span class="k">2</span><span>Find the <code>{</code> after it (:96–103) and its matching <code>}</code> by counting depth (:111–126).</span></li>
+    <li><span class="k">3</span><span>Parse what's between them with a <strong>new parser</strong>, passing the <code>}</code> along so it ends the last statement (:64–74).</span></li>
+    <li><span class="k">4</span><span>If the token right after that <code>}</code> is <code>else</code>, do steps 2–3 again for the else block. Otherwise the else is <code>NilNode</code> (:82–94).</span></li>
+  </ol>
+  <div class="code"><pre><span class="l"><i>64</i>    <span class="kw">private</span> <span class="kw">fun</span> blockOf(</span><span class="l"><i>65</i>        tokens: List&lt;Token&gt;,</span><span class="l"><i>66</i>        openIndex: Int,</span><span class="l"><i>67</i>        closeIndex: Int,</span><span class="l"><i>68</i>    ): ASTNode {</span><span class="l"><i>69</i>        <span class="kw">if</span> (closeIndex == openIndex + 1) <span class="kw">return</span> BlockNode(emptyList(), tokens[openIndex].getPosition())</span><span class="l"><i>70</i>        <span class="kw">return</span> BlockNode(</span><span class="l hl"><i>71</i>            nodes = subParserProvider().executeBlockBody(tokens.subList(openIndex + 1, closeIndex + 1)),</span><span class="l"><i>72</i>            position = tokens[openIndex + 1].getPosition(),</span><span class="l"><i>73</i>        )</span><span class="l"><i>74</i>    }</span><span class="l"><i>75</i></span><span class="l"><i>76</i><span class="cm">    /**</span></span><span class="l"><i>77</i><span class="cm">     * El `else` de este `if` es el que sigue inmediatamente al bloque del `then`.</span></span><span class="l"><i>78</i><span class="cm">     *</span></span><span class="l"><i>79</i><span class="cm">     * Buscarlo en toda la sentencia —como se hacía antes— tomaba el `else` de un `if`</span></span><span class="l"><i>80</i><span class="cm">     * anidado dentro del propio bloque.</span></span><span class="l"><i>81</i><span class="cm">     */</span></span><span class="l"><i>82</i>    <span class="kw">private</span> <span class="kw">fun</span> readElseBlock(</span><span class="l"><i>83</i>        tokens: List&lt;Token&gt;,</span><span class="l"><i>84</i>        thenClose: Int,</span><span class="l"><i>85</i>    ): ASTNode {</span><span class="l hl"><i>86</i>        <span class="kw">val</span> elseToken = tokens.getOrNull(thenClose + 1) ?: <span class="kw">return</span> NilNode</span><span class="l hl"><i>87</i>        <span class="kw">if</span> (elseToken.value != <span class="st">&quot;else&quot;</span>) <span class="kw">return</span> NilNode</span><span class="l"><i>88</i></span><span class="l"><i>89</i>        <span class="kw">val</span> elseOpen = openingBraceFrom(tokens, thenClose + 1)</span><span class="l hl"><i>90</i>        <span class="kw">if</span> (tokens.subList(thenClose + 2, elseOpen).any { it.value == <span class="st">&quot;if&quot;</span> }) {</span><span class="l hl"><i>91</i>            throw error(tokens, <span class="st">&quot;Error parsing block: \&quot;</span><span class="kw">else</span> <span class="kw">if</span>\<span class="st">&quot; is not supported&quot;</span>)</span><span class="l hl"><i>92</i>        }</span><span class="l"><i>93</i>        <span class="kw">return</span> blockOf(tokens, elseOpen, matchingBrace(tokens, elseOpen))</span><span class="l"><i>94</i>    }</span><span class="l"><i>95</i></span><span class="l"><i>96</i>    <span class="kw">private</span> <span class="kw">fun</span> openingBraceFrom(</span><span class="l"><i>97</i>        tokens: List&lt;Token&gt;,</span><span class="l"><i>98</i>        from: Int,</span><span class="l"><i>99</i>    ): Int {</span><span class="l"><i>100</i>        <span class="kw">val</span> offset = tokens.subList(from, tokens.size).indexOfFirst { it.value == <span class="st">&quot;{&quot;</span> }</span><span class="l"><i>101</i>        <span class="kw">if</span> (offset &lt; 0) throw error(tokens, <span class="st">&quot;Error parsing block: missing or unbalanced braces&quot;</span>)</span><span class="l"><i>102</i>        <span class="kw">return</span> from + offset</span><span class="l"><i>103</i>    }</span><span class="l"><i>104</i></span><span class="l"><i>105</i><span class="cm">    /**</span></span><span class="l"><i>106</i><span class="cm">     * Índice del `}` que cierra la llave abierta en [openIndex].</span></span><span class="l"><i>107</i><span class="cm">     *</span></span><span class="l"><i>108</i><span class="cm">     * Cuenta la profundidad en lugar de tomar el primer `}`, que con bloques anidados cerraba</span></span><span class="l"><i>109</i><span class="cm">     * el bloque interno y dejaba el resto del cuerpo fuera del AST.</span></span><span class="l"><i>110</i><span class="cm">     */</span></span><span class="l"><i>111</i>    <span class="kw">private</span> <span class="kw">fun</span> matchingBrace(</span><span class="l"><i>112</i>        tokens: List&lt;Token&gt;,</span><span class="l"><i>113</i>        openIndex: Int,</span><span class="l"><i>114</i>    ): Int {</span><span class="l hl"><i>115</i>        <span class="kw">var</span> depth = 0</span><span class="l hl"><i>116</i>        <span class="kw">for</span> (index <span class="kw">in</span> openIndex until tokens.size) {</span><span class="l hl"><i>117</i>            <span class="kw">when</span> (tokens[index].value) {</span><span class="l hl"><i>118</i>                <span class="st">&quot;{&quot;</span> -&gt; depth++</span><span class="l hl"><i>119</i>                <span class="st">&quot;}&quot;</span> -&gt; {</span><span class="l hl"><i>120</i>                    depth--</span><span class="l hl"><i>121</i>                    <span class="kw">if</span> (depth == 0) <span class="kw">return</span> index</span><span class="l hl"><i>122</i>                }</span><span class="l"><i>123</i>            }</span><span class="l"><i>124</i>        }</span><span class="l"><i>125</i>        throw error(tokens, <span class="st">&quot;Error parsing block: missing or unbalanced braces&quot;</span>)</span><span class="l"><i>126</i>    }</span></pre></div>
+<pre class="tree">Conditional <span class="c">@1:4</span>
+  cond: Literal IDENTIFIER b
+  then:
+    Block (3)
+      Declaration let x: number <span class="c">@2:6</span>
+        Literal NUMBERLITERAL 1
+      Conditional <span class="c">@3:6</span>              <span class="c">← nested if, parsed by the sub-parser</span>
+        cond: Literal IDENTIFIER b
+        then: Block (1)
+                Print <span class="c">@3:11</span>  Literal IDENTIFIER x
+        else: NilNode
+      Print <span class="c">@4:2</span>
+        Literal STRINGLITERAL after
+  else:
+    Block (1)
+      Assignation x <span class="c">@6:4</span>
+        Literal NUMBERLITERAL 2</pre>
+  <p class="code-cap">Statement S2 from Part 1, as built by the jar. The nested <code>if</code> keeps its own (empty) else, and <code>println("after")</code> stays in the outer block.</p>
+</section>
+
+<section id="errors">
+  <h2>Errors, and which piece raises them</h2>
+  <p class="sub">Real messages from the jar. Each covers the full span of tokens involved (1-based here).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Input</th><th>Raised by</th><th>Message</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">let x: number = 5</td><td>splitter <span class="ref">:90–92</span></td><td>las sentencias deben finalizar con ";", "}" o "{" <span class="c">(1:1–1:18)</span></td></tr>
+      <tr><td class="mono">if (b) { println(1);</td><td>splitter <span class="ref">:90–92</span></td><td>same message: the block never closed <span class="c">(1:1–1:21)</span></td></tr>
+      <tr><td class="mono">println(1); }</td><td>splitter <span class="ref">:66</span></td><td>se encontró un "}" que no cierra ningún bloque <span class="c">(1:13–1:14)</span></td></tr>
+      <tr><td class="mono">… else if (c) { … }</td><td>splitter <span class="ref">:75</span></td><td>an <code>if</code> can't continue a statement <span class="c">(1:1–1:28)</span></td></tr>
+      <tr><td class="mono">(empty file)</td><td>splitter <span class="ref">:97</span></td><td>Error: No valid code.</td></tr>
+      <tr><td class="mono">5;</td><td>Parser <span class="ref">:41–45</span></td><td>Can't handle this sentence <span class="c">(1:1–1:2)</span></td></tr>
+      <tr><td class="mono">println();</td><td>PrintlnFactory <span class="ref">:11–13</span></td><td>Invalid token structure for println: Too few tokens <span class="c">(1:1–1:10)</span></td></tr>
+      <tr><td class="mono">let x: number = "hi";</td><td>DeclarationFactory <span class="ref">:84–89</span></td><td>declared data type number is inconsistent with the expression <span class="c">(1:17–1:21)</span></td></tr>
+      <tr><td class="mono">let b: boolean = true; <span class="c">(1.0)</span></td><td>DeclarationFactory <span class="ref">:19–21</span></td><td>no DATA_TYPE found, because <code>boolean</code> is an identifier in 1.0 <span class="c">(1:1–1:22)</span></td></tr>
+      <tr><td class="mono">if (b) { println(1) }</td><td>—</td><td>accepted: the <code>}</code> ends the block's last statement</td></tr>
+    </tbody>
+  </table></div>
+  <p>Every factory builds its errors with the same small helper: the first token's start and the last token's end. A declaration's type error covers only the expression, which is why it spans exactly <code>"hi"</code>.</p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>Two parts, a splitter and builders, instead of one recursive-descent parser</h4>
+    <p>The statement is the natural unit for streaming, and the splitter is the only place that holds tokens. Factories only ever see a complete statement, so each one is simple and has a single job.</p>
+    <p class="cost"><b>Cost</b>The splitter needs a little grammar knowledge of its own (braces, <code>if</code>, <code>else</code>) that a single grammar would keep in one place.</p>
+  </div>
+
+  <div class="decision">
+    <h4>An ordered chain of responsibility</h4>
+    <p>A new construct is a new factory added to a list, and <code>Parser</code> doesn't change (Open/Closed). The language version is the list itself (<span class="ref">ParserFactory.kt:20–42</span>).</p>
+    <p class="cost"><b>Cost</b><code>canHandle</code> checks are coarse, so the list order carries meaning, as the matrix shows. Reordering the list changes behaviour.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Hold a closed block for one token, to attach <code>else</code></h4>
+    <p><code>if { } else { }</code> is one statement, and it becomes one <code>ConditionalNode</code>. Looking one token ahead is the minimum needed to know.</p>
+    <p class="cost"><b>Cost</b>An <code>if</code> without <code>else</code> isn't emitted until the next token arrives. The measurement shows this: 7 lines read for a statement ending on line 6.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Blocks parsed by a sub-parser created through a lambda</h4>
+    <p>Recursion comes for free, since blocks inside blocks follow the same rules. The lambda (<span class="ref">ConditionalFactory.kt:14</span>) delays building the sub-parser until a block actually appears. Building it eagerly would loop forever: <code>forVersion("1.1")</code> creates a <code>ConditionalFactory</code>, which would create another parser for 1.1, and so on. Tests can also pass in a fake parser.</p>
+    <p class="cost"><b>Cost</b>A whole <code>if</code> statement is held in memory while it's parsed. Blocks are small compared with files, so streaming still holds at file scale.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Precedence by splitting at the lowest-precedence operator</h4>
+    <p>Four operators and parentheses fit in about 60 lines, and a new precedence level is one more <code>splitOnOperator</code> call in the chain (<span class="ref">OperationFactory.kt:22–23</span>).</p>
+    <p class="cost"><b>Cost</b>With many operators or levels, a precedence-climbing (Pratt) parser would scale better. PrintScript isn't there.</p>
+  </div>
+
+  <div class="decision">
+    <h4>A literal-only type check at parse time</h4>
+    <p>An obvious <code>let x: number = "hi"</code> fails during validation, before anything runs, and the error points at the expression.</p>
+    <p class="cost"><b>Cost</b>Identifiers and <code>readInput</code> can't be checked without a symbol table, so those checks happen at run time in the interpreter.</p>
+  </div>
+
+  <div class="decision">
+    <h4>One splitter with an <code>insideBlock</code> flag</h4>
+    <p>The top level and block bodies follow the same rules except for one: whether a <code>}</code> ends the last statement or is an error (<span class="ref">StatementSplitter.kt:58–66</span>). One flag avoids maintaining two nearly identical state machines.</p>
+    <p class="cost"><b>Cost</b>A boolean argument changes behaviour, so the call site has to name it (<code>insideBlock = true</code>, <span class="ref">Parser.kt:34</span>) to stay readable.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the line to show.</p>
+  <div class="qa">
+    <details><summary>Why not ANTLR or a classic recursive-descent parser?</summary>
+      <p>Streaming by statement fell out of this design naturally, each construct is isolated in its own factory, and versions are two lists. ANTLR adds a grammar file, a generator step and generated code, and two versions would mean two grammars or grammar-level flags.</p></details>
+    <details><summary>Why is <code>ConditionalFactory</code> first in the list?</summary>
+      <p>An <code>if</code> statement contains a KEYWORD and a <code>=</code> inside its blocks, so <code>DeclarationFactory</code> and <code>AssignationFactory</code> would also claim it. The matrix above shows three factories answering yes.</p></details>
+    <details><summary>How does an <code>else</code> end up on the right <code>if</code>?</summary>
+      <p><code>readElseBlock</code> only looks at the token immediately after the then-block's <em>matching</em> <code>}</code> (<span class="ref">ConditionalFactory.kt:86</span>). An <code>else</code> inside a nested block is inside that block's braces, so the outer <code>if</code> never sees it. The test is "an else belongs to its own if and not to the enclosing one".</p></details>
+    <details><summary>Why can the last statement in a block skip its <code>;</code>?</summary>
+      <p>The block body is passed to the sub-parser <em>with</em> its closing <code>}</code> (<span class="ref">ConditionalFactory.kt:71</span>), and in <code>insideBlock</code> mode that <code>}</code> ends the pending statement (<span class="ref">StatementSplitter.kt:58–64</span>).</p></details>
+    <details><summary>Doesn't holding a whole <code>if</code> break streaming?</summary>
+      <p>Streaming is about the <em>file</em>: the parser never holds more than the current statement. A block is part of one statement. The TCK's 131,072-statement test and <code>StreamingPipelineTest</code> ("taking a few statements reads only a few lines") cover this.</p></details>
+    <details><summary>Where is an <code>if</code> rejected in 1.0?</summary>
+      <p>In practice, the lexer fails first on <code>{</code>. Even without that, the 1.0 factory list has no <code>ConditionalFactory</code>. The test is "parser version 1_0 does not support conditionals".</p></details>
+    <details><summary>Why do factories find tokens by type instead of by fixed index?</summary>
+      <p>It's forgiving about shape, so each factory stays short, and the specific "Expected a … token" messages come from the same <code>find</code> calls. The splitter has already guaranteed that the factory is looking at exactly one statement.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">How many statements does the nested program in Part 1 produce, and why is the second one so long?</label>
+      <details><summary>Answer</summary><p>Three. The splitter counts braces and adds everything while depth is above 0, and after the final <code>}</code> it holds the statement to accept the <code>else</code>. The whole <code>if</code>/<code>else</code>, including the nested <code>if</code>, is one statement.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2"><code>let c: number = a / b;</code>: which factories say yes, which builds it, and why?</label>
+      <details><summary>Answer</summary><p>Declaration (there's a KEYWORD) and Assignation (there's a <code>=</code>). Declaration is earlier in the list, so it wins.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">What does the splitter do right after a <code>}</code> brings the depth back to 0?</label>
+      <details><summary>Answer</summary><p>It sets <code>blockJustClosed</code> and waits for the next token. If that token is <code>else</code>, the statement continues; anything else causes the held statement to be emitted first.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">Why does <code>if (b) { println(1) }</code> parse without a <code>;</code>?</label>
+      <details><summary>Answer</summary><p>The block body goes to a sub-parser in <code>insideBlock</code> mode together with its <code>}</code>, and there that <code>}</code> ends the last statement.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">Draw the tree for <code>2 + 3 * 4</code>. Why is <code>+</code> the root?</label>
+      <details><summary>Answer</summary><p><code>Binary +</code>, with left <code>2</code> and right <code>Binary *</code> (3, 4). <code>OperationFactory</code> tries to split at <code>+</code>/<code>-</code> first; the root is evaluated last, and that gives <code>*</code> higher precedence.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">Why aren't the outer parentheses removed from <code>(2 + 3) * (4 + 5)</code>?</label>
+      <details><summary>Answer</summary><p>They don't wrap the whole expression. The depth returns to 0 at the first <code>)</code>, before the end, so <code>removeFirstAndLastParentheses</code> returns the tokens unchanged and the split happens at <code>*</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">Why does <code>ConditionalFactory</code> receive a lambda instead of a <code>Parser</code>?</label>
+      <details><summary>Answer</summary><p>Building the 1.1 parser creates a <code>ConditionalFactory</code>. If that factory built its own 1.1 parser immediately, construction would never end. The lambda creates the sub-parser only when a block is parsed, and tests can pass in a fake one.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8"><code>let x: number = "hi";</code>: who rejects it, and what span is reported?</label>
+      <details><summary>Answer</summary><p><code>DeclarationFactory</code>'s literal check: a <code>number</code> containing a STRINGLITERAL. The span is only the expression, <code>"hi"</code>, shown as columns 17–21.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="sub">61 tests in 9 files.</p>
+  <ul class="points tests">
+    <li><strong>BlockParsingTest (8):</strong> a block keeps every statement; nested conditionals don't swallow the rest; else belongs to its own if; a closing brace ends the last statement; empty blocks; a stray <code>}</code> is rejected; <code>else if</code> is rejected.</li>
+    <li><strong>StreamingPipelineTest (8):</strong> the first statement doesn't read the whole source; a few statements read only a few lines; a huge source can be traversed; InputStream input; the list API delegates to the streaming one; three positioned errors.</li>
+    <li><strong>PositionedErrorTest (11):</strong> a conditional with or without else is one statement; statements around a conditional; streaming doesn't read past a conditional; every error kind reports its span.</li>
+    <li><strong>ParserTests (12):</strong> assignment, declaration, several declarations on one line, end-to-end with the lexer, missing <code>;</code>, <code>{</code>, <code>}</code> or parentheses, 1.0 without conditionals, custom injected factories.</li>
+    <li><strong>DeclarationFactoryTest (10):</strong> number, string and boolean declarations; type inconsistencies; missing identifier or type; no initialiser; <code>readInput</code>/<code>readEnv</code> accepted.</li>
+    <li><strong>OperationFactoryTest (4)</strong>, <strong>FunctionFactoryTest (4)</strong>, <strong>ConditionalFactoryTest (2)</strong>, <strong>PrintlnFactoryTest (2):</strong> each factory in isolation, including "multiplication has higher precedence than addition".</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-parser-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+})();
+</script>

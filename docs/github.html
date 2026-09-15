@@ -1,0 +1,585 @@
+<title>PrintScript GitHub Study Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F6; --surface:#FFFFFF; --ink:#15202B; --muted:#56626F; --rule:#D5DBE2;
+  --accent:#0B6B69; --accent-soft:#E0F0EF; --code-bg:#E9EDF1; --hl:#E3F1EF;
+  --med:#9A5200; --med-soft:#FDF1E2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+    --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+    --med:#F0A95A; --med-soft:#38270F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161E26; --ink:#E3E8ED; --muted:#98A4B0; --rule:#2A3540;
+  --accent:#5CC6BE; --accent-soft:#12302F; --code-bg:#1D2731; --hl:#15302E;
+  --med:#F0A95A; --med-soft:#38270F;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:780px;margin-inline:auto}
+
+.series{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding-block:18px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.series a,.series span.cur,.series span.todo{font-family:var(--mono);font-size:12.5px;text-decoration:none}
+.series span.cur{color:var(--ink);font-weight:600;border-bottom:2px solid var(--accent)}
+.series span.todo{color:var(--muted);opacity:.7}
+.series .back{margin-left:auto;font-family:var(--body);font-size:13px}
+
+header{padding-block:40px 8px}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,6vw,56px);line-height:1;letter-spacing:-.02em;margin:0 0 16px}
+h1 code{font-family:var(--mono);font-weight:600;font-size:.84em;color:var(--accent);background:none;padding:0}
+.lede{font-size:18px;color:var(--muted);margin:0 0 18px;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0;padding:0;list-style:none;font-size:14px}
+.meta b{font-family:var(--mono);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.jump{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;font-size:13px;padding:3px 10px;border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.jump a:hover{border-color:var(--accent)}
+
+section{padding-top:52px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:34px 0 8px;color:var(--ink)}
+h3 .path{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px}
+p{margin:0 0 14px;max-width:68ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.ref{font-family:var(--mono);font-size:.84em;color:var(--accent);background:var(--accent-soft);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+.pitch{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:22px 26px}
+.pitch p{font-size:18px;line-height:1.65;margin:0}
+.pitch .say{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+
+.code{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin:10px 0 14px}
+.code pre{margin:0;padding:10px 0;font-family:var(--mono);font-size:13px;line-height:1.6;min-width:max-content}
+.code .l{display:block;padding-right:18px}
+.code .l i{display:inline-block;width:3.4em;padding-right:1em;text-align:right;color:var(--muted);font-style:normal;user-select:none;opacity:.75}
+.code .l.hl{background:var(--hl);box-shadow:inset 3px 0 0 var(--accent)}
+.code .cm{color:var(--muted)}
+.code .kw{color:var(--accent)}
+.code .st{color:var(--med)}
+.code-cap{font-size:13px;color:var(--muted);margin:-6px 0 18px}
+
+ul.points{margin:0 0 16px;padding-left:20px}
+ul.points li{margin-bottom:8px;max-width:66ch}
+
+.tablewrap{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--ink);padding:8px 12px 8px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:9px 12px 9px 0;vertical-align:top}
+td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
+.role{font-family:var(--mono);font-size:11px;padding:1px 7px;border-radius:9px;white-space:nowrap;display:inline-block}
+.role.creates{background:var(--accent);color:var(--surface)}
+.role.reads{border:1px solid var(--rule);color:var(--ink)}
+.role.throws{background:var(--med-soft);color:var(--med)}
+.role.catches{border:1px solid var(--med);color:var(--med)}
+.role.none{color:var(--muted);opacity:.6}
+
+.decision{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.decision:first-of-type{border-top:1px solid var(--rule)}
+.decision h4{margin:0;font-size:17px}
+.decision p{margin:0}
+.decision .cost{color:var(--muted);font-size:15px}
+.decision .cost b{color:var(--med);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:6px}
+
+.qa details{border-bottom:1px solid var(--rule);padding:12px 0}
+.qa details:first-of-type{border-top:1px solid var(--rule)}
+.qa summary{cursor:pointer;font-weight:600}
+.qa details p{margin:10px 0 0}
+
+.quizhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:12px}
+.progress{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;margin-top:6px;width:180px}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}}
+.q{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.q:first-of-type{border-top:1px solid var(--rule)}
+.q input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.q label{font-weight:600;cursor:pointer}
+.q details{grid-column:2}
+.q summary{cursor:pointer;font-size:14px;color:var(--accent);width:max-content}
+.q details p{margin:8px 0 0;font-size:15px}
+.q.done label{color:var(--muted)}
+.reset{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;color:var(--muted);cursor:pointer}
+.reset:hover{border-color:var(--accent);color:var(--ink)}
+.tests li{font-size:15px}
+
+.figure{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 14px;overflow-x:auto;margin:10px 0 8px}
+.figure svg{display:block;width:100%;min-width:720px;height:auto}
+figure{margin:0 0 18px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:68ch}
+svg .lane{font-family:var(--mono);font-size:12px;fill:var(--muted);letter-spacing:.06em}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .tick{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+svg .bar{fill:var(--accent)}
+svg .bar.cd{fill:var(--med)}
+svg .ev{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+svg .evl{font-family:var(--body);font-size:12px;fill:var(--ink)}
+svg .trig{stroke:var(--muted);stroke-dasharray:3 3;stroke-width:1}
+svg .bl{font-family:var(--mono);font-size:11px;fill:var(--ink)}
+.demo{background:var(--surface);border:1px solid var(--rule);border-radius:6px;margin:0 0 14px;overflow:hidden}
+.demo header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:10px 14px 0}
+.demo h4{margin:0;font-size:15.5px}
+.demo .why{margin:4px 14px 10px;font-size:14px;color:var(--muted);max-width:none}
+.step{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.cmd{display:flex;align-items:stretch;border-top:1px solid var(--rule);background:var(--ground)}
+.cmd code{flex:1;min-width:0;display:block;background:none;padding:9px 14px;font-size:12.5px;white-space:pre;overflow-x:auto}
+.cmd code::before{content:"$ ";color:var(--muted)}
+.copy{font:inherit;font-size:12px;border:0;border-left:1px solid var(--rule);background:var(--surface);color:var(--accent);padding:0 14px;cursor:pointer;white-space:nowrap}
+.copy:hover{background:var(--accent-soft)}
+.term{margin:0;background:#11171D;color:#DCE3EA;font-family:var(--mono);font-size:12px;line-height:1.55;padding:10px 14px 12px;overflow-x:auto;white-space:pre}
+.term .dim{color:#8894A0}
+.term .ok{color:#7FD3A8}
+.note{margin:0;padding:8px 14px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted)}
+.warn{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--med);border-radius:4px;padding:12px 16px;margin:14px 0}
+.warn h4{margin:0 0 6px;font-size:14px;color:var(--med)}
+.warn ul{margin:0;padding-left:18px}
+.warn li{margin-bottom:6px;font-size:15px}
+.matrix td.y,.matrix td.n{text-align:center;font-family:var(--mono);font-size:12.5px}
+.matrix td.y{color:var(--accent);font-weight:600}
+.matrix td.n{color:var(--muted);opacity:.55}
+td.mono{font-family:var(--mono);font-size:13px}
+h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40px}
+.gates{list-style:none;margin:10px 0 16px;padding:0;border-top:1px solid var(--rule)}
+.gates li{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:4px 12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule)}
+.gates .k{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.gates .w{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+@media (max-width:560px){.gates li{grid-template-columns:30px minmax(0,1fr)}.gates .w{grid-column:2}}
+</style>
+
+<div class="page">
+<nav class="series" aria-label="Study sheets">
+  <span>Study sheets</span>
+  <a href="commons.html">commons</a>
+  <a href="lexer.html">lexer</a>
+  <a href="parser.html">parser</a>
+  <a href="interpreter.html">interpreter</a>
+  <a href="formatter.html">formatter</a>
+  <a href="linter.html">linter</a>
+  <a href="cli.html">cli</a>
+  <span class="cur" aria-current="page">github</span>
+  <a class="back" href="overview.html">Full defense notes →</a>
+</nav>
+
+<header>
+  <p class="eyebrow">Ingsis-2026/Printscript2026 · study sheet 8 of 8 · checked 2026-09-15</p>
+  <h1>GitHub &amp; releases</h1>
+  <p class="lede">How changes reach <code>main</code>, which Actions run and when, and how a new version of the seven PrintScript packages gets published to GitHub Packages and picked up by the TCK.</p>
+  <ul class="meta">
+    <li><b>2</b>workflows: CI and CD</li>
+    <li><b>14</b>pull requests merged</li>
+    <li><b>7</b>artifacts per publish</li>
+    <li><b>v1.0.0</b>current release tag</li>
+    <li><b>~4 min</b>per publish run</li>
+  </ul>
+  <ul class="jump">
+    <li><a href="#pitch">30-second pitch</a></li>
+    <li><a href="#story">How 1.0.0 shipped</a></li>
+    <li><a href="#workflows">The two workflows</a></li>
+    <li><a href="#published">What gets published</a></li>
+    <li><a href="#runbook">Release runbook</a></li>
+    <li><a href="#inspect">Checking runs</a></li>
+    <li><a href="#tck">The TCK side</a></li>
+    <li><a href="#gates">Quality gates</a></li>
+    <li><a href="#decisions">Decisions</a></li>
+    <li><a href="#questions">Questions</a></li>
+    <li><a href="#quiz">Self-check</a></li>
+  </ul>
+</header>
+
+<section id="pitch">
+  <div class="pitch">
+    <p class="say">Say it like this</p>
+    <p>"Every change goes through a pull request to <code>main</code>. <strong>Continuous Integration</strong> runs <code>./gradlew check</code> on each pull request and on each push to <code>main</code>: Ktlint, Detekt, every test and the 80% coverage check. <strong>Continuous Delivery</strong> publishes the seven modules to GitHub Packages. A merge to <code>main</code> publishes <code>1.0.0-SNAPSHOT</code>, and pushing a tag like <code>v1.0.0</code> publishes the release <code>1.0.0</code>. The version comes from the tag, and CD runs the full check again before publishing. The TCK depends on <code>com.github.ingsis-2026:*:1.0.0</code>, so its CI tests exactly what we released."</p>
+  </div>
+</section>
+
+<section id="story">
+  <h2>How 1.0.0 shipped</h2>
+  <p class="sub">The real sequence on 8 September 2026, from <code>gh pr list</code> and <code>gh run list</code>. Times are UTC.</p>
+  <figure>
+    <div class="figure">
+    <svg viewBox="0 0 840 212" role="img" aria-label="Timeline from 22:50 to 23:30 UTC. At 22:53 pull request 14 is opened and CI runs on it for 1 minute 44 seconds. At 23:07 it is merged: CI runs on main for 1 minute 54 seconds and CD publishes 1.0.0-SNAPSHOT in 4 minutes 11 seconds. At 23:24 tag v1.0.0 is pushed and CD publishes 1.0.0 in 4 minutes 6 seconds.">
+      <text class="lane" x="16" y="44">YOU</text>
+      <line class="grid" x1="110" y1="40" x2="820" y2="40"/>
+      <text class="lane" x="16" y="99">CI</text>
+      <line class="grid" x1="110" y1="95" x2="820" y2="95"/>
+      <text class="lane" x="16" y="154">CD</text>
+      <line class="grid" x1="110" y1="150" x2="820" y2="150"/>
+      <line class="grid" x1="110.0" y1="176" x2="110.0" y2="182"/>
+      <text class="tick" x="110.0" y="205" text-anchor="middle">22:50</text>
+      <line class="grid" x1="285.0" y1="176" x2="285.0" y2="182"/>
+      <text class="tick" x="285.0" y="205" text-anchor="middle">23:00</text>
+      <line class="grid" x1="460.0" y1="176" x2="460.0" y2="182"/>
+      <text class="tick" x="460.0" y="205" text-anchor="middle">23:10</text>
+      <line class="grid" x1="635.0" y1="176" x2="635.0" y2="182"/>
+      <text class="tick" x="635.0" y="205" text-anchor="middle">23:20</text>
+      <line class="grid" x1="810.0" y1="176" x2="810.0" y2="182"/>
+      <text class="tick" x="810.0" y="205" text-anchor="middle">23:30</text>
+      <line class="trig" x1="169.5" y1="46" x2="169.5" y2="142"/>
+      <circle class="ev" cx="169.5" cy="40" r="6"/>
+      <text class="evl" x="169.5" y="24" text-anchor="middle">PR #14 opened</text>
+      <line class="trig" x1="410.4" y1="46" x2="410.4" y2="142"/>
+      <circle class="ev" cx="410.4" cy="40" r="6"/>
+      <text class="evl" x="410.4" y="24" text-anchor="middle">PR #14 merged</text>
+      <line class="trig" x1="707.3" y1="46" x2="707.3" y2="142"/>
+      <circle class="ev" cx="707.3" cy="40" r="6"/>
+      <text class="evl" x="707.3" y="24" text-anchor="middle">tag v1.0.0 pushed</text>
+      <rect class="bar" x="170.4" y="87" width="30.3" height="16" rx="3"/>
+      <text class="bl" x="185.5" y="120" text-anchor="middle">PR check · 1m44s</text>
+      <rect class="bar" x="410.4" y="87" width="33.2" height="16" rx="3"/>
+      <text class="bl" x="427.0" y="120" text-anchor="middle">main · 1m54s</text>
+      <rect class="bar cd" x="410.4" y="142" width="73.2" height="16" rx="3"/>
+      <text class="bl" x="447.0" y="175" text-anchor="middle">1.0.0-SNAPSHOT · 4m11s</text>
+      <rect class="bar cd" x="707.3" y="142" width="71.8" height="16" rx="3"/>
+      <text class="bl" x="743.2" y="175" text-anchor="middle">1.0.0 · 4m6s</text>
+    </svg>
+    </div>
+    <figcaption>Three actions from the team, four workflow runs, all green. The tag points at <code>d2661f8</code>, the merge commit of PR #14, so the release is exactly what was on <code>main</code>.</figcaption>
+  </figure>
+<pre class="term"><span class="dim">$ gh run list --repo Ingsis-2026/Printscript2026 --limit 4</span>
+<span class="ok">completed  success</span>  Merge pull request #14 …  Continuous Delivery     <b>v1.0.0</b>  push          34290478345  4m6s
+<span class="ok">completed  success</span>  Merge pull request #14 …  Continuous Delivery     main    push          34289170655  4m11s
+<span class="ok">completed  success</span>  Merge pull request #14 …  Continuous Integration  main    push          34289170651  1m54s
+<span class="ok">completed  success</span>  (fix): publish tagged …   Continuous Integration  fix/…   pull_request  34288102059  1m44s</pre>
+  <p>The two CD runs differ only in the version they computed. From their logs: the push to <code>main</code> ran with <code>VERSION: 1.0.0-SNAPSHOT</code>, and the tag push ran with <code>VERSION: 1.0.0</code>. Both executed the same seven tasks, <code>:cli</code>, <code>:commons</code>, <code>:formatter</code>, <code>:interpreter</code>, <code>:lexer</code>, <code>:linter</code> and <code>:parser</code>, each running <code>publishGprPublicationToGitHubPackagesRepository</code>.</p>
+</section>
+
+<section id="workflows">
+  <h2>The two workflows</h2>
+  <p class="sub">Both live in <code>.github/workflows</code> and both call the same Gradle task as the pre-commit hook.</p>
+
+  <h3>ci.yml · Continuous Integration</h3>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">name</span>: Continuous Integration</span><span class="l"><i>2</i></span><span class="l hl"><i>3</i><span class="kw">on</span>:</span><span class="l hl"><i>4</i>  push:</span><span class="l hl"><i>5</i>    branches: [ <span class="st">&quot;main&quot;</span> ]</span><span class="l hl"><i>6</i>  pull_request:</span><span class="l hl"><i>7</i>    branches: [ <span class="st">&quot;main&quot;</span> ]</span><span class="l"><i>8</i></span><span class="l"><i>9</i><span class="kw">jobs</span>:</span><span class="l"><i>10</i>  check:</span><span class="l hl"><i>11</i>    <span class="kw">name</span>: Code Quality, Tests &amp; Coverage</span><span class="l"><i>12</i>    runs-<span class="kw">on</span>: ubuntu-latest</span><span class="l"><i>13</i></span><span class="l"><i>14</i>    <span class="kw">steps</span>:</span><span class="l"><i>15</i>      - <span class="kw">name</span>: Checkout repository</span><span class="l"><i>16</i>        <span class="kw">uses</span>: actions/checkout@v4</span><span class="l"><i>17</i></span><span class="l"><i>18</i>      - <span class="kw">name</span>: Set up JDK 21</span><span class="l"><i>19</i>        <span class="kw">uses</span>: actions/setup-java@v4</span><span class="l"><i>20</i>        <span class="kw">with</span>:</span><span class="l"><i>21</i>          java-version: &#x27;21&#x27;</span><span class="l"><i>22</i>          distribution: &#x27;temurin&#x27;</span><span class="l"><i>23</i>          cache: &#x27;gradle&#x27;</span><span class="l"><i>24</i></span><span class="l"><i>25</i>      - <span class="kw">name</span>: Grant execute permission <span class="kw">for</span> gradlew</span><span class="l"><i>26</i>        <span class="kw">run</span>: chmod +x gradlew</span><span class="l"><i>27</i></span><span class="l hl"><i>28</i>      - <span class="kw">name</span>: Run Quality Checks, Tests and Coverage</span><span class="l hl"><i>29</i>        <span class="kw">run</span>: ./gradlew check</span></pre></div>
+  <p>It runs on pushes to <code>main</code> and on pull requests targeting <code>main</code> (:3–7). There's one job: check out, install JDK 21 with the Gradle cache, run <code>./gradlew check</code>. It has no special permissions and publishes nothing. It answers one question: is this commit healthy?</p>
+
+  <h3>cd.yml · Continuous Delivery</h3>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">name</span>: Continuous Delivery</span><span class="l"><i>2</i></span><span class="l hl"><i>3</i><span class="kw">on</span>:</span><span class="l hl"><i>4</i>  push:</span><span class="l hl"><i>5</i>    branches: [ <span class="st">&quot;main&quot;</span> ]</span><span class="l hl"><i>6</i>    tags:</span><span class="l hl"><i>7</i>      - &#x27;v*&#x27;</span><span class="l hl"><i>8</i>  release:</span><span class="l hl"><i>9</i>    types: [ published ]</span><span class="l hl"><i>10</i>  workflow_dispatch:</span><span class="l"><i>11</i></span><span class="l"><i>12</i><span class="kw">jobs</span>:</span><span class="l"><i>13</i>  publish:</span><span class="l"><i>14</i>    <span class="kw">name</span>: Publish Artifacts to GitHub Packages</span><span class="l hl"><i>15</i>    runs-<span class="kw">on</span>: ubuntu-latest</span><span class="l hl"><i>16</i>    <span class="kw">permissions</span>:</span><span class="l hl"><i>17</i>      contents: read</span><span class="l hl"><i>18</i>      packages: write</span><span class="l"><i>19</i></span><span class="l"><i>20</i>    <span class="kw">steps</span>:</span><span class="l"><i>21</i>      - <span class="kw">name</span>: Checkout repository</span><span class="l"><i>22</i>        <span class="kw">uses</span>: actions/checkout@v4</span><span class="l"><i>23</i></span><span class="l"><i>24</i>      - <span class="kw">name</span>: Set up JDK 21</span><span class="l"><i>25</i>        <span class="kw">uses</span>: actions/setup-java@v4</span><span class="l"><i>26</i>        <span class="kw">with</span>:</span><span class="l"><i>27</i>          java-version: &#x27;21&#x27;</span><span class="l"><i>28</i>          distribution: &#x27;temurin&#x27;</span><span class="l"><i>29</i>          cache: &#x27;gradle&#x27;</span><span class="l"><i>30</i></span><span class="l"><i>31</i>      - <span class="kw">name</span>: Grant execute permission <span class="kw">for</span> gradlew</span><span class="l"><i>32</i>        <span class="kw">run</span>: chmod +x gradlew</span><span class="l"><i>33</i></span><span class="l hl"><i>34</i>      - <span class="kw">name</span>: Set Version</span><span class="l hl"><i>35</i>        <span class="kw">run</span>: |</span><span class="l hl"><i>36</i>          <span class="kw">if</span> [ <span class="st">&quot;${{ github.ref_type }}&quot;</span> = <span class="st">&quot;tag&quot;</span> ]; then</span><span class="l hl"><i>37</i><span class="cm">            # Tags are named v1.0.0, but the artifacts are published as 1.0.0.</span></span><span class="l hl"><i>38</i>            echo <span class="st">&quot;VERSION=${GITHUB_REF_NAME#v}&quot;</span> &gt;&gt; $GITHUB_ENV</span><span class="l hl"><i>39</i>          <span class="kw">else</span></span><span class="l hl"><i>40</i>            echo <span class="st">&quot;VERSION=1.0.0-SNAPSHOT&quot;</span> &gt;&gt; $GITHUB_ENV</span><span class="l hl"><i>41</i>          fi</span><span class="l"><i>42</i></span><span class="l hl"><i>43</i>      - <span class="kw">name</span>: Verify Code Quality, Tests and Coverage</span><span class="l hl"><i>44</i>        <span class="kw">run</span>: ./gradlew check</span><span class="l"><i>45</i></span><span class="l hl"><i>46</i>      - <span class="kw">name</span>: Publish to GitHub Packages</span><span class="l hl"><i>47</i>        <span class="kw">env</span>:</span><span class="l hl"><i>48</i>          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</span><span class="l hl"><i>49</i>          GITHUB_ACTOR: ${{ github.actor }}</span><span class="l hl"><i>50</i>        <span class="kw">run</span>: ./gradlew publish</span></pre></div>
+  <ul class="points">
+    <li><strong>Four triggers</strong> (:3–10): a push to <code>main</code>, a pushed tag matching <code>v*</code>, a published GitHub Release, and a manual run (<code>workflow_dispatch</code>).</li>
+    <li><strong>Least privilege</strong> (:15–18): read the code, write packages. The built-in <code>GITHUB_TOKEN</code> is enough, so there are no personal secrets to manage.</li>
+    <li><strong>The version is computed, not stored</strong> (:34–41). For a tag, <code>${GITHUB_REF_NAME#v}</code> strips the <code>v</code>, so <code>v1.0.0</code> becomes <code>1.0.0</code>. Anything else gets <code>1.0.0-SNAPSHOT</code>. PR #14 introduced the <code>#v</code> strip.</li>
+    <li><strong>Check before publish</strong> (:43–44): the same quality gate runs again, so a tag on a broken commit can't publish.</li>
+    <li><strong>Publish</strong> (:46–50): <code>./gradlew publish</code>, with the Actions token and user passed as environment variables.</li>
+  </ul>
+
+  <h3>What runs for each event</h3>
+  <div class="tablewrap"><table class="matrix">
+    <thead><tr><th>Event</th><th>CI</th><th>CD</th><th>Version published</th></tr></thead>
+    <tbody>
+      <tr><td>Push to a feature branch (no PR)</td><td class="n">no</td><td class="n">no</td><td>—</td></tr>
+      <tr><td>Pull request to <code>main</code> (opened or updated)</td><td class="y">yes</td><td class="n">no</td><td>—</td></tr>
+      <tr><td>Merge (push) to <code>main</code></td><td class="y">yes</td><td class="y">yes</td><td class="mono">1.0.0-SNAPSHOT</td></tr>
+      <tr><td>Push tag <code>v1.1.0</code></td><td class="n">no</td><td class="y">yes</td><td class="mono">1.1.0</td></tr>
+      <tr><td>Publish a GitHub Release for a tag</td><td class="n">no</td><td class="y">yes</td><td class="mono">the tag's version</td></tr>
+      <tr><td>Manual run on <code>main</code></td><td class="n">no</td><td class="y">yes</td><td class="mono">1.0.0-SNAPSHOT</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="published">
+  <h2>What gets published</h2>
+  <p class="sub">Publishing is configured once, in the convention plugin every module applies.</p>
+  <div class="code"><pre><span class="l"><i>1</i><span class="kw">plugins</span> {</span><span class="l"><i>2</i>    kotlin(<span class="st">&quot;jvm&quot;</span>)</span><span class="l"><i>3</i>    jacoco</span><span class="l hl"><i>4</i>    `maven-publish`</span><span class="l"><i>5</i>    id(<span class="st">&quot;io.gitlab.arturbosch.detekt&quot;</span>)</span><span class="l"><i>6</i>    id(<span class="st">&quot;org.jlleitschuh.gradle.ktlint&quot;</span>)</span><span class="l"><i>7</i>}</span><span class="l"><i>8</i></span><span class="l hl"><i>9</i>group = <span class="st">&quot;com.github.ingsis-2026&quot;</span></span><span class="l hl"><i>10</i>version = System.getenv(<span class="st">&quot;VERSION&quot;</span>) ?: <span class="st">&quot;1.0.0&quot;</span></span><span class="l"><i>11</i></span><span class="l"><i>12</i>publishing {</span><span class="l"><i>13</i>    repositories {</span><span class="l"><i>14</i>        maven {</span><span class="l"><i>15</i>            <span class="kw">name</span> = <span class="st">&quot;GitHubPackages&quot;</span></span><span class="l hl"><i>16</i>            url = uri(<span class="st">&quot;https://maven.pkg.github.com/Ingsis-2026/Printscript2026&quot;</span>)</span><span class="l"><i>17</i>            credentials {</span><span class="l hl"><i>18</i>                username = System.getenv(<span class="st">&quot;GITHUB_ACTOR&quot;</span>) ?: project.findProperty(<span class="st">&quot;gpr.user&quot;</span>) as String?</span><span class="l hl"><i>19</i>                password = System.getenv(<span class="st">&quot;GITHUB_TOKEN&quot;</span>) ?: project.findProperty(<span class="st">&quot;gpr.key&quot;</span>) as String?</span><span class="l"><i>20</i>            }</span><span class="l"><i>21</i>        }</span><span class="l"><i>22</i>    }</span><span class="l"><i>23</i>    publications {</span><span class="l hl"><i>24</i>        create&lt;MavenPublication&gt;(<span class="st">&quot;gpr&quot;</span>) {</span><span class="l hl"><i>25</i>            from(components[<span class="st">&quot;java&quot;</span>])</span><span class="l hl"><i>26</i>        }</span><span class="l"><i>27</i>    }</span><span class="l"><i>28</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Coordinates</strong> (:9–10): group <code>com.github.ingsis-2026</code>, artifact = module name, and version = the <code>VERSION</code> environment variable, or <code>1.0.0</code> when it isn't set (a local build).</li>
+    <li><strong>Repository</strong> (:16): <code>https://maven.pkg.github.com/Ingsis-2026/Printscript2026</code>.</li>
+    <li><strong>Credentials</strong> (:18–19): in Actions, <code>GITHUB_ACTOR</code> and <code>GITHUB_TOKEN</code>. Locally they'd come from the <code>gpr.user</code> and <code>gpr.key</code> Gradle properties.</li>
+    <li><strong>One publication named <code>gpr</code></strong> built from the module's jar (:24–26). Gradle derives the task name from that: <code>publishGprPublicationToGitHubPackagesRepository</code>, exactly what the CD log shows.</li>
+  </ul>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Artifact</th><th>Used by the TCK</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">com.github.ingsis-2026:commons:1.0.0</td><td>yes</td></tr>
+      <tr><td class="mono">com.github.ingsis-2026:lexer:1.0.0</td><td>yes</td></tr>
+      <tr><td class="mono">com.github.ingsis-2026:parser:1.0.0</td><td>yes</td></tr>
+      <tr><td class="mono">com.github.ingsis-2026:interpreter:1.0.0</td><td>yes</td></tr>
+      <tr><td class="mono">com.github.ingsis-2026:formatter:1.0.0</td><td>yes</td></tr>
+      <tr><td class="mono">com.github.ingsis-2026:linter:1.0.0</td><td>yes</td></tr>
+      <tr><td class="mono">com.github.ingsis-2026:cli:1.0.0</td><td>no (published because it applies the same conventions)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="runbook">
+  <h2>Release runbook</h2>
+  <p class="sub">From a change on your machine to a new version the TCK can use. These are the commands the team's history shows; nothing here was run while preparing this sheet.</p>
+
+  <div class="demo">
+    <header><span class="step">1</span><h4>Start from an up-to-date main</h4></header>
+    <p class="why">As of 15 September your local <code>main</code> is behind GitHub: it still points at <code>7820da5</code>, while <code>origin/main</code> and <code>v1.0.0</code> are at <code>d2661f8</code>. Pull before a demo.</p>
+    <div class="cmd"><code data-copy="git switch main">git switch main</code><button type="button" class="copy" id="copy-1">Copy</button></div>
+    <div class="cmd"><code data-copy="git pull">git pull</code><button type="button" class="copy" id="copy-2">Copy</button></div>
+    <div class="cmd"><code data-copy="git switch -c fix/short-description">git switch -c fix/short-description</code><button type="button" class="copy" id="copy-3">Copy</button></div>
+    <p class="note">Branch names in the history follow <code>feat/…</code>, <code>fix/…</code> and <code>chore/…</code>.</p>
+  </div>
+
+  <div class="demo">
+    <header><span class="step">2</span><h4>Commit: the pre-commit hook runs the gate</h4></header>
+    <p class="why"><code>scripts/pre-commit</code> runs <code>./gradlew check</code> and aborts the commit if it fails. It's copied into <code>.git/hooks</code> every time <code>./gradlew build</code> runs (<span class="ref">build.gradle.kts:5–17</span>).</p>
+    <div class="cmd"><code data-copy="git add -A">git add -A</code><button type="button" class="copy" id="copy-4">Copy</button></div>
+    <div class="cmd"><code data-copy="git commit -m &quot;fix: describe the change&quot;">git commit -m &quot;fix: describe the change&quot;</code><button type="button" class="copy" id="copy-5">Copy</button></div>
+    <p class="note">Commit prefixes in the history: <code>feat:</code>, <code>fix:</code>, <code>refactor:</code>, <code>docs:</code>, <code>ci:</code>, <code>build:</code>, <code>chore:</code>. If a style check fails, <code>./gradlew ktlintFormat</code> fixes most issues.</p>
+  </div>
+
+  <div class="demo">
+    <header><span class="step">3</span><h4>Push and open a pull request: CI runs</h4></header>
+    <p class="why">Opening the PR triggers Continuous Integration on it. Every new push to the branch runs it again.</p>
+    <div class="cmd"><code data-copy="git push -u origin fix/short-description">git push -u origin fix/short-description</code><button type="button" class="copy" id="copy-6">Copy</button></div>
+    <div class="cmd"><code data-copy="gh pr create --base main --fill">gh pr create --base main --fill</code><button type="button" class="copy" id="copy-7">Copy</button></div>
+    <div class="cmd"><code data-copy="gh pr checks --watch">gh pr checks --watch</code><button type="button" class="copy" id="copy-8">Copy</button></div>
+  </div>
+
+  <div class="demo">
+    <header><span class="step">4</span><h4>Merge: CI and CD run on main, publishing the snapshot</h4></header>
+    <p class="why">The team merges with a merge commit ("Merge pull request #N"). The push to <code>main</code> starts both workflows, and CD republishes <code>1.0.0-SNAPSHOT</code>.</p>
+    <div class="cmd"><code data-copy="gh pr merge --merge">gh pr merge --merge</code><button type="button" class="copy" id="copy-9">Copy</button></div>
+    <div class="cmd"><code data-copy="gh run list --limit 3">gh run list --limit 3</code><button type="button" class="copy" id="copy-10">Copy</button></div>
+  </div>
+
+  <div class="demo">
+    <header><span class="step">5</span><h4>Release: tag main and push the tag</h4></header>
+    <p class="why">This is the step that publishes a new version. Use the next semantic version: <code>v1.0.1</code> for a fix, <code>v1.1.0</code> for a feature. CD turns the tag into the version number.</p>
+    <div class="cmd"><code data-copy="git switch main">git switch main</code><button type="button" class="copy" id="copy-11">Copy</button></div>
+    <div class="cmd"><code data-copy="git pull">git pull</code><button type="button" class="copy" id="copy-12">Copy</button></div>
+    <div class="cmd"><code data-copy="git tag v1.1.0">git tag v1.1.0</code><button type="button" class="copy" id="copy-13">Copy</button></div>
+    <div class="cmd"><code data-copy="git push origin v1.1.0">git push origin v1.1.0</code><button type="button" class="copy" id="copy-14">Copy</button></div>
+    <p class="note">This is how <code>v1.0.0</code> was released: the tag points at the merge commit, and the push triggered the CD run that published <code>1.0.0</code>.</p>
+  </div>
+
+  <div class="demo">
+    <header><span class="step">6</span><h4>Confirm the publish</h4></header>
+    <p class="why">Find the CD run for the tag and check which version it computed.</p>
+    <div class="cmd"><code data-copy="gh run list --workflow cd.yml --limit 3">gh run list --workflow cd.yml --limit 3</code><button type="button" class="copy" id="copy-15">Copy</button></div>
+    <div class="cmd"><code data-copy="gh run watch">gh run watch</code><button type="button" class="copy" id="copy-16">Copy</button></div>
+    <div class="cmd"><code data-copy="gh run view RUN_ID --log | grep &quot;VERSION:&quot;">gh run view RUN_ID --log | grep &quot;VERSION:&quot;</code><button type="button" class="copy" id="copy-17">Copy</button></div>
+    <p class="note">Replace <code>RUN_ID</code> with the number from <code>gh run list</code>. The published packages are listed on the repository's GitHub page under <em>Packages</em>.</p>
+  </div>
+
+  <div class="demo">
+    <header><span class="step">7</span><h4>Point the TCK at the new version</h4></header>
+    <p class="why">The TCK uses <code>1.0.0</code> by default. To test another version, pass it as a property; downloading from GitHub Packages needs credentials (see <a href="#tck">the TCK side</a>).</p>
+    <div class="cmd"><code data-copy="./gradlew test -PprintscriptVersion=1.1.0">./gradlew test -PprintscriptVersion=1.1.0</code><button type="button" class="copy" id="copy-18">Copy</button></div>
+  </div>
+
+  <div class="warn">
+    <h4>Pitfalls to avoid</h4>
+    <ul>
+      <li><strong>Don't also create a GitHub Release for a tag you already pushed.</strong> <code>release: published</code> is a CD trigger too, so it would start a second publish of the same version. GitHub Packages doesn't accept re-uploading an existing non-snapshot version, so expect that second run to fail.</li>
+      <li><strong>Tags need the <code>v</code>.</strong> CD only listens to <code>v*</code> (<span class="ref">cd.yml:6–7</span>). A tag named <code>1.1.0</code> publishes nothing.</li>
+      <li><strong>If the tagged commit fails the check, nothing is published.</strong> Fix it on a new commit, delete the tag (<code>git push origin :refs/tags/v1.1.0</code> and <code>git tag -d v1.1.0</code>), and tag again.</li>
+      <li><strong>The snapshot label is fixed</strong> at <code>1.0.0-SNAPSHOT</code> (<span class="ref">cd.yml:40</span>). After releasing <code>1.1.0</code>, update it by hand to <code>1.1.0-SNAPSHOT</code>.</li>
+    </ul>
+  </div>
+
+  <h3>Useful extras</h3>
+  <div class="demo">
+    <header><h4>Run CD manually, or rerun a run</h4></header>
+    <p class="why">The manual trigger publishes a snapshot from <code>main</code>. A rerun repeats a specific run, for example one that failed for a transient reason.</p>
+    <div class="cmd"><code data-copy="gh workflow run cd.yml --ref main">gh workflow run cd.yml --ref main</code><button type="button" class="copy" id="copy-19">Copy</button></div>
+    <div class="cmd"><code data-copy="gh run rerun RUN_ID">gh run rerun RUN_ID</code><button type="button" class="copy" id="copy-20">Copy</button></div>
+  </div>
+  <div class="demo">
+    <header><h4>Publish to your machine only</h4></header>
+    <p class="why">Installs the jars in <code>~/.m2</code>, which the TCK checks first. Without <code>VERSION</code> the version is <code>1.0.0</code>. On this machine <code>~/.m2</code> already holds <code>1.0.0</code> for all seven modules.</p>
+    <div class="cmd"><code data-copy="./gradlew publishToMavenLocal">./gradlew publishToMavenLocal</code><button type="button" class="copy" id="copy-21">Copy</button></div>
+    <div class="cmd"><code data-copy="VERSION=1.1.0 ./gradlew publishToMavenLocal">VERSION=1.1.0 ./gradlew publishToMavenLocal</code><button type="button" class="copy" id="copy-22">Copy</button></div>
+  </div>
+</section>
+
+<section id="inspect">
+  <h2>Checking what ran</h2>
+  <p class="sub">Read-only commands that answer "is it green?" and "what did it publish?".</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Question</th><th>Command</th></tr></thead>
+    <tbody>
+      <tr><td>Which workflows exist?</td><td class="mono">gh workflow list</td></tr>
+      <tr><td>What ran recently, and did it pass?</td><td class="mono">gh run list --limit 10</td></tr>
+      <tr><td>What happened in one run?</td><td class="mono">gh run view 34290478345</td></tr>
+      <tr><td>Which version did a CD run publish?</td><td class="mono">gh run view 34290478345 --log | grep "VERSION:"</td></tr>
+      <tr><td>Which PRs were merged?</td><td class="mono">gh pr list --state merged</td></tr>
+      <tr><td>Is the tag on GitHub, and where does it point?</td><td class="mono">git ls-remote --tags origin</td></tr>
+      <tr><td>Are the checks on my PR passing?</td><td class="mono">gh pr checks</td></tr>
+    </tbody>
+  </table></div>
+  <p>The two example run IDs are the real CD runs for <code>v1.0.0</code> (34290478345) and for the snapshot (34289170655). Run these from inside the repository, or add <code>--repo Ingsis-2026/Printscript2026</code>.</p>
+</section>
+
+<section id="tck">
+  <h2>The TCK side</h2>
+  <p class="sub">A fork, <code>eantonijevic/printscript-tck</code>, of <code>austral-ingsis/printscript-tck</code>. It consumes the published artifacts.</p>
+  <div class="code"><pre><span class="l"><i>5</i><span class="cm">// Version of the PrintScript implementation to test.</span></span><span class="l"><i>6</i><span class="cm">// Override with -PprintscriptVersion=1.0.0-SNAPSHOT to pull the snapshot from GitHub Packages.</span></span><span class="l hl"><i>7</i>def printscriptVersion = project.findProperty(<span class="st">&quot;printscriptVersion&quot;</span>) ?: <span class="st">&quot;1.0.0&quot;</span></span><span class="l"><i>8</i></span><span class="l"><i>9</i><span class="cm">// GitHub Packages needs credentials even for public packages, so the repository is only</span></span><span class="l"><i>10</i><span class="cm">// declared when they are available. Locally the artifacts come from mavenLocal</span></span><span class="l"><i>11</i><span class="cm">// (./gradlew publishToMavenLocal in the Printscript2026 repo).</span></span><span class="l hl"><i>12</i>def gprUser = project.findProperty(<span class="st">&quot;gpr.user&quot;</span>) ?: System.getenv(<span class="st">&quot;GITHUB_ACTOR&quot;</span>) ?: System.getenv(<span class="st">&quot;USERNAME&quot;</span>)</span><span class="l hl"><i>13</i>def gprKey = project.findProperty(<span class="st">&quot;gpr.key&quot;</span>) ?: System.getenv(<span class="st">&quot;GITHUB_TOKEN&quot;</span>) ?: System.getenv(<span class="st">&quot;TOKEN&quot;</span>)</span><span class="l"><i>14</i></span><span class="l"><i>15</i>repositories {</span><span class="l hl"><i>16</i>    mavenLocal()</span><span class="l"><i>17</i>    mavenCentral()</span><span class="l hl"><i>18</i>    <span class="kw">if</span> (gprUser != <span class="kw">null</span> &amp;&amp; gprKey != <span class="kw">null</span>) {</span><span class="l"><i>19</i>        maven {</span><span class="l"><i>20</i>            <span class="kw">name</span> = <span class="st">&quot;GitHubPackages&quot;</span></span><span class="l hl"><i>21</i>            url = uri(<span class="st">&quot;https://maven.pkg.github.com/Ingsis-2026/Printscript2026&quot;</span>)</span><span class="l"><i>22</i>            credentials {</span><span class="l"><i>23</i>                username = gprUser</span><span class="l"><i>24</i>                password = gprKey</span><span class="l"><i>25</i>            }</span><span class="l"><i>26</i>        }</span><span class="l"><i>27</i>    }</span><span class="l"><i>28</i>}</span></pre></div>
+  <ul class="points">
+    <li><strong>Which version</strong> (:7): <code>1.0.0</code>, or <code>-PprintscriptVersion=…</code>.</li>
+    <li><strong>Where from</strong> (:15–28): <code>mavenLocal</code> first, then Maven Central, then GitHub Packages, but only when credentials exist (:12–13, :18). The comment at :9–11 notes that GitHub Packages requires credentials even for public packages.</li>
+    <li><strong>Locally</strong> there's no <code>~/.gradle/gradle.properties</code> with <code>gpr.*</code> on this machine, so the TCK uses the jars that <code>publishToMavenLocal</code> put in <code>~/.m2</code>.</li>
+  </ul>
+  <div class="code"><pre><span class="l"><i>4</i><span class="kw">name</span>: Java CI <span class="kw">with</span> Gradle</span><span class="l"><i>5</i></span><span class="l hl"><i>6</i><span class="kw">on</span>: [push, pull_request]</span><span class="l"><i>7</i></span><span class="l"><i>8</i><span class="kw">jobs</span>:</span><span class="l"><i>9</i>  build:</span><span class="l"><i>10</i>    runs-<span class="kw">on</span>: ubuntu-latest</span><span class="l"><i>11</i></span><span class="l"><i>12</i>    <span class="kw">steps</span>:</span><span class="l"><i>13</i>      - <span class="kw">uses</span>: actions/checkout@v2</span><span class="l"><i>14</i>      - <span class="kw">name</span>: Set up JDK 21</span><span class="l"><i>15</i>        <span class="kw">uses</span>: actions/setup-java@v2</span><span class="l"><i>16</i>        <span class="kw">with</span>:</span><span class="l"><i>17</i>          java-version: &#x27;21&#x27;</span><span class="l"><i>18</i>          distribution: &#x27;adopt&#x27;</span><span class="l"><i>19</i>      - <span class="kw">name</span>: Grant execute permission <span class="kw">for</span> gradlew</span><span class="l"><i>20</i>        <span class="kw">run</span>: chmod +x gradlew</span><span class="l"><i>21</i>      - <span class="kw">name</span>: Gradle Clean</span><span class="l"><i>22</i>        <span class="kw">run</span>: ./gradlew clean</span><span class="l"><i>23</i>      - <span class="kw">name</span>: Build <span class="kw">with</span> Gradle</span><span class="l hl"><i>24</i>        <span class="kw">run</span>: ./gradlew build</span><span class="l"><i>25</i>        <span class="kw">env</span>:</span><span class="l hl"><i>26</i>          USERNAME: &lt;your-username&gt;</span><span class="l hl"><i>27</i>          TOKEN: ${{ secrets.GITHUB_TOKEN }}</span></pre></div>
+  <p><strong>In CI</strong>, the fork's "Java CI with Gradle" workflow runs on every push and PR (:6). It sets <code>USERNAME</code> and <code>TOKEN</code> (:26–27), which the build file accepts as credentials (:12–13). The GitHub Packages repository is then declared, and the runner downloads <code>1.0.0</code> from Ingsis-2026. Its latest run, on branch <code>group-7-validation</code>, succeeded.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Goal</th><th>Command, from the TCK directory</th></tr></thead>
+    <tbody>
+      <tr><td>Run the TCK against <code>~/.m2</code></td><td class="mono">./gradlew test</td></tr>
+      <tr><td>Run against the snapshot on GitHub</td><td class="mono">./gradlew test -PprintscriptVersion=1.0.0-SNAPSHOT -Pgpr.user=USER -Pgpr.key=TOKEN</td></tr>
+      <tr><td>See the fork's CI runs</td><td class="mono">gh run list --repo eantonijevic/printscript-tck --limit 5</td></tr>
+    </tbody>
+  </table></div>
+  <p class="code-cap">The token needs the <code>read:packages</code> scope. Don't paste a real token into slides or a shared terminal.</p>
+</section>
+
+<section id="gates">
+  <h2>Quality gates, layered</h2>
+  <p class="sub">The same <code>./gradlew check</code> guards four points on the way to a published package.</p>
+  <ol class="gates">
+    <li><span class="k">1</span><span><strong>Pre-commit hook</strong>: blocks a commit that fails locally.</span><span class="w">scripts/pre-commit</span></li>
+    <li><span class="k">2</span><span><strong>CI on the pull request</strong>: visible to reviewers before merging.</span><span class="w">ci.yml · pull_request</span></li>
+    <li><span class="k">3</span><span><strong>CI on <code>main</code></strong>: confirms the merged result, not just the branch.</span><span class="w">ci.yml · push</span></li>
+    <li><span class="k">4</span><span><strong>CD before publishing</strong>: a broken commit, or a tag on one, never reaches GitHub Packages.</span><span class="w">cd.yml:43–44</span></li>
+  </ol>
+  <p><code>check</code> means Ktlint, Detekt, all tests, and JaCoCo verification at a minimum of 80% per module, wired in <span class="ref">printscript.kotlin-common-conventions.gradle.kts:74–87</span>.</p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions to defend</h2>
+  <p class="sub">Each with the cost we accepted.</p>
+
+  <div class="decision">
+    <h4>Separate CI and CD workflows</h4>
+    <p>CI answers "is this change healthy?" for every PR and needs no special permissions. CD answers "publish this" only for <code>main</code>, tags and releases, and is the only workflow with <code>packages: write</code>.</p>
+    <p class="cost"><b>Cost</b>A merge to <code>main</code> runs <code>check</code> twice on the same commit, once in each workflow: about two extra minutes.</p>
+  </div>
+
+  <div class="decision">
+    <h4>The version comes from the git tag</h4>
+    <p>There's one source of truth, no "bump version" commits, and releasing is a single <code>git push origin vX.Y.Z</code>. The tag also records exactly which commit was released.</p>
+    <p class="cost"><b>Cost</b>The version isn't visible in the source, and local builds default to <code>1.0.0</code> unless <code>VERSION</code> is set.</p>
+  </div>
+
+  <div class="decision">
+    <h4>A snapshot on every merge</h4>
+    <p>Consumers like the TCK can test the latest <code>main</code> as <code>1.0.0-SNAPSHOT</code> without waiting for a release, and releases stay deliberate.</p>
+    <p class="cost"><b>Cost</b>The snapshot label is hard-coded in <code>cd.yml</code> and has to be updated after each release.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Run the full check again before publishing</h4>
+    <p>Publishing never trusts an earlier run: a tag can point at any commit, including one CI never saw.</p>
+    <p class="cost"><b>Cost</b>About 1.5 minutes of each ~4-minute CD run.</p>
+  </div>
+
+  <div class="decision">
+    <h4>GitHub Packages with the built-in token</h4>
+    <p>The packages live next to the code, and CD publishes with <code>GITHUB_TOKEN</code>, so there are no personal access tokens stored as secrets.</p>
+    <p class="cost"><b>Cost</b>Consumers need credentials even though the packages are public, which is why the TCK's build only adds that repository when credentials exist.</p>
+  </div>
+
+  <div class="decision">
+    <h4>Pull requests as a team convention</h4>
+    <p>All 14 changes went through PRs with CI checks, merged with merge commits so each PR stays visible in the history.</p>
+    <p class="cost"><b>Cost</b><code>main</code> has no branch protection or rulesets (checked via the GitHub API), so nothing technically blocks a direct push. Requiring the CI check would enforce the convention.</p>
+  </div>
+</section>
+
+<section id="questions">
+  <h2>Questions you might get</h2>
+  <p class="sub">Short answers, with the file to show.</p>
+  <div class="qa">
+    <details><summary>How do you publish a new version?</summary>
+      <p>Merge to <code>main</code>, then <code>git tag v1.1.0</code> and <code>git push origin v1.1.0</code>. CD strips the <code>v</code>, runs <code>check</code> and executes <code>./gradlew publish</code>, which uploads all seven modules as <code>1.1.0</code>.</p></details>
+    <details><summary>What's the difference between <code>1.0.0-SNAPSHOT</code> and <code>1.0.0</code>?</summary>
+      <p>The snapshot is republished on every merge to <code>main</code>, so it always means "latest main". <code>1.0.0</code> was published once, from the tagged commit <code>d2661f8</code>, and doesn't change. The TCK depends on <code>1.0.0</code>.</p></details>
+    <details><summary>What ran for PR #14, and what did it change?</summary>
+      <p>CI on the PR (1m44s), then after the merge CI on <code>main</code> (1m54s) and CD publishing the snapshot (4m11s), then CD for the tag (4m6s). The change made CD strip the <code>v</code> from tag names, so tag <code>v1.0.0</code> publishes version <code>1.0.0</code>, the version the TCK asks for.</p></details>
+    <details><summary>Why does CD run the tests again if CI already did?</summary>
+      <p>A tag or a manual run can target a commit CI never checked, and publishing is the one step that can't be undone for a release version. Checking again in the same run that publishes makes that impossible to skip.</p></details>
+    <details><summary>Where does the TCK get the PrintScript jars?</summary>
+      <p>Locally from <code>~/.m2</code> (<code>publishToMavenLocal</code>). In the fork's CI from GitHub Packages, using the workflow token. Both resolve <code>com.github.ingsis-2026:*:1.0.0</code>.</p></details>
+    <details><summary>Why are there yellow warnings on the Actions runs?</summary>
+      <p>GitHub notes that <code>actions/checkout@v4</code> and <code>actions/setup-java@v4</code> target a deprecated Node.js version. The runs still succeed. Upgrading those actions to their next major versions removes the warnings.</p></details>
+    <details><summary>Is <code>main</code> protected?</summary>
+      <p>Not by settings: the API reports no branch protection and no rulesets. The team always used PRs with CI, and requiring the "Code Quality, Tests &amp; Coverage" check would enforce it.</p></details>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="quizhead">
+    <div><h2>Self-check</h2><p class="sub" style="margin:0">Answer out loud first, then open the answer. Your ticks are saved in this browser only.</p></div>
+    <div><div class="progress" id="progress-text">0 of 8</div><div class="bar" aria-hidden="true"><span id="progress-bar"></span></div></div>
+  </div>
+  <div id="quiz-list">
+    <div class="q"><input type="checkbox" id="q1"><label for="q1">Which workflows run for a PR to main, a merge to main, and a pushed tag <code>v1.1.0</code>?</label>
+      <details><summary>Answer</summary><p>PR: CI. Merge: CI and CD. Tag: CD only.</p></details></div>
+    <div class="q"><input type="checkbox" id="q2"><label for="q2">What version does CD publish in each case?</label>
+      <details><summary>Answer</summary><p>A push to main publishes <code>1.0.0-SNAPSHOT</code>. Tag <code>v1.1.0</code> publishes <code>1.1.0</code>, because <code>${GITHUB_REF_NAME#v}</code> strips the <code>v</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">Type the commands to release 1.1.0 once the change is merged.</label>
+      <details><summary>Answer</summary><p><code>git switch main</code>, <code>git pull</code>, <code>git tag v1.1.0</code>, <code>git push origin v1.1.0</code>. Then <code>gh run list --workflow cd.yml</code> to watch it.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">Which Gradle task publishes, and how many artifacts per run?</label>
+      <details><summary>Answer</summary><p><code>./gradlew publish</code>, which runs <code>publishGprPublicationToGitHubPackagesRepository</code> in each of the seven modules, cli included.</p></details></div>
+    <div class="q"><input type="checkbox" id="q5"><label for="q5">Why does only CD have <code>packages: write</code>?</label>
+      <details><summary>Answer</summary><p>Least privilege: CI only needs to read and build, and CD is the one job that uploads. The built-in token gets exactly the permissions the workflow declares.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">How does the TCK get the artifacts locally, and in its CI?</label>
+      <details><summary>Answer</summary><p>Locally from <code>mavenLocal</code> (<code>publishToMavenLocal</code>). In CI, the workflow's credentials make the build add the GitHub Packages repository, and it downloads <code>1.0.0</code> from there.</p></details></div>
+    <div class="q"><input type="checkbox" id="q7"><label for="q7">Name the four places where <code>./gradlew check</code> guards the path to a published package.</label>
+      <details><summary>Answer</summary><p>The pre-commit hook, CI on the pull request, CI on main after the merge, and CD right before <code>publish</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">Why not create a GitHub Release for <code>v1.0.0</code> now?</label>
+      <details><summary>Answer</summary><p><code>release: published</code> triggers CD again for the same version. <code>1.0.0</code> already exists in GitHub Packages, and a release version can't be uploaded twice, so that run would be expected to fail.</p></details></div>
+  </div>
+  <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
+</section>
+</div>
+
+<script>
+(function(){
+  var KEY = "printscript-study-github-quiz";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#quiz-list input[type="checkbox"]'));
+  var text = document.getElementById("progress-text");
+  var bar = document.getElementById("progress-bar");
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(state){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    text.textContent = done + " of " + boxes.length;
+    bar.style.width = (100 * done / boxes.length) + "%";
+    boxes.forEach(function(b){ b.closest(".q").classList.toggle("done", b.checked); });
+  }
+  var state = load();
+  boxes.forEach(function(b){
+    b.checked = !!state[b.id];
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(state); render(); });
+  });
+  document.getElementById("quiz-reset").addEventListener("click", function(){
+    state = {}; save(state); boxes.forEach(function(b){ b.checked = false; }); render();
+  });
+  render();
+  document.querySelectorAll(".copy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var code = btn.parentNode.querySelector("code");
+      var value = code.getAttribute("data-copy") || code.textContent;
+      function done(label){ btn.textContent = label; setTimeout(function(){ btn.textContent = "Copy"; }, 1600); }
+      function selectFallback(){
+        try {
+          var range = document.createRange(); range.selectNodeContents(code);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+          done(document.execCommand && document.execCommand("copy") ? "Copied" : "Selected");
+        } catch (e) { done("Select to copy"); }
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(function(){ done("Copied"); }, selectFallback);
+        } else { selectFallback(); }
+      } catch (e) { selectFallback(); }
+    });
+  });
+})();
+</script>

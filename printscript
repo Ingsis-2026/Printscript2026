@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Atajo para la CLI de PrintScript, para no escribir la ruta completa a la distribución:
+#
+#   ./printscript validation programa.ps
+#   ./printscript execution programa.ps --version 1.1
+#
+# Si la distribución todavía no está construida, la construye una vez. Después de cambiar el
+# código hay que volver a construirla con "./gradlew :cli:installDist".
+
+set -e
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+bin="$root/cli/build/install/printscript/bin/printscript"
+
+if [ ! -x "$bin" ]; then
+    echo "Construyendo la CLI (./gradlew :cli:installDist)..." >&2
+    "$root/gradlew" --project-dir "$root" --quiet :cli:installDist >&2
+fi
+
+exec "$bin" "$@"
