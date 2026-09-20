@@ -4,6 +4,18 @@ import token.Token
 import token.TokenPosition
 import token.TokenType
 
+/**
+ * Reconstruye una aproximación de los tokens de cada sentencia a partir del AST, para que el
+ * Linter pueda aplicar reglas token por token sobre un árbol ya parseado.
+ *
+ * No devuelve los tokens originales del fuente ni pretende hacerlo: omite keywords, declaradores,
+ * tipos, paréntesis y puntuación, y le da a cada token la posición del nodo que lo originó, con lo
+ * cual su inicio y su fin son el mismo punto. Por ejemplo, `let x: number = 5;` vuelve convertido
+ * en dos tokens: `IDENTIFIER(x)` y `NUMBERLITERAL(5)`.
+ *
+ * Alcanza para las reglas del linter, que miran identificadores y argumentos de funciones. No
+ * sirve para reimprimir el fuente: para eso hay que volver a lexear el texto original.
+ */
 class Tokenizer {
     /** Variante perezosa: re-tokeniza cada nodo a medida que se lo pide. */
     fun parseToTokens(astNodes: Sequence<ASTNode>): Sequence<List<Token>> = astNodes.map { extractTokensFromAST(it) }

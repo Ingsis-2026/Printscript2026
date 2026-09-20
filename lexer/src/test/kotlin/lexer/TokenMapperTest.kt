@@ -108,6 +108,27 @@ class TokenMapperTest {
     }
 
     @Test
+    fun `test resolve recognizes a known lexeme`() {
+        assertEquals(TokenResolution.Recognized(TokenType.KEYWORD), TokenMapper("1.0").resolve("let"))
+    }
+
+    @Test
+    fun `test resolve rejects a lexeme disallowed by the version, with its reason`() {
+        assertEquals(
+            TokenResolution.Rejected("Const declarations are not allowed in version 1.0"),
+            TokenMapper("1.0").resolve("const"),
+        )
+    }
+
+    @Test
+    fun `test resolve rejects an unrecognized lexeme`() {
+        assertEquals(
+            TokenResolution.Rejected("Carácter inválido encontrado: '!@#$%'"),
+            TokenMapper("1.0").resolve("!@#$%"),
+        )
+    }
+
+    @Test
     fun `test custom strategies injection`() {
         val customStrategies =
             mapOf(
