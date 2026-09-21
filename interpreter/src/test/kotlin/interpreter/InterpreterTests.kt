@@ -62,7 +62,7 @@ class InterpreterTests {
         val node = AssignationNode("x", expression, TokenType.ASSIGNATION, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
-        assertEquals(42, interpreter.variables["x"])
+        assertEquals(42, interpreter.variables.valueOf("x"))
     }
 
     @Test
@@ -71,7 +71,7 @@ class InterpreterTests {
         val node = DeclarationNode(TokenType.KEYWORD, "let", "x", TokenType.DATA_TYPE, "number", expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
-        assertEquals(42, interpreter.variables["x"])
+        assertEquals(42, interpreter.variables.valueOf("x"))
     }
 
     @Test
@@ -197,7 +197,7 @@ class InterpreterTests {
         val node = AssignationNode("x", expression, TokenType.ASSIGNATION, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
-        assertEquals(42, interpreter.variables["x"])
+        assertEquals(42, interpreter.variables.valueOf("x"))
     }
 
     @Test
@@ -365,7 +365,7 @@ class InterpreterTests {
         val node = DeclarationNode(TokenType.KEYWORD, "let", "x", TokenType.DATA_TYPE, "number", expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
-        assertEquals(42, interpreter.variables["x"])
+        assertEquals(42, interpreter.variables.valueOf("x"))
     }
 
     @Test
@@ -389,7 +389,7 @@ class InterpreterTests {
 
         // Verificar
         assertEquals(15, result)
-        assertEquals(10, interpreter.variables["x"]) // Verificar que 'x' sigue siendo 10
+        assertEquals(10, interpreter.variables.valueOf("x")) // Verificar que 'x' sigue siendo 10
     }
 
     @Test
@@ -429,7 +429,7 @@ class InterpreterTests {
         val functionNode = FunctionNode(TokenType.FUNCTION, "println", functionBody, position)
 
         // Asignar un valor a x
-        interpreter.variables["x"] = 10
+        interpreter.variables.assign("x", 10)
 
         // Ejecutar la función
         val result = interpreter.execute(functionNode)
@@ -494,9 +494,9 @@ class InterpreterTests {
         interpreter.execute(AssignationNode("z", sumNode, TokenType.ASSIGNATION, position))
 
         // Verificar que las variables están correctamente asignadas
-        assertEquals(10, interpreter.variables["x"])
-        assertEquals(20, interpreter.variables["y"])
-        assertEquals(30, interpreter.variables["z"])
+        assertEquals(10, interpreter.variables.valueOf("x"))
+        assertEquals(20, interpreter.variables.valueOf("y"))
+        assertEquals(30, interpreter.variables.valueOf("z"))
     }
 
     /*
@@ -933,7 +933,7 @@ class InterpreterTests {
 
         val result = interpreter.execute(node)
 
-        assertEquals(10, interpreter.variables["x"])
+        assertEquals(10, interpreter.variables.valueOf("x"))
         assertEquals(10, result)
     }
 
@@ -945,7 +945,7 @@ class InterpreterTests {
 
         val result = interpreter.execute(node)
 
-        assertEquals("Hello", interpreter.variables["greeting"])
+        assertEquals("Hello", interpreter.variables.valueOf("greeting"))
         assertEquals("Hello", result)
     }
 
@@ -963,7 +963,7 @@ class InterpreterTests {
         val newNode = AssignationNode("numberVar", newExpression, TokenType.NUMBERLITERAL, position)
         val result = interpreter.execute(newNode)
 
-        assertEquals(100, interpreter.variables["numberVar"])
+        assertEquals(100, interpreter.variables.valueOf("numberVar"))
         assertEquals(100, result)
     }
 
@@ -992,8 +992,8 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader)
 
         // Asignación inicial de una constante
-        interpreter.variables["constVar"] = "FixedValue"
-        interpreter.declarationKeywords["constVar"] = "const"
+        interpreter.variables.declare("constVar", Declaration("const", "string"))
+        interpreter.variables.assign("constVar", "FixedValue")
 
         // Intento de reasignar una constante
         val newExpression = LiteralNode("New Value", TokenType.STRINGLITERAL, position)
@@ -1151,7 +1151,8 @@ class InterpreterTests {
                 position,
             )
         interpreter.execute(node)
-        assertEquals(false, interpreter.variables.containsKey("uninit"))
+        assertTrue(interpreter.variables.isDeclared("uninit"))
+        assertNull(interpreter.variables.valueOf("uninit"))
     }
 
     @Test
@@ -1224,8 +1225,8 @@ class InterpreterTests {
     @Test
     fun `test reassign const variable throws`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.variables["c"] = 10
-        interpreter.declarationKeywords["c"] = "const"
+        interpreter.variables.declare("c", Declaration("const", "number"))
+        interpreter.variables.assign("c", 10)
         val assignNode =
             AssignationNode(
                 "c",
@@ -1241,7 +1242,7 @@ class InterpreterTests {
     @Test
     fun `test reassign variable wrong type throws`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.variables["x"] = 10
+        interpreter.variables.assign("x", 10)
         val assignNode =
             AssignationNode(
                 "x",
@@ -1257,7 +1258,7 @@ class InterpreterTests {
     @Test
     fun `test reassign string variable with number throws`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.variables["str"] = "hello"
+        interpreter.variables.assign("str", "hello")
         val assignNode =
             AssignationNode(
                 "str",

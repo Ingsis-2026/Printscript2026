@@ -48,21 +48,21 @@ class ExternalInputTypingTest {
     fun `a string variable keeps the text as it was typed`() {
         val interpreter = run("let s: string = readInput(\"v: \");", "5")
 
-        assertEquals("5", interpreter.variables["s"])
+        assertEquals("5", interpreter.variables.valueOf("s"))
     }
 
     @Test
     fun `a number variable receives a number`() {
         val interpreter = run("let n: number = readInput(\"v: \");", "42")
 
-        assertEquals(42, interpreter.variables["n"])
+        assertEquals(42, interpreter.variables.valueOf("n"))
     }
 
     @Test
     fun `a boolean variable receives a boolean`() {
         val interpreter = run("let b: boolean = readInput(\"v: \");", "true")
 
-        assertEquals(true, interpreter.variables["b"])
+        assertEquals(true, interpreter.variables.valueOf("b"))
     }
 
     @Test
@@ -79,7 +79,7 @@ class ExternalInputTypingTest {
     fun `a later assignment uses the declared type of the variable`() {
         val interpreter = run("let x: boolean = true;\nx = readInput(\"v: \");", "false")
 
-        assertEquals(false, interpreter.variables["x"])
+        assertEquals(false, interpreter.variables.valueOf("x"))
     }
 
     @Test
@@ -93,7 +93,8 @@ class ExternalInputTypingTest {
     fun `a variable declared without a value still remembers its type`() {
         val interpreter = run("let n: number;\nn = readInput(\"v: \");", "10")
 
-        assertEquals(10, interpreter.variables["n"])
+        assertEquals("number", interpreter.variables.declarationOf("n")?.declaredType)
+        assertEquals(10, interpreter.variables.valueOf("n"))
     }
 
     @Test

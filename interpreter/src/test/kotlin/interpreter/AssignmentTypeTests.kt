@@ -37,13 +37,13 @@ class AssignmentTypeTests {
         val result = interpreter.execute(assignation("flag", "false", TokenType.BOOLEANLITERAL))
 
         assertEquals(false, result)
-        assertEquals(false, interpreter.variables["flag"])
+        assertEquals(false, interpreter.variables.valueOf("flag"))
     }
 
     @Test
     fun `a decimal variable can be reassigned to another decimal`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.variables["ratio"] = 1.5
+        interpreter.variables.assign("ratio", 1.5)
 
         val result = interpreter.execute(assignation("ratio", "2.5", TokenType.NUMBERLITERAL))
 

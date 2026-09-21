@@ -28,7 +28,7 @@ class LiteralEvaluator : NodeEvaluator {
                 }
             TokenType.DATA_TYPE -> literal.value
             TokenType.IDENTIFIER ->
-                interpreter.variables[literal.value]
+                interpreter.variables.valueOf(literal.value)
                     ?: throw InterpreterException("Undefined variable: ${literal.value}")
             else -> throw InterpreterException("Unsupported literal type: ${literal.type}")
         }
