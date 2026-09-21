@@ -16,7 +16,7 @@ class DeclarationEvaluator : NodeEvaluator {
         interpreter: Interpreter,
     ): Any? {
         val declarationNode = node as DeclarationNode
-        if (interpreter.variables.valueOf(declarationNode.id) != null) {
+        if (interpreter.variables.isTaken(declarationNode.id)) {
             throw InterpreterException("La variable '${declarationNode.id}' ya ha sido declarada")
         }
 

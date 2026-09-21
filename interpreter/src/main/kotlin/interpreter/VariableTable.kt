@@ -26,6 +26,13 @@ class VariableTable {
     /** El valor actual del nombre, o `null` si todavía no tiene ninguno. */
     fun valueOf(name: String): Any? = values[name]
 
+    /**
+     * Si el nombre ya está en uso, sea porque se lo declaró o porque se le dio valor sin
+     * declararlo. Es la pregunta que corresponde antes de aceptar una declaración nueva:
+     * cualquiera de las dos cosas alcanza para que el nombre esté ocupado.
+     */
+    fun isTaken(name: String): Boolean = declarations.containsKey(name) || values.containsKey(name)
+
     /** Si el programa todavía no creó ninguna variable. */
     fun isEmpty(): Boolean = declarations.isEmpty() && values.isEmpty()
 

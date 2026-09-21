@@ -21,9 +21,7 @@ class AssignmentEvaluator : NodeEvaluator {
 
         val resolved = resolveExternalInput(value, assignation.id, interpreter)
 
-        if (interpreter.variables.valueOf(assignation.id) != null) {
-            rejectInvalidReassignment(assignation.id, resolved, interpreter)
-        }
+        rejectInvalidReassignment(assignation.id, resolved, interpreter)
 
         interpreter.variables.assign(assignation.id, resolved)
         return resolved
