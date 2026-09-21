@@ -645,7 +645,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test subtraction of two floats`() {
+    fun `test subtraction of two decimals`() {
         val left = LiteralNode("10.5", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("5.2", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "-", position, position)
@@ -657,7 +657,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test subtraction of int and float`() {
+    fun `test subtraction of int and decimal`() {
         val left = LiteralNode("10", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("2.5", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "-", position, position)
@@ -669,7 +669,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test subtraction of float and int`() {
+    fun `test subtraction of decimal and int`() {
         val left = LiteralNode("10.5", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("5", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "-", position, position)
@@ -705,7 +705,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test multiplication of two floats`() {
+    fun `test multiplication of two decimals`() {
         val left = LiteralNode("2.5", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("3.5", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "*", position, position)
@@ -717,7 +717,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test multiplication of integer and float`() {
+    fun `test multiplication of integer and decimal`() {
         val left = LiteralNode("4", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("2.5", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "*", position, position)
@@ -729,7 +729,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test multiplication of float and integer`() {
+    fun `test multiplication of decimal and integer`() {
         val left = LiteralNode("2.5", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("4", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "*", position, position)
@@ -815,7 +815,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test division of two floats`() {
+    fun `test division of two decimals`() {
         val left = LiteralNode("7.5", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("2.5", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "/", position, position)
@@ -827,7 +827,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test division of integer by float`() {
+    fun `test division of integer by decimal`() {
         val left = LiteralNode("10", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("4.0", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "/", position, position)
@@ -839,7 +839,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test division of float by integer`() {
+    fun `test division of decimal by integer`() {
         val left = LiteralNode("7.5", TokenType.NUMBERLITERAL, position)
         val right = LiteralNode("3", TokenType.NUMBERLITERAL, position)
         val operatorToken = Token(TokenType.OPERATOR, "/", position, position)

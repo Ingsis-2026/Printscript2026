@@ -63,10 +63,6 @@ class BinaryEvaluator : NodeEvaluator {
                     rejectZeroDivisor(b)
                     a / b
                 },
-                onFloat = { a, b ->
-                    rejectZeroDivisor(b)
-                    a / b
-                },
                 onDouble = { a, b ->
                     rejectZeroDivisor(b)
                     a / b
@@ -121,8 +117,8 @@ class BinaryEvaluator : NodeEvaluator {
     }
 
     private companion object {
-        val ADDITION = NumericOperation({ a, b -> a + b }, { a, b -> a + b }, { a, b -> a + b })
-        val SUBTRACTION = NumericOperation({ a, b -> a - b }, { a, b -> a - b }, { a, b -> a - b })
-        val MULTIPLICATION = NumericOperation({ a, b -> a * b }, { a, b -> a * b }, { a, b -> a * b })
+        val ADDITION = NumericOperation({ a, b -> a + b }, { a, b -> a + b })
+        val SUBTRACTION = NumericOperation({ a, b -> a - b }, { a, b -> a - b })
+        val MULTIPLICATION = NumericOperation({ a, b -> a * b }, { a, b -> a * b })
     }
 }
