@@ -1283,11 +1283,16 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test custom function in function evaluator`() {
+    fun `test unknown function name is rejected`() {
         val interpreter = Interpreter(printer, reader)
         val expr = LiteralNode("hello", TokenType.STRINGLITERAL, position)
         val funcNode = FunctionNode(TokenType.FUNCTION, "myCustomFunction", expr, position)
-        val result = interpreter.execute(funcNode)
-        assertEquals("hello", result)
+
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                interpreter.execute(funcNode)
+            }
+
+        assertEquals("Unsupported function: myCustomFunction", exception.message)
     }
 }

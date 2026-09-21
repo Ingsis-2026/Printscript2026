@@ -21,7 +21,8 @@ class FunctionEvaluator : NodeEvaluator {
         return when (call.functionName) {
             "readInput" -> readInput(call, interpreter)
             "readEnv" -> readEnv(call, interpreter)
-            else -> printValue(call, interpreter)
+            "println" -> printValue(call, interpreter)
+            else -> throw InterpreterException("Unsupported function: ${call.functionName}")
         }
     }
 
@@ -49,7 +50,13 @@ class FunctionEvaluator : NodeEvaluator {
         return ExternalInput(value, "readEnv")
     }
 
-    /** Cualquier otra función imprime su expresión: la salida va por el Printer inyectado, no por stdout. */
+    /**
+     * Imprime la expresión por el Printer inyectado, no por stdout.
+     *
+     * Un `println` escrito en el fuente no llega acá: `PrintlnFactory` se adelanta a
+     * `FunctionFactory` en la cadena del parser y lo convierte en un `PrintNode`, que atiende
+     * [PrintEvaluator]. Esta rama cubre un `FunctionNode` construido directamente.
+     */
     private fun printValue(
         node: FunctionNode,
         interpreter: Interpreter,
