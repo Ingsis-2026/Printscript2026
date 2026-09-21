@@ -437,29 +437,6 @@ class InterpreterTests {
         // Verificar
         assertEquals(15, result) // 10 + 5
     }
-    /*
-    @Test
-    fun `test readEnv function`() {
-        // Configurar el entorno para que devuelva un valor específico
-        val envVariable = "BEST_FOOTBALL_CLUB"
-        System.setProperty(envVariable, "Barcelona") // Configura la variable de entorno para la prueba
-
-        val interpreter = Interpreter(printer)
-
-        // Crear el nodo de función readEnv
-        val readEnvNode = FunctionNode(TokenType.FUNCTION, LiteralNode(envVariable, TokenType.STRINGLITERAL, position), position)
-
-        // Ejecutar la función readEnv
-        val result = interpreter.execute(readEnvNode)
-
-        // Verificar que el resultado sea el valor de la variable de entorno
-        assertEquals("Barcelona", result)
-
-        // Limpiar la variable de entorno después de la prueba
-        System.clearProperty(envVariable)
-    }
-
-     */
 
     @Test
     fun `test programmatic script with multiple statements`() {
@@ -499,36 +476,6 @@ class InterpreterTests {
         assertEquals(30, interpreter.variables.valueOf("z"))
     }
 
-    /*
-    @Test
-    fun `test invalid expression for type`() {
-        val interpreter = Interpreter()
-
-        // Crear un nodo de asignación con tipo 'number' pero con una expresión no válida
-        val invalidExpressionNode =
-            AssignationNode(
-                id = "pi",
-                expression = LiteralNode("3.14159", TokenType.NUMBERLITERAL, position),
-                valType = TokenType.DATA_TYPE,
-                position = position,
-            )
-        assertEquals(3.14159, interpreter.execute(invalidExpressionNode))
-    }
-
-    @Test
-    fun `test invalid arithmetic operation with strings`() {
-        val left = LiteralNode("hello", TokenType.STRINGLITERAL, position)
-        val right = LiteralNode("5", TokenType.NUMBERLITERAL, position)
-        val operatorToken = Token(TokenType.OPERATOR, "+", position, position)
-        val node = BinaryNode(left, right, operatorToken, position)
-        val interpreter = Interpreter()
-        assertThrows(RuntimeException::class.java) {
-            interpreter.execute(node)
-        }
-    }
-
-
-     */
     @Test
     fun `test concatenation of StringNumber and Number`() {
         val left = LiteralNode("2", TokenType.STRINGLITERAL, position)
@@ -1009,7 +956,7 @@ class InterpreterTests {
     @Test
     fun `test valid readInput with string argument`() {
         val expression = LiteralNode("Enter your name: ", TokenType.STRINGLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position) // Modificado aquí
+        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
 
         // Simulamos la interacción con el reader
         val interpreter =
@@ -1029,7 +976,7 @@ class InterpreterTests {
     @Test
     fun `test readInput throws exception for non-string argument`() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position) // Modificado aquí
+        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         val exception =
@@ -1049,7 +996,7 @@ class InterpreterTests {
                 Token(TokenType.OPERATOR, "+", position, position),
                 position,
             )
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position) // Modificado aquí
+        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         val exception =
@@ -1063,7 +1010,7 @@ class InterpreterTests {
     @Test
     fun `test readInput prints the argument message`() {
         val expression = LiteralNode("Enter a value: ", TokenType.STRINGLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position) // Modificado aquí
+        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
 
         val outputStream = ByteArrayOutputStream()
         System.setOut(PrintStream(outputStream))
