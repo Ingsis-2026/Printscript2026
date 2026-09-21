@@ -540,7 +540,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test handleReadEnv with undefined environment variable`() {
+    fun `test readEnv with undefined environment variable`() {
         val interpreter = Interpreter(printer, reader)
         val envVariable = "BEST_FOOTBALL_CLUB"
         val node = FunctionNode(TokenType.FUNCTION, "readEnv", LiteralNode(envVariable, TokenType.STRINGLITERAL, position), position)
@@ -1156,7 +1156,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test handle readInput function`() {
+    fun `test readInput function`() {
         val testReader =
             object : Reader {
                 override fun input(message: String): String = "100"

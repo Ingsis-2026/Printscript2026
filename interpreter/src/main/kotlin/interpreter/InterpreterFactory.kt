@@ -12,7 +12,8 @@ import interpreter.evaluators.NodeEvaluator
 import interpreter.evaluators.PrintEvaluator
 
 object InterpreterFactory {
-    fun defaultEvaluators(): List<NodeEvaluator> =
+    /** Los nodos que PrintScript 1.0 sabe ejecutar. */
+    fun version10Evaluators(): List<NodeEvaluator> =
         listOf(
             LiteralEvaluator(),
             BinaryEvaluator(),
@@ -20,38 +21,28 @@ object InterpreterFactory {
             DeclarationEvaluator(),
             PrintEvaluator(),
             BlockEvaluator(),
-            ConditionalEvaluator(),
-            FunctionEvaluator(),
             NilEvaluator(),
         )
+
+    /**
+     * 1.1 es 1.0 más lo que la versión agrega al lenguaje: `if`/`else` y las funciones
+     * `readInput` y `readEnv`.
+     *
+     * Se escribe como una suma para que la diferencia entre versiones esté dicha, en lugar de
+     * quedar a la vista sólo de quien compare dos listas enteras.
+     */
+    fun version11Evaluators(): List<NodeEvaluator> = version10Evaluators() + ConditionalEvaluator() + FunctionEvaluator()
+
+    fun evaluatorsFor(version: String): List<NodeEvaluator> =
+        when (version) {
+            "1.0" -> version10Evaluators()
+            "1.1" -> version11Evaluators()
+            else -> throw IllegalArgumentException("Unsupported version: $version")
+        }
 
     fun forVersion(
         version: String,
         printer: Printer,
         reader: Reader,
-    ): Interpreter =
-        when (version) {
-            "1.0" ->
-                Interpreter(
-                    printer = printer,
-                    reader = reader,
-                    evaluators =
-                        listOf(
-                            LiteralEvaluator(),
-                            BinaryEvaluator(),
-                            AssignmentEvaluator(),
-                            DeclarationEvaluator(),
-                            PrintEvaluator(),
-                            BlockEvaluator(),
-                            NilEvaluator(),
-                        ),
-                )
-            "1.1" ->
-                Interpreter(
-                    printer = printer,
-                    reader = reader,
-                    evaluators = defaultEvaluators(),
-                )
-            else -> throw IllegalArgumentException("Unsupported version: $version")
-        }
+    ): Interpreter = Interpreter(printer = printer, reader = reader, evaluators = evaluatorsFor(version))
 }

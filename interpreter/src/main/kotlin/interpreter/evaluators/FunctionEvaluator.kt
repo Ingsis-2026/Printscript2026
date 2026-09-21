@@ -15,21 +15,13 @@ class FunctionEvaluator : NodeEvaluator {
         node: ASTNode,
         interpreter: Interpreter,
     ): Any? {
-        val functionNode = node as FunctionNode
-        return when (functionNode.type) {
-            TokenType.FUNCTION -> {
-                when (functionNode.functionName) {
-                    "readInput" -> handleReadInput(functionNode, interpreter)
-                    "readEnv" -> handleReadEnv(functionNode, interpreter)
-                    else -> {
-                        val value = interpreter.execute(functionNode.expression)
-                        // La salida va por el Printer inyectado, no por stdout.
-                        interpreter.printer.print(value.toString())
-                        value
-                    }
-                }
-            }
-            else -> throw InterpreterException("Unsupported function: ${functionNode.type}")
+        val call = node as FunctionNode
+        if (call.type != TokenType.FUNCTION) throw InterpreterException("Unsupported function: ${call.type}")
+
+        return when (call.functionName) {
+            "readInput" -> readInput(call, interpreter)
+            "readEnv" -> readEnv(call, interpreter)
+            else -> printValue(call, interpreter)
         }
     }
 
@@ -37,24 +29,34 @@ class FunctionEvaluator : NodeEvaluator {
      * Devuelve el texto leído sin interpretar: el tipo lo fija el destino de la llamada.
      * Ver [ExternalInput].
      */
-    private fun handleReadInput(
+    private fun readInput(
         node: FunctionNode,
         interpreter: Interpreter,
     ): ExternalInput {
-        val message = stringArgumentOf(node, interpreter, "readInput")
+        val message = stringArgumentOf(node, interpreter, functionName = "readInput")
 
         // El argumento es el mensaje que se imprime antes de pedir el valor.
         interpreter.printer.print(message)
         return ExternalInput(interpreter.reader.input(message), "readInput")
     }
 
-    private fun handleReadEnv(
+    private fun readEnv(
         node: FunctionNode,
         interpreter: Interpreter,
     ): ExternalInput {
-        val varName = stringArgumentOf(node, interpreter, "readEnv")
+        val varName = stringArgumentOf(node, interpreter, functionName = "readEnv")
         val value = System.getenv(varName) ?: undefinedEnvironmentVariable(varName)
         return ExternalInput(value, "readEnv")
+    }
+
+    /** Cualquier otra función imprime su expresión: la salida va por el Printer inyectado, no por stdout. */
+    private fun printValue(
+        node: FunctionNode,
+        interpreter: Interpreter,
+    ): Any? {
+        val value = interpreter.execute(node.expression)
+        interpreter.printer.print(value.toString())
+        return value
     }
 
     private fun stringArgumentOf(

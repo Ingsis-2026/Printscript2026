@@ -6,7 +6,7 @@ import interpreter.evaluators.NodeEvaluator
 class Interpreter(
     val printer: Printer,
     val reader: Reader,
-    private val evaluators: List<NodeEvaluator> = InterpreterFactory.defaultEvaluators(),
+    private val evaluators: List<NodeEvaluator> = InterpreterFactory.version11Evaluators(),
 ) {
     /**
      * Las variables del programa. Es pública porque un [NodeEvaluator] de terceros recibe el
