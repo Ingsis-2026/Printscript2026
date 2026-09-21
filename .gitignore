@@ -4,6 +4,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Ktlint ###
+# Baseline que el plugin genera en cada módulo; no se versiona.
+*/config/ktlint/
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws
