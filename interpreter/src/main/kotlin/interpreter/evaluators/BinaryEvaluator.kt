@@ -15,27 +15,32 @@ class BinaryEvaluator : NodeEvaluator {
         val binary = node as BinaryNode
         val leftValue = interpreter.execute(binary.left) ?: throw InterpreterException("Invalid left operand")
         val rightValue = interpreter.execute(binary.right) ?: throw InterpreterException("Invalid right operand")
-        val operator = binary.operator.value
 
-        return when (operator) {
-            "+" -> handleAddition(leftValue, rightValue)
-            "-" -> ArithmeticOperations.compute(leftValue, rightValue, operator, SUBTRACTION)
-            "*" -> handleMultiplication(leftValue, rightValue)
-            "/" -> handleDivision(leftValue, rightValue)
-            ">" -> handleComparison(leftValue, rightValue, operator) { a, b -> a > b }
-            "<" -> handleComparison(leftValue, rightValue, operator) { a, b -> a < b }
+        return when (val operator = binary.operator.value) {
+            "+" -> add(leftValue, rightValue)
+            "-" -> subtract(leftValue, rightValue)
+            "*" -> multiply(leftValue, rightValue)
+            "/" -> divide(leftValue, rightValue)
+            ">" -> isGreaterThan(leftValue, rightValue)
+            "<" -> isLessThan(leftValue, rightValue)
             else -> throw InterpreterException("Unsupported operator: $operator")
         }
     }
 
-    private fun handleAddition(
+    /** Con un string de por medio `+` concatena; si no, suma. */
+    private fun add(
         leftValue: Any,
         rightValue: Any,
     ): Any =
         concatenate(leftValue, rightValue)
             ?: ArithmeticOperations.compute(leftValue, rightValue, "+", ADDITION)
 
-    private fun handleMultiplication(
+    private fun subtract(
+        leftValue: Any,
+        rightValue: Any,
+    ): Any = ArithmeticOperations.compute(leftValue, rightValue, "-", SUBTRACTION)
+
+    private fun multiply(
         leftValue: Any,
         rightValue: Any,
     ): Any {
@@ -45,7 +50,7 @@ class BinaryEvaluator : NodeEvaluator {
         return ArithmeticOperations.compute(leftValue, rightValue, "*", MULTIPLICATION)
     }
 
-    private fun handleDivision(
+    private fun divide(
         leftValue: Any,
         rightValue: Any,
     ): Any {
@@ -55,29 +60,36 @@ class BinaryEvaluator : NodeEvaluator {
         val division =
             NumericOperation(
                 onInt = { a, b ->
-                    checkDivisorNotZero(b)
-                    a / b
-                },
-                onFloat = { a, b ->
-                    checkDivisorNotZero(b)
+                    rejectZeroDivisor(b)
                     a / b
                 },
                 onDouble = { a, b ->
-                    checkDivisorNotZero(b)
+                    rejectZeroDivisor(b)
                     a / b
                 },
             )
         return ArithmeticOperations.compute(leftValue, rightValue, "/", division)
     }
 
-    private fun handleComparison(
+    private fun isGreaterThan(
+        leftValue: Any,
+        rightValue: Any,
+    ): Boolean = compare(leftValue, rightValue, ">") { left, right -> left > right }
+
+    private fun isLessThan(
+        leftValue: Any,
+        rightValue: Any,
+    ): Boolean = compare(leftValue, rightValue, "<") { left, right -> left < right }
+
+    /** Comparar sólo está definido entre enteros. */
+    private fun compare(
         leftValue: Any,
         rightValue: Any,
         operator: String,
-        compare: (Int, Int) -> Boolean,
+        comparison: (Int, Int) -> Boolean,
     ): Boolean =
         if (leftValue is Int && rightValue is Int) {
-            compare(leftValue, rightValue)
+            comparison(leftValue, rightValue)
         } else {
             throw InterpreterException("Unsupported operands for $operator")
         }
@@ -87,7 +99,7 @@ class BinaryEvaluator : NodeEvaluator {
      * "number" el resultado es "string". Cubre todo Number (enteros y decimales), no sólo Int.
      *
      * Devuelve `null` cuando el par de operandos no es una concatenación, para que
-     * [handleAddition] continúe con la aritmética numérica.
+     * [add] continúe con la aritmética numérica.
      */
     private fun concatenate(
         leftValue: Any,
@@ -100,13 +112,13 @@ class BinaryEvaluator : NodeEvaluator {
             else -> null
         }
 
-    private fun checkDivisorNotZero(divisor: Number) {
+    private fun rejectZeroDivisor(divisor: Number) {
         if (divisor.toDouble() == 0.0) throw InterpreterException("Division by zero")
     }
 
     private companion object {
-        val ADDITION = NumericOperation({ a, b -> a + b }, { a, b -> a + b }, { a, b -> a + b })
-        val SUBTRACTION = NumericOperation({ a, b -> a - b }, { a, b -> a - b }, { a, b -> a - b })
-        val MULTIPLICATION = NumericOperation({ a, b -> a * b }, { a, b -> a * b }, { a, b -> a * b })
+        val ADDITION = NumericOperation({ a, b -> a + b }, { a, b -> a + b })
+        val SUBTRACTION = NumericOperation({ a, b -> a - b }, { a, b -> a - b })
+        val MULTIPLICATION = NumericOperation({ a, b -> a * b }, { a, b -> a * b })
     }
 }

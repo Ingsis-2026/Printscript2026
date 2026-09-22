@@ -6,20 +6,13 @@ import interpreter.evaluators.NodeEvaluator
 class Interpreter(
     val printer: Printer,
     val reader: Reader,
-    private val evaluators: List<NodeEvaluator> = InterpreterFactory.defaultEvaluators(),
+    private val evaluators: List<NodeEvaluator> = InterpreterFactory.version11Evaluators(),
 ) {
-    val variables: MutableMap<String, Any?> = mutableMapOf()
-
-    /** Keyword con el que se declaró cada variable (`let` o `const`). */
-    val declarationKeywords: MutableMap<String, String> = mutableMapOf()
-
     /**
-     * Tipo declarado de cada variable (`string`, `number` o `boolean`).
-     *
-     * Se guarda para poder resolver un [ExternalInput] asignado más tarde, cuando el nodo de
-     * la declaración ya no está a mano.
+     * Las variables del programa. Es pública porque un [NodeEvaluator] de terceros recibe el
+     * intérprete entero y necesita poder leerlas y escribirlas.
      */
-    val declaredTypes: MutableMap<String, String> = mutableMapOf()
+    val variables: VariableTable = VariableTable()
 
     /**
      * Evalúa un nodo y garantiza que todo error salga con su ubicación.

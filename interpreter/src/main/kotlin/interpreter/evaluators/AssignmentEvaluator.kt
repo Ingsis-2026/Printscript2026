@@ -21,11 +21,9 @@ class AssignmentEvaluator : NodeEvaluator {
 
         val resolved = resolveExternalInput(value, assignation.id, interpreter)
 
-        if (interpreter.variables.containsKey(assignation.id)) {
-            checkReassignable(assignation.id, resolved, interpreter)
-        }
+        rejectInvalidReassignment(assignation.id, resolved, interpreter)
 
-        interpreter.variables[assignation.id] = resolved
+        interpreter.variables.assign(assignation.id, resolved)
         return resolved
     }
 
@@ -37,24 +35,24 @@ class AssignmentEvaluator : NodeEvaluator {
     ): Any {
         if (value !is ExternalInput) return value
         val declaredType =
-            interpreter.declaredTypes[id]
+            interpreter.variables.declarationOf(id)?.declaredType
                 ?: throw InterpreterException("No se puede asignar ${value.origin} a '$id': la variable no fue declarada")
         return value.asType(declaredType)
     }
 
-    private fun checkReassignable(
+    private fun rejectInvalidReassignment(
         id: String,
         value: Any,
         interpreter: Interpreter,
     ) {
-        val declarationKeyword = interpreter.declarationKeywords[id]
-        if (declarationKeyword == "const") {
-            throw InterpreterException("No es posible reasignar una variable de tipo $declarationKeyword")
+        val declaration = interpreter.variables.declarationOf(id)
+        if (declaration != null && declaration.isConstant) {
+            throw InterpreterException("No es posible reasignar una variable de tipo ${declaration.keyword}")
         }
 
         // Una variable sólo admite valores de su mismo tipo de PrintScript, y "number"
         // abarca enteros y decimales: reasignar 5 con 2.5 es válido.
-        val existing = interpreter.variables[id] ?: return
+        val existing = interpreter.variables.valueOf(id) ?: return
         if (printScriptTypeOf(existing) != printScriptTypeOf(value)) {
             throw InterpreterException("Invalid expression for type ${literalTypeNameOf(existing)}")
         }
@@ -69,6 +67,11 @@ class AssignmentEvaluator : NodeEvaluator {
             else -> TokenType.UNKNOWN
         }
 
-    /** Nombre del TokenType literal asociado al valor, sólo para los mensajes de error. */
+    /**
+     * Nombre del TokenType literal asociado al valor, sólo para los mensajes de error.
+     *
+     * Devuelve el nombre del enum en minúsculas, así que el mensaje dice "numberliteral" y no
+     * "number". Los tests fijan esa redacción textualmente: es intencional, no un descuido.
+     */
     private fun literalTypeNameOf(value: Any): String = printScriptTypeOf(value).name.lowercase()
 }

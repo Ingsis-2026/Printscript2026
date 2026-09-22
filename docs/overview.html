@@ -131,7 +131,7 @@ td:first-child{white-space:nowrap}
     <li><a href="#commons"><span>commons</span><span>242</span></a></li>
     <li><a href="#lexer"><span>lexer</span><span>242</span></a></li>
     <li><a href="#parser"><span>parser</span><span>727</span></a></li>
-    <li><a href="#interpreter"><span>interpreter</span><span>665</span></a></li>
+    <li><a href="#interpreter"><span>interpreter</span><span>734</span></a></li>
     <li><a href="#formatter"><span>formatter</span><span>427</span></a></li>
     <li><a href="#linter"><span>linter</span><span>369</span></a></li>
     <li><a href="#cli"><span>cli</span><span>729</span></a></li>
@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 2fb5a82 · main</p>
+  <p class="eyebrow">Printscript2026 @ abf669b · main</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -348,7 +348,7 @@ PrintNode                                  <span class="c">@4:0</span>
         <tr><td>let a</td><td>Declaration → Literal <code>"12"</code> → <code>Int 12</code></td><td><code>{a=12}</code></td></tr>
         <tr><td>let b</td><td>Declaration → Literal → <code>Int 4</code></td><td><code>{a=12, b=4}</code></td></tr>
         <tr><td>let c</td><td>Declaration → Binary <code>/</code> → Literal <code>a</code> (lookup 12), Literal <code>b</code> (lookup 4) → <code>ArithmeticOperations</code> Int/Int → <code>3</code></td><td><code>{a=12, b=4, c=3}</code></td></tr>
-        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:99</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
+        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:104</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
       </tbody>
     </table></div>
     <p>The printer receives <code>Result: 3</code>, which is exactly the output the PDF expects. In the CLI the printer is <code>OutputPrinter</code> writing to stdout; in the TCK it's the test's <code>PrintEmitter</code>. The interpreter code is identical in both.</p>
@@ -501,19 +501,19 @@ return splitOnOperator(tokens, ::isAdditionOrSubtraction)
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Choose evaluators for the version.</strong> <span class="ref">InterpreterFactory.kt:28–56</span>: 1.0 has no <code>ConditionalEvaluator</code> or <code>FunctionEvaluator</code>, and 1.1 uses the full list (:15–26).</div></li>
-      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:11–22</span> keeps three maps: <code>variables</code>, <code>declarationKeywords</code> (to reject reassigning a <code>const</code>) and <code>declaredTypes</code> (to type a later <code>readInput</code>).</div></li>
-      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:32–42</span> finds the evaluator that <code>canEvaluate</code> the node and runs it. Evaluators throw errors without positions; the catch at :38–40 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
+      <li><div><strong>Choose evaluators for the version.</strong> <span class="ref">InterpreterFactory.kt:14–47</span>: <code>version10Evaluators()</code> is the 1.0 list, and <code>version11Evaluators()</code> is written as that list plus what 1.1 adds — <code>ConditionalEvaluator</code> and <code>FunctionEvaluator</code> (:34).</div></li>
+      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:11–15</span> keeps one <code>VariableTable</code>, which stores each variable's <code>Declaration</code> (the keyword, to reject reassigning a <code>const</code>, and the declared type, to type a later <code>readInput</code>) separately from its value — because a variable can be declared without a value, and can get a value without being declared.</div></li>
+      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:25–35</span> finds the evaluator that <code>canEvaluate</code> the node and runs it. Evaluators throw errors without positions; the catch at :38–40 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
       <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:17–34</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:19). An identifier is looked up and throws "Undefined variable" if missing (:30–32).</div></li>
-      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:20–28</span> dispatches on the operator. <code>+</code> tries string concatenation first (:31–36, :92–101), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is in <span class="ref">ArithmeticOperations.kt:21–56</span>. Division by zero is checked at :103–105, and multiplying or dividing a string is rejected at :42–44 and :52–54.</div></li>
-      <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:18–42</span> rejects redeclaration (:18–20) and records the type and keyword even when there's no value (:32–33). It types an <code>ExternalInput</code> using the declared type (:36).</div></li>
-      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:17–30</span> refuses to reassign a <code>const</code> (:50–53) and refuses a value of a different PrintScript type (:57–60). Int and Double both count as <code>number</code> (:64–70).</div></li>
+      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:19–27</span> dispatches on the operator, one named operation per branch. <code>+</code> tries string concatenation first (:30–36), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :115–117, and multiplying or dividing a string is rejected at :47–49 and :57–59.</div></li>
+      <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:18–44</span> rejects a name that is already taken (:19–21) and records the <code>Declaration</code> even when there's no value (:32–35). It types an <code>ExternalInput</code> using the declared type (:38).</div></li>
+      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:17–27</span> refuses to reassign a <code>const</code> (:48–51) and refuses a value of a different PrintScript type (:55–58). Int and Double both count as <code>number</code>.</div></li>
       <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:16–23</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:16–29</span> requires a <code>Boolean</code> (:18–20). <span class="ref">BlockEvaluator.kt:16–18</span> runs children in order, and <code>NilEvaluator</code> returns null.</div></li>
-      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:40–49</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:51–58). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
+      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:33–42</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:44–51). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
     </ol>
 
     <h3>The typed-input trick</h3>
-<pre><span class="c">// ExternalInput.kt:16–27: the destination decides the type</span>
+<pre><span class="c">// ExternalInput.kt:10–21: the destination decides the type</span>
 fun asType(dataType: String): Any = when (dataType) {
     "string"  -&gt; text
     "number"  -&gt; text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
@@ -524,7 +524,7 @@ fun asType(dataType: String): Any = when (dataType) {
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>One evaluator per node type<small>NodeEvaluator.kt:6 · InterpreterFactory.kt:15</small></dt><dd>This is a strategy registry: a new node type is a new evaluator plus a list entry, with no edits to <code>Interpreter</code>. The version is again just the list.</dd></div>
+      <div class="decision"><dt>One evaluator per node type<small>NodeEvaluator.kt:6 · InterpreterFactory.kt:16</small></dt><dd>This is a strategy registry: a new node type is a new evaluator plus a list entry, with no edits to <code>Interpreter</code>. The version is again just the list.</dd></div>
       <div class="decision"><dt><code>Printer</code> / <code>Reader</code> interfaces<small>Printer.kt:3 · Reader.kt:3</small></dt><dd>Dependency inversion. The spec requires a programmatic way to provide input, which is the TCK's <code>InputProvider</code>. Being single-method interfaces, they take Java method references directly (<span class="ref">InterpreterAdapter.java:54</span>).</dd></div>
       <div class="decision"><dt>Executes node by node<small>Interpreter.kt:32</small></dt><dd>The interpreter never sees the whole program, and the caller decides how the stream is fed. That's what lets execution interleave with parsing.</dd></div>
     </dl>
@@ -649,7 +649,7 @@ fun asType(dataType: String): Any = when (dataType) {
       <tbody>
         <tr><td>lexer</td><td>Token vocabulary; <code>const</code> rejected with position</td><td><span class="ref">TokenMapper.kt:74–86</span></td></tr>
         <tr><td>parser</td><td><code>ConditionalFactory</code> in the list or not</td><td><span class="ref">ParserFactory.kt:20–42</span></td></tr>
-        <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:28–56</span></td></tr>
+        <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:14–47</span></td></tr>
         <tr><td>linter</td><td><code>inputonly</code> rule allowed or not</td><td><span class="ref">RuleFactory.kt:23–31</span></td></tr>
         <tr><td>formatter</td><td>Only via its lexer, which must accept braces</td><td><span class="ref">FormatterBuilderPS.kt:24</span></td></tr>
         <tr><td>cli</td><td><code>--version</code>, default 1.0, validated against {1.0, 1.1}</td><td><span class="ref">ArgumentParser.kt:108–113</span></td></tr>
@@ -679,7 +679,7 @@ fun asType(dataType: String): Any = when (dataType) {
         <tr><td>commons</td><td class="num">242</td><td class="num">26</td><td class="num">90.3%</td></tr>
         <tr><td>lexer</td><td class="num">242</td><td class="num">21</td><td class="num">90.8%</td></tr>
         <tr><td>parser</td><td class="num">727</td><td class="num">61</td><td class="num">91.7%</td></tr>
-        <tr><td>interpreter</td><td class="num">665</td><td class="num">126</td><td class="num">87.1%</td></tr>
+        <tr><td>interpreter</td><td class="num">734</td><td class="num">127</td><td class="num">90.3%</td></tr>
         <tr><td>formatter</td><td class="num">427</td><td class="num">33</td><td class="num">93.4%</td></tr>
         <tr><td>linter</td><td class="num">369</td><td class="num">58</td><td class="num">91.0%</td></tr>
         <tr><td>cli</td><td class="num">729</td><td class="num">68</td><td class="num">93.1%</td></tr>
@@ -751,7 +751,7 @@ fun asType(dataType: String): Any = when (dataType) {
       <h4>Interpreter: a registry of evaluators, one per node type</h4>
       <p class="over">instead of a Visitor, or one large <code>when</code> over the sealed class</p>
       <div class="cols">
-        <div><h5>Why</h5><p>A new node type is a new class plus a registration, and <code>Interpreter</code> never changes. Which constructs a version supports is visible in one list (<span class="ref">InterpreterFactory.kt:28–56</span>). A Visitor would force every visitor to change with each new node.</p></div>
+        <div><h5>Why</h5><p>A new node type is a new class plus a registration, and <code>Interpreter</code> never changes. Which constructs a version supports is visible in one list (<span class="ref">InterpreterFactory.kt:14–47</span>). A Visitor would force every visitor to change with each new node.</p></div>
         <div><h5 class="cost">Cost we accept</h5><p>Dispatch happens at run time, and each evaluator casts its node (<span class="ref">BinaryEvaluator.kt:15</span>), so a missing evaluator is a run-time error instead of a compile error. The <code>Tokenizer</code>, where exhaustiveness matters more, uses the <code>when</code> instead.</p></div>
       </div>
     </div>
@@ -761,7 +761,7 @@ fun asType(dataType: String): Any = when (dataType) {
       <p class="over">instead of a PrintScript value hierarchy (<code>NumberValue</code>, <code>StringValue</code>…)</p>
       <div class="cols">
         <div><h5>Why</h5><p>There are fewer classes, arithmetic and concatenation use Kotlin's own operators, and printing is <code>toString()</code>. The mapping back to PrintScript types is one small function (<span class="ref">AssignmentEvaluator.kt:64–70</span>).</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>Evaluators use <code>is</code> checks, and Int/Double promotion needs explicit handling (<span class="ref">ArithmeticOperations.kt:21–56</span>). <code>readInput</code>'s untyped text needed its own wrapper, <code>ExternalInput</code>.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Evaluators use <code>is</code> checks, and Int/Double promotion needs explicit handling (<span class="ref">ArithmeticOperations.kt:24–36</span>). <code>readInput</code>'s untyped text needed its own wrapper, <code>ExternalInput</code>.</p></div>
       </div>
     </div>
 
@@ -835,7 +835,7 @@ fun asType(dataType: String): Any = when (dataType) {
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
-      <p>Three layers. First, 393 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+      <p>Three layers. First, 394 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
       <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. Move <code>Tokenizer</code> into the linter if nothing else adopts it. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>
