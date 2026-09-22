@@ -12,7 +12,6 @@ import token.Token
 import token.TokenPosition
 import token.TokenType
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class ASTNodeTests {
     @Test
@@ -115,11 +114,11 @@ class ASTNodeTests {
     fun `test 008 conditional node without else block`() {
         val condition = LiteralNode("false", TokenType.BOOLEANLITERAL, TokenPosition(1, 1))
         val thenBlock = LiteralNode("0", TokenType.NUMBERLITERAL, TokenPosition(1, 2))
-        val conditionalNode = ConditionalNode(condition, thenBlock, null, TokenPosition(1, 4))
+        val conditionalNode = ConditionalNode(condition, thenBlock, position = TokenPosition(1, 4))
 
         assertEquals(condition, conditionalNode.condition)
         assertEquals(thenBlock, conditionalNode.thenBlock)
-        assertNull(conditionalNode.elseBlock)
+        assertEquals(NilNode, conditionalNode.elseBlock)
         assertEquals(TokenPosition(1, 4), conditionalNode.position)
     }
 

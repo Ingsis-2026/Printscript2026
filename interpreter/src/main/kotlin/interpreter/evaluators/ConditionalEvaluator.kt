@@ -22,9 +22,7 @@ class ConditionalEvaluator : NodeEvaluator {
         if (condition) {
             interpreter.execute(conditional.thenBlock)
         } else {
-            conditional.elseBlock?.let {
-                interpreter.execute(it)
-            }
+            interpreter.execute(conditional.elseBlock)
         }
         return Unit
     }

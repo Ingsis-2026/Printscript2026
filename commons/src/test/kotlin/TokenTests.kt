@@ -10,9 +10,9 @@ class TokenTests {
     fun `test Token creation and properties`() {
         val initialPosition = TokenPosition(1, 5)
         val finalPosition = TokenPosition(1, 5)
-        val token = Token(TokenType.LITERAL, "42", initialPosition, finalPosition)
+        val token = Token(TokenType.NUMBERLITERAL, "42", initialPosition, finalPosition)
 
-        assertEquals(TokenType.LITERAL, token.getType())
+        assertEquals(TokenType.NUMBERLITERAL, token.getType())
         assertEquals("42", token.value)
         assertEquals(initialPosition, token.getPosition()) // Esto se debe cambiar para que se ajuste a tus expectativas
         assertEquals(finalPosition, token.getPosition()) // Acceder directamente a la propiedad pública
@@ -30,8 +30,8 @@ class TokenTests {
     fun `test equals and hashCode`() {
         val initialPosition = TokenPosition(1, 5)
         val finalPosition = TokenPosition(1, 10)
-        val token1 = Token(TokenType.LITERAL, "42", initialPosition, finalPosition)
-        val token2 = Token(TokenType.LITERAL, "42", initialPosition, finalPosition)
+        val token1 = Token(TokenType.NUMBERLITERAL, "42", initialPosition, finalPosition)
+        val token2 = Token(TokenType.NUMBERLITERAL, "42", initialPosition, finalPosition)
         val token3 = Token(TokenType.OPERATOR, "+", initialPosition, finalPosition)
 
         // Prueba de igualdad
@@ -47,10 +47,10 @@ class TokenTests {
     fun `test toString`() {
         val initialPosition = TokenPosition(1, 5)
         val finalPosition = TokenPosition(1, 10)
-        val token = Token(TokenType.LITERAL, "42", initialPosition, finalPosition)
+        val token = Token(TokenType.NUMBERLITERAL, "42", initialPosition, finalPosition)
 
         val expectedString =
-            "Token(type = 'LITERAL', value = '42', start = 'TokenPosition(row=1, column=5)'," +
+            "Token(type = 'NUMBERLITERAL', value = '42', start = 'TokenPosition(row=1, column=5)'," +
                 " end = 'TokenPosition(row=1, column=10)')"
         assertEquals(expectedString, token.toString())
     }

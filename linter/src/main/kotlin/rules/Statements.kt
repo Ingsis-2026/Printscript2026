@@ -79,8 +79,8 @@ private fun bodyOf(node: ASTNode): Sequence<ASTNode> =
         -> emptySequence()
     }
 
-/** Un bloque ausente llega como [NilNode] o como `null`, y en los dos casos no aporta sentencias. */
-private fun statementsIn(block: ASTNode?): Sequence<ASTNode> = if (block is BlockNode) block.nodes.asSequence() else emptySequence()
+/** Un `if` sin `else` lo lleva en [NilNode], que no aporta sentencias. */
+private fun statementsIn(block: ASTNode): Sequence<ASTNode> = if (block is BlockNode) block.nodes.asSequence() else emptySequence()
 
 private fun childrenOf(node: ASTNode): Sequence<ASTNode> =
     when (node) {

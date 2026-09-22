@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ abf669b · main</p>
+  <p class="eyebrow">Printscript2026 @ 93595ab · main</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -387,8 +387,8 @@ println("Result: " + c);</pre></td>
 
     <h3>What's in it</h3>
     <ol class="steps">
-      <li><div><strong>Tokens.</strong> <span class="ref">TokenType.kt:3</span> lists 16 categories (IDENTIFIER, KEYWORD, DATA_TYPE, FUNCTION, CONDITIONAL…). <span class="ref">TokenPosition.kt:3</span> is a 0-based <code>(row, column)</code>. <span class="ref">Token.kt:7–12</span> is an immutable data class carrying both a start and an end position. Having the end position is what lets errors report the full range the assignment asks for (<span class="ref">Token.kt:17–21</span>).</div></li>
-      <li><div><strong>The AST.</strong> <span class="ref">ASTNode.kt:7</span> is a <code>sealed class</code> in which every node has a <code>position</code>. There are nine node types: <code>LiteralNode</code> :11, <code>BinaryNode</code> :17, <code>PrintNode</code> :24, <code>DeclarationNode</code> :29, <code>AssignationNode</code> :39, <code>BlockNode</code> :46, <code>ConditionalNode</code> :51, <code>FunctionNode</code> :58, and <code>NilNode</code> :65, a null object used for "no value". <code>ConditionalNode.condition</code> is typed <code>LiteralNode</code>, which encodes the 1.1 rule that an <code>if</code> takes only a boolean variable or literal.</div></li>
+      <li><div><strong>Tokens.</strong> <span class="ref">TokenType.kt:3</span> lists 14 categories (IDENTIFIER, KEYWORD, DATA_TYPE, FUNCTION, CONDITIONAL…), each one the lexer can emit. <span class="ref">TokenPosition.kt:3</span> is a 0-based <code>(row, column)</code>. <span class="ref">Token.kt:7–12</span> is an immutable data class carrying both a start and an end position. Having the end position is what lets errors report the full range the assignment asks for (<span class="ref">Token.kt:17–21</span>).</div></li>
+      <li><div><strong>The AST.</strong> <span class="ref">ASTNode.kt:7</span> is a <code>sealed class</code> in which every node has a <code>position</code>. There are nine node types: <code>LiteralNode</code> :11, <code>BinaryNode</code> :17, <code>PrintNode</code> :24, <code>DeclarationNode</code> :29, <code>AssignationNode</code> :39, <code>BlockNode</code> :46, <code>ConditionalNode</code> :51, <code>FunctionNode</code> :58, and <code>NilNode</code> :66, a null object used for "no value". <code>ConditionalNode.condition</code> is typed <code>LiteralNode</code>, which encodes the 1.1 rule that an <code>if</code> takes only a boolean variable or literal.</div></li>
       <li><div><strong>Errors.</strong> <span class="ref">PrintScriptException.kt:14–18</span> is an abstract <code>RuntimeException</code> with optional start and end positions. <code>describe()</code> at :20 converts to 1-based coordinates and prints <em>"desde línea X, columna Y hasta línea …"</em>, or a single point when start equals end (:29). <code>LexerException</code>, <code>ParserException</code> and <code>InterpreterException</code> all extend it.</div></li>
     </ol>
 
