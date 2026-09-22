@@ -3,6 +3,7 @@ package lexer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import token.TokenPosition
 import token.TokenType
 
 class TokenMapperTest {
@@ -61,8 +62,22 @@ class TokenMapperTest {
     }
 
     @Test
-    fun `test an operator can have more than one character`() {
-        assertEquals(listOf(TokenType.OPERATOR), typesOf("1.0", "<="))
+    fun `test the longest symbol wins`() {
+        val lexer =
+            Lexer(
+                TokenMapper(
+                    words = emptyMap(),
+                    symbols = mapOf("=" to TokenType.ASSIGNATION, "==" to TokenType.OPERATOR),
+                ),
+            )
+
+        assertEquals(listOf(TokenType.IDENTIFIER, TokenType.OPERATOR, TokenType.IDENTIFIER), lexer.execute("a == b").map { it.getType() })
+    }
+
+    @Test
+    fun `test an operator the language does not have is an invalid character`() {
+        val exception = assertThrows<LexerException> { typesOf("1.1", "x % 2") }
+        assertEquals("Carácter inválido encontrado: '%'", exception.message)
     }
 
     @Test
@@ -89,18 +104,38 @@ class TokenMapperTest {
     }
 
     @Test
-    fun `test custom definitions injection`() {
-        val lexer =
-            Lexer(
-                TokenMapper(
-                    listOf(
-                        TokenDefinition.words(TokenType.KEYWORD, "custom"),
-                        TokenDefinition(TokenType.NUMBERLITERAL, """\d+""".toRegex()),
-                    ),
-                ),
-            )
+    fun `test a string keeps any other kind of quote inside it`() {
+        assertEquals(listOf("it's"), Lexer(TokenMapper("1.0")).execute("\"it's\"").map { it.value })
+    }
 
-        assertEquals(listOf(TokenType.KEYWORD, TokenType.NUMBERLITERAL), lexer.execute("custom 456").map { it.getType() })
-        assertThrows<LexerException> { lexer.execute("let") }
+    @Test
+    fun `test an unclosed string is rejected from its opening quote`() {
+        val exception = assertThrows<LexerException> { typesOf("1.0", "println(\"hola);") }
+
+        assertEquals("String sin cerrar: falta la comilla de cierre", exception.message)
+        assertEquals(TokenPosition(0, 8), exception.startPosition)
+        assertEquals(TokenPosition(0, 15), exception.endPosition)
+    }
+
+    @Test
+    fun `test a number glued to a name is rejected`() {
+        val exception = assertThrows<LexerException> { typesOf("1.0", "let x: number = 123abc;") }
+        assertEquals("Número inválido: '123abc'", exception.message)
+    }
+
+    @Test
+    fun `test a dot not followed by a digit is not part of the number`() {
+        assertThrows<LexerException> { typesOf("1.0", "3.") }
+    }
+
+    @Test
+    fun `test custom vocabulary injection`() {
+        val lexer = Lexer(TokenMapper(words = mapOf("custom" to TokenType.KEYWORD), symbols = emptyMap()))
+
+        assertEquals(
+            listOf(TokenType.KEYWORD, TokenType.NUMBERLITERAL, TokenType.IDENTIFIER),
+            lexer.execute("custom 456 let").map { it.getType() },
+        )
+        assertThrows<LexerException> { lexer.execute(";") }
     }
 }

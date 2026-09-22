@@ -3,66 +3,85 @@ package lexer
 import token.TokenType
 
 /**
- * Los tokens que existen en una versión de PrintScript, en el orden en que el [Lexer] los prueba.
+ * El vocabulario de una versión de PrintScript: sus palabras y sus símbolos, con el tipo de token
+ * que produce cada uno.
  *
- * Una palabra que la versión no tiene no se rechaza acá: no está en la lista, así que se lee como
+ * Una palabra que la versión no tiene no está en [words], así que el [Lexer] la lee como
  * identificador, y es el parser el que rechaza la sentencia.
  */
 class TokenMapper(
-    val definitions: List<TokenDefinition>,
+    val words: Map<String, TokenType>,
+    val symbols: Map<String, TokenType>,
 ) {
-    constructor(version: String) : this(definitionsFor(version))
+    constructor(version: String) : this(vocabularyOf(version))
+
+    private constructor(vocabulary: TokenMapper) : this(vocabulary.words, vocabulary.symbols)
+
+    private val symbolsLongestFirst = symbols.entries.sortedByDescending { it.key.length }
+
+    /** El símbolo más largo de la versión que aparece en [line] a partir de [column], o `null` si ninguno. */
+    fun symbolAt(
+        line: String,
+        column: Int,
+    ): Map.Entry<String, TokenType>? = symbolsLongestFirst.firstOrNull { line.startsWith(it.key, column) }
+
+    /** Una versión que agrega palabras y símbolos a esta. */
+    operator fun plus(addition: TokenMapper): TokenMapper = TokenMapper(words + addition.words, symbols + addition.symbols)
 
     companion object {
         fun forVersion(version: String): TokenMapper = TokenMapper(version)
 
-        private fun definitionsFor(version: String): List<TokenDefinition> =
+        private fun vocabularyOf(version: String): TokenMapper =
             when (version) {
-                "1.0" -> inOrder(VERSION_1_0_WORDS, VERSION_1_0_SYMBOLS)
-                "1.1" -> inOrder(VERSION_1_1_WORDS, VERSION_1_1_SYMBOLS)
+                "1.0" -> VERSION_1_0
+                "1.1" -> VERSION_1_1
                 else -> throw IllegalArgumentException("Unsupported version: $version")
             }
 
-        /** Las palabras van antes que el identificador porque él también las reconocería, y gana la primera. */
-        private fun inOrder(
-            words: List<TokenDefinition>,
-            symbols: List<TokenDefinition>,
-        ): List<TokenDefinition> = words + NAMES_AND_LITERALS + symbols
-
-        private val VERSION_1_0_WORDS =
-            listOf(
-                TokenDefinition.words(TokenType.KEYWORD, "let"),
-                TokenDefinition.words(TokenType.FUNCTION, "println"),
-                TokenDefinition.words(TokenType.DATA_TYPE, "string", "number"),
+        private val VERSION_1_0 =
+            TokenMapper(
+                words =
+                    mapOf(
+                        "let" to TokenType.KEYWORD,
+                        "println" to TokenType.FUNCTION,
+                        "string" to TokenType.DATA_TYPE,
+                        "number" to TokenType.DATA_TYPE,
+                    ),
+                symbols =
+                    mapOf(
+                        "(" to TokenType.PARENTHESIS,
+                        ")" to TokenType.PARENTHESIS,
+                        ":" to TokenType.DECLARATOR,
+                        "=" to TokenType.ASSIGNATION,
+                        ";" to TokenType.PUNCTUATOR,
+                        "+" to TokenType.OPERATOR,
+                        "-" to TokenType.OPERATOR,
+                        "*" to TokenType.OPERATOR,
+                        "/" to TokenType.OPERATOR,
+                        ">" to TokenType.OPERATOR,
+                        "<" to TokenType.OPERATOR,
+                    ),
             )
 
-        private val VERSION_1_1_WORDS =
-            VERSION_1_0_WORDS +
-                listOf(
-                    TokenDefinition.words(TokenType.KEYWORD, "const"),
-                    TokenDefinition.words(TokenType.CONDITIONAL, "if", "else"),
-                    TokenDefinition.words(TokenType.FUNCTION, "readInput", "readEnv"),
-                    TokenDefinition.words(TokenType.DATA_TYPE, "boolean"),
-                    TokenDefinition.words(TokenType.BOOLEANLITERAL, "true", "false"),
+        private val VERSION_1_1 =
+            VERSION_1_0 +
+                TokenMapper(
+                    words =
+                        mapOf(
+                            "const" to TokenType.KEYWORD,
+                            "if" to TokenType.CONDITIONAL,
+                            "else" to TokenType.CONDITIONAL,
+                            "readInput" to TokenType.FUNCTION,
+                            "readEnv" to TokenType.FUNCTION,
+                            "boolean" to TokenType.DATA_TYPE,
+                            "true" to TokenType.BOOLEANLITERAL,
+                            "false" to TokenType.BOOLEANLITERAL,
+                        ),
+                    symbols =
+                        mapOf(
+                            "{" to TokenType.PUNCTUATOR,
+                            "}" to TokenType.PUNCTUATOR,
+                        ),
                 )
-
-        private val NAMES_AND_LITERALS =
-            listOf(
-                TokenDefinition(TokenType.IDENTIFIER, """\b[a-zA-Z_][a-zA-Z0-9_]*\b""".toRegex()),
-                TokenDefinition(TokenType.STRINGLITERAL, "'[^']*'|\"[^\"]*\"".toRegex()),
-                TokenDefinition(TokenType.NUMBERLITERAL, """[0-9]+(\.[0-9]+)?""".toRegex()),
-            )
-
-        private val VERSION_1_0_SYMBOLS =
-            listOf(
-                TokenDefinition(TokenType.PARENTHESIS, "[()]".toRegex()),
-                TokenDefinition(TokenType.DECLARATOR, ":".toRegex()),
-                // Antes que los operadores, que también aceptan `=`: si no, `x=-1` daría un operador `=-`.
-                TokenDefinition(TokenType.ASSIGNATION, "=".toRegex()),
-                TokenDefinition(TokenType.OPERATOR, "[-+*/%=><!&|^~]+".toRegex()),
-                TokenDefinition(TokenType.PUNCTUATOR, """[\[\],;.]""".toRegex()),
-            )
-
-        private val VERSION_1_1_SYMBOLS = VERSION_1_0_SYMBOLS + TokenDefinition(TokenType.PUNCTUATOR, "[{}]".toRegex())
     }
 }
