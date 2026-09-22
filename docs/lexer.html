@@ -163,20 +163,21 @@ td.mono{font-family:var(--mono);font-size:13px}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 1c05846 · study sheet 2 of 8</p>
+  <p class="eyebrow">Printscript2026 @ 192567b · study sheet 2 of 8</p>
   <h1><code>lexer</code></h1>
-  <p class="lede">Turns source text into a lazy stream of tokens, one line at a time. Which words exist is decided only by the version chosen, and anything it can't recognise becomes an error with exact columns.</p>
+  <p class="lede">Turns source text into a lazy stream of tokens, one line at a time. Each version is a plain list of words and symbols, so extending the language never means writing a regex, and anything that isn't in the vocabulary becomes an error at its exact column.</p>
   <ul class="meta">
     <li><b>4</b>files</li>
-    <li><b>206</b>lines</li>
-    <li><b>18</b>tests</li>
+    <li><b>218</b>lines</li>
+    <li><b>23</b>tests</li>
     <li><b>1</b>dependency: commons</li>
     <li><b>~20</b>minutes to study</li>
   </ul>
   <ul class="jump">
     <li><a href="#pitch">30-second pitch</a></li>
     <li><a href="#scan">Scanning a line</a></li>
-    <li><a href="#regex">The combined regex</a></li>
+    <li><a href="#vocabulary">The vocabulary</a></li>
+    <li><a href="#readers">Reading each kind of token</a></li>
     <li><a href="#versions">1.0 vs 1.1</a></li>
     <li><a href="#lazy">Laziness, measured</a></li>
     <li><a href="#code">The code</a></li>
@@ -189,7 +190,7 @@ td.mono{font-family:var(--mono);font-size:13px}
 <section id="pitch">
   <div class="pitch">
     <p class="say">Say it like this</p>
-    <p>"Each version is an ordered list of token definitions: a type and the regex that recognises it. The lexer joins them into one regex, with one named group per definition, and scans the source <strong>one line at a time</strong>. Each match is a lexeme. Where the match starts and ends is the token's position, and the group that captured it is its type. When two definitions recognise the same text, the first one in the list wins, so a version's words come before identifiers. A word the version doesn't have simply isn't in its list, so it reads as an identifier. Whatever the pattern skipped over is checked too: anything that isn't whitespace is an invalid character, reported with its columns. Because the output is a <code>Sequence</code>, a line is read only when the parser asks for more tokens, so memory depends on the longest line, not on the file size."</p>
+    <p>"Each version is a vocabulary: a map of its words and a map of its symbols, each with the token type it produces. The lexer reads the source <strong>one line at a time</strong>, left to right, and the first character decides what to read. A letter starts a name: we read the whole name, and it's a word if the version has it, or an identifier if it doesn't. A digit starts a number, a quote starts a string, and anything else has to be the longest symbol of the version that starts there. If nothing fits, it's an invalid character, reported at its column. There's no regex, so adding a word or a symbol to the language is one entry in a map. Because the output is a <code>Sequence</code>, a line is read only when the parser asks for more tokens, so memory depends on the longest line, not on the file size."</p>
   </div>
 </section>
 
@@ -209,10 +210,10 @@ td.mono{font-family:var(--mono);font-size:13px}
 
 <section id="scan">
   <h2>Scanning one line</h2>
-  <p class="sub">What <code>tokenizeLine</code> does with <code>let x: number = 5 @ 3;</code> under version 1.0.</p>
+  <p class="sub">What a <code>LineScanner</code> does with <code>let x: number = 5 @ 3;</code> under version 1.0.</p>
   <figure>
     <div class="figure">
-    <svg viewBox="0 0 640 106" role="img" aria-label="The line let x: number = 5 @ 3; drawn one character per cell. Brackets mark the six tokens matched before column 17. The run from column 17 to 20 contains an at sign that no pattern matched, so the lexer throws there, and 3 and the semicolon are never tokenized.">
+    <svg viewBox="0 0 640 106" role="img" aria-label="The line let x: number = 5 @ 3; drawn one character per cell. Brackets mark the six tokens read before column 18. At column 18 the scanner finds an at sign, which is not a symbol of the version, so it throws there, and 3 and the semicolon are never tokenized.">
       <text class="col" x="33" y="13" text-anchor="middle">0</text>
       <rect class="cell " x="20" y="20" width="26" height="28"/>
       <text class="ch " x="33" y="40" text-anchor="middle">l</text>
@@ -261,12 +262,12 @@ td.mono{font-family:var(--mono);font-size:13px}
       <rect class="cell " x="436" y="20" width="26" height="28"/>
       <text class="ch " x="449" y="40" text-anchor="middle">5</text>
       <text class="col" x="475" y="13" text-anchor="middle">17</text>
-      <rect class="cell gap" x="462" y="20" width="26" height="28"/>
+      <rect class="cell " x="462" y="20" width="26" height="28"/>
       <text class="col" x="501" y="13" text-anchor="middle">18</text>
       <rect class="cell gap" x="488" y="20" width="26" height="28"/>
       <text class="ch gap" x="501" y="40" text-anchor="middle">@</text>
       <text class="col" x="527" y="13" text-anchor="middle">19</text>
-      <rect class="cell gap" x="514" y="20" width="26" height="28"/>
+      <rect class="cell dim" x="514" y="20" width="26" height="28"/>
       <text class="col" x="553" y="13" text-anchor="middle">20</text>
       <rect class="cell dim" x="540" y="20" width="26" height="28"/>
       <text class="ch dim" x="553" y="40" text-anchor="middle">3</text>
@@ -288,62 +289,58 @@ td.mono{font-family:var(--mono);font-size:13px}
       <path class="br" d="M439 52 V57 H459 V52"/>
       <line class="stem" x1="449.0" y1="57" x2="449.0" y2="86"/>
       <text class="lab" x="449.0" y="98" text-anchor="middle">NUMBERLITERAL</text>
-      <path class="br" style="stroke:var(--med)" d="M465 52 V57 H537 V52"/>
-      <text class="lab gap" x="501.0" y="74" text-anchor="middle">skipped → error</text>
+      <path class="br" style="stroke:var(--med)" d="M491 52 V57 H511 V52"/>
+      <text class="lab gap" x="501.0" y="74" text-anchor="middle">no symbol → error</text>
       <text class="lab dim" x="592" y="98" text-anchor="end">never tokenized</text>
     </svg>
     </div>
-    <figcaption>Each cell is one character; the small numbers are 0-based columns. Six tokens match. The regex's next match is <code>3</code> at column 20, so the lexer checks the text it jumped over (columns 17–20). It isn't blank: <code>'@'</code> becomes the error <em>"Carácter inválido encontrado: '@' (desde línea 1, columna 19 hasta línea 1, columna 20)"</em>, the real output of the jar.</figcaption>
+    <figcaption>Each cell is one character; the small numbers are 0-based columns. Six tokens are read, and the blanks between them are skipped. At column 18 the next character is <code>@</code>: not a letter, a digit or a quote, and no symbol of the version starts with it, so it becomes the error <em>"Carácter inválido encontrado: '@' (desde línea 1, columna 19 hasta línea 1, columna 20)"</em>, the real output of the CLI.</figcaption>
   </figure>
-  <div class="code"><pre><span class="l"><i>36</i>    <span class="kw">private</span> <span class="kw">fun</span> tokenizeLine(</span><span class="l"><i>37</i>        row: Int,</span><span class="l"><i>38</i>        lineContent: String,</span><span class="l"><i>39</i>    ): List&lt;Token&gt; {</span><span class="l"><i>40</i>        <span class="kw">val</span> tokens = mutableListOf&lt;Token&gt;()</span><span class="l hl"><i>41</i>        <span class="kw">val</span> matcher = anyTokenPattern.matcher(lineContent)</span><span class="l"><i>42</i>        <span class="kw">var</span> scannedUpTo = 0</span><span class="l"><i>43</i></span><span class="l hl"><i>44</i>        <span class="kw">while</span> (matcher.find()) {</span><span class="l hl"><i>45</i>            rejectSkippedText(lineContent, row, from = scannedUpTo, to = matcher.start())</span><span class="l hl"><i>46</i>            tokens.add(tokenFoundBy(matcher, row))</span><span class="l hl"><i>47</i>            scannedUpTo = matcher.end()</span><span class="l"><i>48</i>        }</span><span class="l hl"><i>49</i>        rejectSkippedText(lineContent, row, from = scannedUpTo, to = lineContent.length)</span><span class="l"><i>50</i></span><span class="l"><i>51</i>        <span class="kw">return</span> tokens</span><span class="l"><i>52</i>    }</span></pre></div>
+  <div class="code"><pre><span class="l"><i>18</i>    <span class="kw">fun</span> tokens(): List&lt;Token&gt; {</span><span class="l"><i>19</i>        <span class="kw">val</span> tokens = mutableListOf&lt;Token&gt;()</span><span class="l"><i>20</i>        <span class="kw">var</span> column = 0</span><span class="l hl"><i>21</i>        <span class="kw">while</span> (column &lt; line.length) {</span><span class="l hl"><i>22</i>            <span class="kw">if</span> (line[column].isWhitespace()) {</span><span class="l hl"><i>23</i>                column++</span><span class="l hl"><i>24</i>            } <span class="kw">else</span> {</span><span class="l hl"><i>25</i>                <span class="kw">val</span> token = tokenAt(column)</span><span class="l hl"><i>26</i>                tokens.add(token)</span><span class="l hl"><i>27</i>                column = token.getFinalPosition().column</span><span class="l"><i>28</i>            }</span><span class="l"><i>29</i>        }</span><span class="l"><i>30</i>        <span class="kw">return</span> tokens</span><span class="l"><i>31</i>    }</span><span class="l"><i>32</i></span><span class="l"><i>33</i>    <span class="kw">private</span> <span class="kw">fun</span> tokenAt(start: Int): Token {</span><span class="l"><i>34</i>        <span class="kw">val</span> first = line[start]</span><span class="l hl"><i>35</i>        <span class="kw">return</span> <span class="kw">when</span> {</span><span class="l hl"><i>36</i>            first.startsName() -&gt; nameAt(start)</span><span class="l hl"><i>37</i>            first.isNumeral() -&gt; numberAt(start)</span><span class="l hl"><i>38</i>            first == &#x27;&quot;&#x27; || first == &#x27;\&#x27;&#x27; -&gt; stringAt(start)</span><span class="l hl"><i>39</i>            <span class="kw">else</span> -&gt; symbolAt(start)</span><span class="l"><i>40</i>        }</span><span class="l"><i>41</i>    }</span></pre></div>
   <ul class="points">
-    <li><strong>One <code>Matcher</code> per line</strong> (:41) over the pattern compiled once when the <code>Lexer</code> was built (:24–27).</li>
-    <li><strong>The gap check runs before every token</strong> (:45) and once more for the rest of the line (:49). <code>scannedUpTo</code> (:42, :47) remembers where the last token ended.</li>
-    <li><strong>Every match becomes a token</strong> (:46). There is no second decision to make: the type comes from the match itself (see <a href="#regex">the combined regex</a>).</li>
+    <li><strong>Blanks are skipped</strong> (:22–23). Everything else starts a token.</li>
+    <li><strong>The first character decides what to read</strong> (:35–39): a letter or <code>_</code> starts a name, a digit a number, a quote a string, and anything else must be a symbol.</li>
+    <li><strong>Each reader returns a whole token</strong>, and scanning continues where it ends (:25–27). Its positions are the columns where it started and ended.</li>
   </ul>
-  <div class="code"><pre><span class="l"><i>54</i><span class="cm">    /**</span></span><span class="l"><i>55</i><span class="cm">     * Rechaza el texto que el patrón no reconoció.</span></span><span class="l"><i>56</i><span class="cm">     *</span></span><span class="l hl"><i>57</i><span class="cm">     * `Matcher.find` no falla ante un lexema inválido: simplemente lo saltea y sigue con el</span></span><span class="l hl"><i>58</i><span class="cm">     * match siguiente. Para detectarlo hay que mirar los huecos que deja entre matches —y la</span></span><span class="l hl"><i>59</i><span class="cm">     * cola de la línea—, donde cualquier cosa que no sea espacio en blanco es un error.</span></span><span class="l hl"><i>60</i><span class="cm">     */</span></span><span class="l"><i>61</i>    <span class="kw">private</span> <span class="kw">fun</span> rejectSkippedText(</span><span class="l"><i>62</i>        lineContent: String,</span><span class="l"><i>63</i>        row: Int,</span><span class="l"><i>64</i>        from: Int,</span><span class="l"><i>65</i>        to: Int,</span><span class="l"><i>66</i>    ) {</span><span class="l hl"><i>67</i>        <span class="kw">if</span> (from &gt;= to) <span class="kw">return</span></span><span class="l"><i>68</i>        <span class="kw">val</span> skipped = lineContent.substring(from, to)</span><span class="l hl"><i>69</i>        <span class="kw">if</span> (skipped.isBlank()) <span class="kw">return</span></span><span class="l"><i>70</i></span><span class="l hl"><i>71</i>        <span class="kw">val</span> leadingBlanks = skipped.indexOfFirst { !it.isWhitespace() }</span><span class="l hl"><i>72</i>        <span class="kw">val</span> invalid = skipped.trim()</span><span class="l hl"><i>73</i>        <span class="kw">val</span> startColumn = from + leadingBlanks</span><span class="l"><i>74</i>        <span class="kw">throw</span> LexerException(</span><span class="l"><i>75</i>            <span class="st">&quot;Carácter inválido encontrado: &#x27;$invalid&#x27;&quot;</span>,</span><span class="l"><i>76</i>            TokenPosition(row, startColumn),</span><span class="l"><i>77</i>            TokenPosition(row, startColumn + invalid.length),</span><span class="l"><i>78</i>        )</span><span class="l"><i>79</i>    }</span></pre></div>
-  <p class="code-cap">The comment at :57–59 is the key sentence: <code>Matcher.find</code> doesn't fail on garbage, it silently skips it. Checking the gaps is the only way to notice. It's also now the <em>only</em> way the lexer rejects anything.</p>
 </section>
 
-<section id="regex">
-  <h2>The combined regex</h2>
-  <p class="sub">Built once per lexer from the version's definitions, one named group each. These strings were printed from the compiled jar.</p>
-  <div class="code"><pre><span class="l"><i>19</i><span class="kw">class</span> Lexer(</span><span class="l"><i>20</i>    tokenMapper: TokenMapper,</span><span class="l"><i>21</i>) {</span><span class="l hl"><i>22</i>    <span class="kw">private</span> <span class="kw">val</span> definitions: List&lt;TokenDefinition&gt; = tokenMapper.definitions</span><span class="l"><i>23</i></span><span class="l hl"><i>24</i>    <span class="kw">private</span> <span class="kw">val</span> anyTokenPattern: Pattern =</span><span class="l hl"><i>25</i>        Pattern.compile(</span><span class="l hl"><i>26</i>            definitions.withIndex().joinToString(<span class="st">&quot;|&quot;</span>) { (index, definition) -&gt; <span class="st">&quot;(?&lt;${groupOf(index)}&gt;${definition.regex.pattern})&quot;</span> },</span><span class="l hl"><i>27</i>        )</span></pre></div>
-  <div class="raw"><b>1.0</b>(?&lt;definition0&gt;\blet\b)|(?&lt;definition1&gt;\bprintln\b)|(?&lt;definition2&gt;\bstring\b|\bnumber\b)|(?&lt;definition3&gt;\b[a-zA-Z_][a-zA-Z0-9_]*\b)|(?&lt;definition4&gt;'[^']*'|"[^"]*")|(?&lt;definition5&gt;[0-9]+(\.[0-9]+)?)|(?&lt;definition6&gt;[()])|(?&lt;definition7&gt;:)|(?&lt;definition8&gt;=)|(?&lt;definition9&gt;[-+*/%=&gt;&lt;!&amp;|^~]+)|(?&lt;definition10&gt;[\[\],;.])</div>
-  <div class="raw"><b>1.1</b>(?&lt;definition0&gt;\blet\b)|(?&lt;definition1&gt;\bprintln\b)|(?&lt;definition2&gt;\bstring\b|\bnumber\b)|(?&lt;definition3&gt;\bconst\b)|(?&lt;definition4&gt;\bif\b|\belse\b)|(?&lt;definition5&gt;\breadInput\b|\breadEnv\b)|(?&lt;definition6&gt;\bboolean\b)|(?&lt;definition7&gt;\btrue\b|\bfalse\b)|(?&lt;definition8&gt;\b[a-zA-Z_][a-zA-Z0-9_]*\b)|(?&lt;definition9&gt;'[^']*'|"[^"]*")|(?&lt;definition10&gt;[0-9]+(\.[0-9]+)?)|(?&lt;definition11&gt;[()])|(?&lt;definition12&gt;:)|(?&lt;definition13&gt;=)|(?&lt;definition14&gt;[-+*/%=&gt;&lt;!&amp;|^~]+)|(?&lt;definition15&gt;[\[\],;.])|(?&lt;definition16&gt;[{}])</div>
-
-  <h3>Order is part of the design</h3>
-  <p>At each position, Java's regex engine takes the <em>first alternative that matches</em>, not the longest one. So the order of the version's list decides what a lexeme becomes. This is 1.1's list, in order:</p>
-  <ol class="order">
-    <li><span class="n">1</span><span class="pat">\blet\b</span><span class="ty">KEYWORD</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">2</span><span class="pat">\bprintln\b</span><span class="ty">FUNCTION</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">3</span><span class="pat">\bstring\b|\bnumber\b</span><span class="ty">DATA_TYPE</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">4</span><span class="pat">\bconst\b</span><span class="ty">KEYWORD</span><span class="tag v11">new in 1.1</span></li>
-    <li><span class="n">5</span><span class="pat">\bif\b|\belse\b</span><span class="ty">CONDITIONAL</span><span class="tag v11">new in 1.1</span></li>
-    <li><span class="n">6</span><span class="pat">\breadInput\b|\breadEnv\b</span><span class="ty">FUNCTION</span><span class="tag v11">new in 1.1</span></li>
-    <li><span class="n">7</span><span class="pat">\bboolean\b</span><span class="ty">DATA_TYPE</span><span class="tag v11">new in 1.1</span></li>
-    <li><span class="n">8</span><span class="pat">\btrue\b|\bfalse\b</span><span class="ty">BOOLEANLITERAL</span><span class="tag v11">new in 1.1</span></li>
-    <li><span class="n">9</span><span class="pat">\b[a-zA-Z_][a-zA-Z0-9_]*\b</span><span class="ty">IDENTIFIER</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">10</span><span class="pat">'[^']*'|"[^"]*"</span><span class="ty">STRINGLITERAL</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">11</span><span class="pat">[0-9]+(\.[0-9]+)?</span><span class="ty">NUMBERLITERAL</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">12</span><span class="pat">[()]</span><span class="ty">PARENTHESIS</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">13</span><span class="pat">:</span><span class="ty">DECLARATOR</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">14</span><span class="pat">=</span><span class="ty">ASSIGNATION</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">15</span><span class="pat">[-+*/%=&gt;&lt;!&amp;|^~]+</span><span class="ty">OPERATOR</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">16</span><span class="pat">[\[\],;.]</span><span class="ty">PUNCTUATOR</span><span class="tag v10">1.0</span></li>
-    <li><span class="n">17</span><span class="pat">[{}]</span><span class="ty">PUNCTUATOR</span><span class="tag v11">new in 1.1</span></li>
-  </ol>
+<section id="vocabulary">
+  <h2>The vocabulary</h2>
+  <p class="sub">Everything the lexer knows about a version. There's no regex and nothing to put in order.</p>
+  <div class="code"><pre><span class="l"><i>41</i>        <span class="kw">private</span> <span class="kw">val</span> VERSION_1_0 =</span><span class="l"><i>42</i>            TokenMapper(</span><span class="l"><i>43</i>                words =</span><span class="l"><i>44</i>                    mapOf(</span><span class="l hl"><i>45</i>                        <span class="st">&quot;let&quot;</span> to TokenType.KEYWORD,</span><span class="l hl"><i>46</i>                        <span class="st">&quot;println&quot;</span> to TokenType.FUNCTION,</span><span class="l hl"><i>47</i>                        <span class="st">&quot;string&quot;</span> to TokenType.DATA_TYPE,</span><span class="l hl"><i>48</i>                        <span class="st">&quot;number&quot;</span> to TokenType.DATA_TYPE,</span><span class="l"><i>49</i>                    ),</span><span class="l"><i>50</i>                symbols =</span><span class="l"><i>51</i>                    mapOf(</span><span class="l hl"><i>52</i>                        <span class="st">&quot;(&quot;</span> to TokenType.PARENTHESIS,</span><span class="l hl"><i>53</i>                        <span class="st">&quot;)&quot;</span> to TokenType.PARENTHESIS,</span><span class="l hl"><i>54</i>                        <span class="st">&quot;:&quot;</span> to TokenType.DECLARATOR,</span><span class="l hl"><i>55</i>                        <span class="st">&quot;=&quot;</span> to TokenType.ASSIGNATION,</span><span class="l hl"><i>56</i>                        <span class="st">&quot;;&quot;</span> to TokenType.PUNCTUATOR,</span><span class="l hl"><i>57</i>                        <span class="st">&quot;+&quot;</span> to TokenType.OPERATOR,</span><span class="l hl"><i>58</i>                        <span class="st">&quot;-&quot;</span> to TokenType.OPERATOR,</span><span class="l hl"><i>59</i>                        <span class="st">&quot;*&quot;</span> to TokenType.OPERATOR,</span><span class="l hl"><i>60</i>                        <span class="st">&quot;/&quot;</span> to TokenType.OPERATOR,</span><span class="l hl"><i>61</i>                        <span class="st">&quot;&gt;&quot;</span> to TokenType.OPERATOR,</span><span class="l hl"><i>62</i>                        <span class="st">&quot;&lt;&quot;</span> to TokenType.OPERATOR,</span><span class="l"><i>63</i>                    ),</span><span class="l"><i>64</i>            )</span><span class="l"><i>65</i></span><span class="l"><i>66</i>        <span class="kw">private</span> <span class="kw">val</span> VERSION_1_1 =</span><span class="l hl"><i>67</i>            VERSION_1_0 +</span><span class="l"><i>68</i>                TokenMapper(</span><span class="l"><i>69</i>                    words =</span><span class="l"><i>70</i>                        mapOf(</span><span class="l hl"><i>71</i>                            <span class="st">&quot;const&quot;</span> to TokenType.KEYWORD,</span><span class="l hl"><i>72</i>                            <span class="st">&quot;if&quot;</span> to TokenType.CONDITIONAL,</span><span class="l hl"><i>73</i>                            <span class="st">&quot;else&quot;</span> to TokenType.CONDITIONAL,</span><span class="l hl"><i>74</i>                            <span class="st">&quot;readInput&quot;</span> to TokenType.FUNCTION,</span><span class="l hl"><i>75</i>                            <span class="st">&quot;readEnv&quot;</span> to TokenType.FUNCTION,</span><span class="l hl"><i>76</i>                            <span class="st">&quot;boolean&quot;</span> to TokenType.DATA_TYPE,</span><span class="l hl"><i>77</i>                            <span class="st">&quot;true&quot;</span> to TokenType.BOOLEANLITERAL,</span><span class="l hl"><i>78</i>                            <span class="st">&quot;false&quot;</span> to TokenType.BOOLEANLITERAL,</span><span class="l"><i>79</i>                        ),</span><span class="l"><i>80</i>                    symbols =</span><span class="l"><i>81</i>                        mapOf(</span><span class="l hl"><i>82</i>                            <span class="st">&quot;{&quot;</span> to TokenType.PUNCTUATOR,</span><span class="l hl"><i>83</i>                            <span class="st">&quot;}&quot;</span> to TokenType.PUNCTUATOR,</span><span class="l"><i>84</i>                        ),</span><span class="l"><i>85</i>                )</span></pre></div>
   <ul class="points">
-    <li><strong>Words before IDENTIFIER</strong> (1–8 before 9). <code>let</code> is a KEYWORD because definition 1 is tried first. <code>letter</code> isn't cut short: <code>\blet\b</code> fails because no word boundary follows the <code>t</code>, so the identifier takes the whole word.</li>
-    <li><strong>Every 1.1 word lands before IDENTIFIER too</strong> (4–8). Each version is assembled as <em>words + names and literals + symbols</em> (<span class="ref">TokenMapper.kt:27–30</span>), so 1.1 adds to the word list and can't end up behind the identifier by accident.</li>
-    <li><strong><code>=</code> before OPERATOR</strong> (14 before 15). <code>x=-1</code> gives ASSIGNATION, then OPERATOR <code>-</code>. With the operator class first, it would swallow <code>=-</code> as one token. A side effect: <code>==</code>, which isn't PrintScript, lexes as two ASSIGNATION tokens.</li>
-    <li><strong>Names, literals and symbols never compete.</strong> They start with different characters (a letter or <code>_</code>, a quote, a digit, punctuation), so their order relative to one another doesn't matter.</li>
+    <li><strong>A word is a name the version gives a type</strong> (:45–48). Adding <code>while</code> is one line: <code>"while" to TokenType.CONDITIONAL</code>.</li>
+    <li><strong>A symbol is literal text</strong> (:52–62). Adding <code>&lt;=</code> is one line too; there's nothing to escape and no position in a list to choose.</li>
+    <li><strong>1.1 is 1.0 plus what it adds</strong> (:66–85): eight words and the braces. Nothing is replaced, so the difference between the versions is exactly what's written.</li>
+    <li><strong>Operators are only the ones the language has.</strong> <code>%</code> or <code>!</code> aren't in any version, so they're invalid characters in the lexer, not errors discovered later.</li>
   </ul>
+</section>
 
-  <h3>The group that matched is the type</h3>
-  <div class="code"><pre><span class="l"><i>81</i>    <span class="kw">private</span> <span class="kw">fun</span> tokenFoundBy(</span><span class="l"><i>82</i>        matcher: Matcher,</span><span class="l"><i>83</i>        row: Int,</span><span class="l"><i>84</i>    ): Token {</span><span class="l hl"><i>85</i>        <span class="kw">val</span> type = typeCapturedBy(matcher)</span><span class="l hl"><i>86</i>        <span class="kw">return</span> Token(type, valueOf(type, matcher.group()), TokenPosition(row, matcher.start()), TokenPosition(row, matcher.end()))</span><span class="l"><i>87</i>    }</span><span class="l"><i>88</i></span><span class="l"><i>89</i><span class="cm">    /** `start` es -1 para los grupos que no participaron del match. */</span></span><span class="l"><i>90</i>    <span class="kw">private</span> <span class="kw">fun</span> typeCapturedBy(matcher: Matcher): TokenType {</span><span class="l hl"><i>91</i>        <span class="kw">val</span> capturing = definitions.indices.first { index -&gt; matcher.start(groupOf(index)) != -1 }</span><span class="l hl"><i>92</i>        <span class="kw">return</span> definitions[capturing].type</span><span class="l"><i>93</i>    }</span></pre></div>
-  <div class="code"><pre><span class="l"><i>105</i><span class="cm">    /**</span></span><span class="l"><i>106</i><span class="cm">     * Cada definición se busca por nombre y no por número de grupo, porque su regex puede tener</span></span><span class="l"><i>107</i><span class="cm">     * grupos propios (el de los decimales de NUMBERLITERAL) que correrían la numeración.</span></span><span class="l"><i>108</i><span class="cm">     */</span></span><span class="l hl"><i>109</i>    <span class="kw">private</span> <span class="kw">fun</span> groupOf(definitionIndex: Int): String = <span class="st">&quot;definition$definitionIndex&quot;</span></span></pre></div>
-  <p>After a match, exactly one definition's group took part in it. <code>typeCapturedBy</code> finds it (:91): <code>start(group)</code> is -1 for every group that didn't. Groups are looked up by <em>name</em> (:109) because some definitions have groups of their own: NUMBERLITERAL's <code>(\.[0-9]+)</code> would shift every group number after it.</p>
+<section id="readers">
+  <h2>Reading each kind of token</h2>
+  <p class="sub">Four small readers, one per first character.</p>
+
+  <h3>Names</h3>
+  <div class="code"><pre><span class="l"><i>43</i><span class="cm">    /** Un nombre es una palabra de la versión si la versión la tiene, y un identificador si no. */</span></span><span class="l"><i>44</i>    <span class="kw">private</span> <span class="kw">fun</span> nameAt(start: Int): Token {</span><span class="l hl"><i>45</i>        <span class="kw">val</span> end = endOfRun(start) { it.continuesName() }</span><span class="l hl"><i>46</i>        <span class="kw">val</span> name = line.substring(start, end)</span><span class="l hl"><i>47</i>        <span class="kw">return</span> token(vocabulary.words[name] ?: TokenType.IDENTIFIER, name, start, end)</span><span class="l"><i>48</i>    }</span></pre></div>
+  <p>The whole name is read before anything is decided (:45), and only then looked up in the version's words (:47). That's why <code>letter</code> is one identifier and not <code>let</code> + <code>ter</code>, and why <code>printlnCount</code> is a name. A name the version doesn't have is an identifier: under 1.0, <code>const</code> and <code>if</code> are just names.</p>
+
+  <h3>Numbers</h3>
+  <div class="code"><pre><span class="l"><i>50</i>    <span class="kw">private</span> <span class="kw">fun</span> numberAt(start: Int): Token {</span><span class="l"><i>51</i>        <span class="kw">val</span> integerEnd = endOfRun(start) { it.isNumeral() }</span><span class="l hl"><i>52</i>        <span class="kw">val</span> hasDecimals = line.getOrNull(integerEnd) == &#x27;.&#x27; &amp;&amp; line.getOrNull(integerEnd + 1)?.isNumeral() == <span class="kw">true</span></span><span class="l"><i>53</i>        <span class="kw">val</span> end = <span class="kw">if</span> (hasDecimals) endOfRun(integerEnd + 1) { it.isNumeral() } <span class="kw">else</span> integerEnd</span><span class="l"><i>54</i></span><span class="l hl"><i>55</i>        <span class="kw">if</span> (line.getOrNull(end)?.continuesName() == <span class="kw">true</span>) {</span><span class="l hl"><i>56</i>            <span class="kw">val</span> runEnd = endOfRun(end) { it.continuesName() }</span><span class="l hl"><i>57</i>            <span class="kw">throw</span> LexerException(<span class="st">&quot;Número inválido: &#x27;${line.substring(start, runEnd)}&#x27;&quot;</span>, position(start), position(runEnd))</span><span class="l hl"><i>58</i>        }</span><span class="l"><i>59</i>        <span class="kw">return</span> token(TokenType.NUMBERLITERAL, line.substring(start, end), start, end)</span><span class="l"><i>60</i>    }</span></pre></div>
+  <p>Digits, then an optional <code>.</code> and more digits (:52). A <code>.</code> without a digit after it isn't part of the number, and since <code>.</code> isn't a symbol either, <code>3.</code> is an error. A number glued to a name, like <code>123abc</code>, is rejected on the spot (:55–58) instead of being quietly split into two tokens.</p>
+
+  <h3>Strings</h3>
+  <div class="code"><pre><span class="l"><i>62</i><span class="cm">    /** El valor de un string no lleva las comillas; su posición, sí. */</span></span><span class="l"><i>63</i>    <span class="kw">private</span> <span class="kw">fun</span> stringAt(start: Int): Token {</span><span class="l hl"><i>64</i>        <span class="kw">val</span> closing = line.indexOf(line[start], startIndex = start + 1)</span><span class="l hl"><i>65</i>        <span class="kw">if</span> (closing &lt; 0) {</span><span class="l hl"><i>66</i>            <span class="kw">throw</span> LexerException(<span class="st">&quot;String sin cerrar: falta la comilla de cierre&quot;</span>, position(start), position(line.length))</span><span class="l"><i>67</i>        }</span><span class="l hl"><i>68</i>        <span class="kw">return</span> token(TokenType.STRINGLITERAL, line.substring(start + 1, closing), start, closing + 1)</span><span class="l"><i>69</i>    }</span></pre></div>
+  <p>A string ends at the next quote of the same kind (:64), so <code>"it's"</code> works. Without a closing quote it fails from the opening one to the end of the line (:65–66). The value drops the quotes, but the positions still cover them (:68), which is how the formatter recovers the original text.</p>
+
+  <h3>Symbols</h3>
+  <div class="code"><pre><span class="l"><i>71</i>    <span class="kw">private</span> <span class="kw">fun</span> symbolAt(start: Int): Token {</span><span class="l"><i>72</i>        <span class="kw">val</span> (symbol, type) =</span><span class="l hl"><i>73</i>            vocabulary.symbolAt(line, start)</span><span class="l hl"><i>74</i>                ?: <span class="kw">throw</span> LexerException(<span class="st">&quot;Carácter inválido encontrado: &#x27;${line[start]}&#x27;&quot;</span>, position(start), position(start + 1))</span><span class="l"><i>75</i>        <span class="kw">return</span> token(type, symbol, start, start + symbol.length)</span><span class="l"><i>76</i>    }</span></pre></div>
+  <div class="code"><pre><span class="l hl"><i>20</i>    <span class="kw">private</span> <span class="kw">val</span> symbolsLongestFirst = symbols.entries.sortedByDescending { it.key.length }</span><span class="l"><i>21</i></span><span class="l"><i>22</i><span class="cm">    /** El símbolo más largo de la versión que aparece en [line] a partir de [column], o `null` si ninguno. */</span></span><span class="l"><i>23</i>    <span class="kw">fun</span> symbolAt(</span><span class="l"><i>24</i>        line: String,</span><span class="l"><i>25</i>        column: Int,</span><span class="l hl"><i>26</i>    ): Map.Entry&lt;String, TokenType&gt;? = symbolsLongestFirst.firstOrNull { line.startsWith(it.key, column) }</span></pre></div>
+  <p>The vocabulary answers "which symbol starts here?" by trying the longest ones first (<span class="ref">TokenMapper.kt:20</span>). Today every symbol is one character, so it doesn't matter yet. It's what lets a future <code>&lt;=</code> win over <code>&lt;</code> without anyone thinking about order. If no symbol starts at that column, the character is invalid (<span class="ref">LineScanner.kt:74</span>).</p>
+
+  <h3>The helpers</h3>
+  <div class="code"><pre><span class="l"><i>78</i><span class="cm">    /** Dónde termina la racha de caracteres que cumplen [belongs] a partir de [from]. */</span></span><span class="l"><i>79</i>    <span class="kw">private</span> <span class="kw">fun</span> endOfRun(</span><span class="l"><i>80</i>        from: Int,</span><span class="l"><i>81</i>        belongs: (Char) -&gt; Boolean,</span><span class="l hl"><i>82</i>    ): Int = (from until line.length).firstOrNull { !belongs(line[it]) } ?: line.length</span></pre></div>
+  <div class="code"><pre><span class="l"><i>94</i><span class="kw">private</span> <span class="kw">fun</span> Char.startsName(): Boolean = <span class="kw">this</span> <span class="kw">in</span> &#x27;a&#x27;..&#x27;z&#x27; || <span class="kw">this</span> <span class="kw">in</span> &#x27;A&#x27;..&#x27;Z&#x27; || <span class="kw">this</span> == &#x27;_&#x27;</span><span class="l"><i>95</i></span><span class="l"><i>96</i><span class="kw">private</span> <span class="kw">fun</span> Char.continuesName(): Boolean = startsName() || isNumeral()</span><span class="l"><i>97</i></span><span class="l"><i>98</i><span class="kw">private</span> <span class="kw">fun</span> Char.isNumeral(): Boolean = <span class="kw">this</span> <span class="kw">in</span> &#x27;0&#x27;..&#x27;9&#x27;</span></pre></div>
+  <p>Names use ASCII letters, digits and <code>_</code>, as before; <code>año</code> isn't a valid name.</p>
 </section>
 
 <section id="versions">
@@ -359,9 +356,10 @@ td.mono{font-family:var(--mono);font-size:13px}
       <tr><td class="mono">if</td><td class="mono">IDENTIFIER</td><td class="mono">CONDITIONAL</td><td>1.0 has no conditionals</td></tr>
       <tr><td class="mono">true</td><td class="mono">IDENTIFIER</td><td class="mono">BOOLEANLITERAL</td><td>1.0 has no booleans</td></tr>
       <tr><td class="mono">{</td><td>error</td><td class="mono">PUNCTUATOR</td><td>braces don't exist in 1.0</td></tr>
-      <tr><td class="mono">printlnCount</td><td class="mono">IDENTIFIER</td><td class="mono">IDENTIFIER</td><td>a word inside a longer name is part of the name</td></tr>
+      <tr><td class="mono">printlnCount</td><td class="mono">IDENTIFIER</td><td class="mono">IDENTIFIER</td><td>the whole name is read before it's looked up</td></tr>
       <tr><td class="mono">'hi'</td><td class="mono">STRINGLITERAL</td><td class="mono">STRINGLITERAL</td><td>single or double quotes, as the spec requires</td></tr>
       <tr><td class="mono">3.14</td><td class="mono">NUMBERLITERAL</td><td class="mono">NUMBERLITERAL</td><td>integers and decimals</td></tr>
+      <tr><td class="mono">%</td><td>error</td><td>error</td><td>not an operator of the language</td></tr>
       <tr><td class="mono">@</td><td>error</td><td>error</td><td>never a valid lexeme</td></tr>
     </tbody>
   </table></div>
@@ -376,7 +374,7 @@ td.mono{font-family:var(--mono);font-size:13px}
       <tr><td><code>let s: string = readInput("x");</code></td><td>parser</td><td><code>readInput</code> is just an identifier in 1.0: <em>Error in operation</em> (columns 17–31)</td></tr>
     </tbody>
   </table></div>
-  <p>Nothing in the lexer rejects a word for belonging to another version. A 1.1 word just isn't in 1.0's list (<span class="ref">TokenMapper.kt:32–37</span>), so 1.0 reads it as a name, and the program fails where the grammar stops making sense. The lexer itself only stops <code>{</code>, a character 1.0 doesn't have.</p>
+  <p>Nothing in the lexer rejects a word for belonging to another version. A 1.1 word just isn't in 1.0's map (<span class="ref">TokenMapper.kt:43–49</span>), so 1.0 reads it as a name, and the program fails where the grammar stops making sense. The lexer itself only stops <code>{</code>, a symbol 1.0 doesn't have.</p>
 </section>
 
 <section id="lazy">
@@ -386,12 +384,13 @@ td.mono{font-family:var(--mono);font-size:13px}
     <div><span class="big">1 line</span><p>read to hand out the first 5 tokens of an <strong>infinite</strong> source of <code>println("line");</code>. The 10th token needed exactly 2 lines.</p></div>
     <div><span class="big">7 tokens</span><p>delivered before the error in <code>let a: number = 1;</code> ⏎ <code>println(a); @</code>. None of line 2's five valid tokens came out first.</p></div>
   </div>
-  <div class="code"><pre><span class="l"><i>29</i>    <span class="kw">fun</span> execute(input: String): List&lt;Token&gt; = convertToTokens(input.lineSequence()).toList()</span><span class="l"><i>30</i></span><span class="l hl"><i>31</i>    <span class="kw">fun</span> convertToTokens(lines: Sequence&lt;String&gt;): Sequence&lt;Token&gt; = lines.mapIndexed(::tokenizeLine).flatten()</span><span class="l"><i>32</i></span><span class="l hl"><i>33</i>    <span class="kw">fun</span> convertToTokens(inputStream: InputStream): Sequence&lt;Token&gt; =</span><span class="l hl"><i>34</i>        convertToTokens(BufferedReader(InputStreamReader(inputStream)).lineSequence())</span></pre></div>
+  <div class="code"><pre><span class="l"><i>12</i><span class="kw">class</span> Lexer(</span><span class="l"><i>13</i>    <span class="kw">private</span> <span class="kw">val</span> tokenMapper: TokenMapper,</span><span class="l"><i>14</i>) {</span><span class="l"><i>15</i>    <span class="kw">fun</span> execute(input: String): List&lt;Token&gt; = convertToTokens(input.lineSequence()).toList()</span><span class="l"><i>16</i></span><span class="l hl"><i>17</i>    <span class="kw">fun</span> convertToTokens(lines: Sequence&lt;String&gt;): Sequence&lt;Token&gt; =</span><span class="l hl"><i>18</i>        lines.mapIndexed { row, line -&gt; LineScanner(tokenMapper, row, line).tokens() }.flatten()</span><span class="l"><i>19</i></span><span class="l hl"><i>20</i>    <span class="kw">fun</span> convertToTokens(inputStream: InputStream): Sequence&lt;Token&gt; =</span><span class="l hl"><i>21</i>        convertToTokens(BufferedReader(InputStreamReader(inputStream)).lineSequence())</span><span class="l"><i>22</i>}</span></pre></div>
   <ul class="points">
-    <li><strong><code>lines.mapIndexed(::tokenizeLine).flatten()</code></strong> (:31). Sequence operations are lazy, so a line is tokenized only when the consumer asks past the previous line's tokens. That's the first experiment: an infinite input can't hang it. <code>mapIndexed</code> supplies the row number.</li>
-    <li><strong>The unit of work is a line.</strong> <code>tokenizeLine</code> returns a complete <code>List</code> (:36–52), and <code>flatten</code> hands it out token by token. That's the second experiment: a bad character anywhere in a line fails before that line's tokens are delivered. Memory is bounded by the longest line.</li>
-    <li><strong>The <code>InputStream</code> overload</strong> (:33–34) wraps a <code>BufferedReader</code> and reuses the same path. The caller owns the stream and closes it.</li>
+    <li><strong><code>lines.mapIndexed { … }.flatten()</code></strong> (:17–18). Sequence operations are lazy, so a line is scanned only when the consumer asks past the previous line's tokens. That's the first experiment: an infinite input can't hang it. <code>mapIndexed</code> supplies the row number.</li>
+    <li><strong>The unit of work is a line.</strong> <code>LineScanner.tokens()</code> returns a complete <code>List</code>, and <code>flatten</code> hands it out token by token. That's the second experiment: a bad character anywhere in a line fails before that line's tokens are delivered. Memory is bounded by the longest line.</li>
+    <li><strong>The <code>InputStream</code> overload</strong> (:20–21) wraps a <code>BufferedReader</code> and reuses the same path. The caller owns the stream and closes it.</li>
   </ul>
+
 </section>
 
 <section id="code">
@@ -399,26 +398,15 @@ td.mono{font-family:var(--mono);font-size:13px}
   <p class="sub">The pieces not already shown above.</p>
 
   <h3>TokenMapper.kt <span class="path">construction and versions</span></h3>
-  <div class="code"><pre><span class="l"><i>11</i><span class="kw">class</span> TokenMapper(</span><span class="l hl"><i>12</i>    <span class="kw">val</span> definitions: List&lt;TokenDefinition&gt;,</span><span class="l"><i>13</i>) {</span><span class="l hl"><i>14</i>    <span class="kw">constructor</span>(version: String) : <span class="kw">this</span>(definitionsFor(version))</span><span class="l"><i>15</i></span><span class="l"><i>16</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l"><i>17</i>        <span class="kw">fun</span> forVersion(version: String): TokenMapper = TokenMapper(version)</span><span class="l"><i>18</i></span><span class="l"><i>19</i>        <span class="kw">private</span> <span class="kw">fun</span> definitionsFor(version: String): List&lt;TokenDefinition&gt; =</span><span class="l hl"><i>20</i>            <span class="kw">when</span> (version) {</span><span class="l hl"><i>21</i>                <span class="st">&quot;1.0&quot;</span> -&gt; inOrder(VERSION_1_0_WORDS, VERSION_1_0_SYMBOLS)</span><span class="l hl"><i>22</i>                <span class="st">&quot;1.1&quot;</span> -&gt; inOrder(VERSION_1_1_WORDS, VERSION_1_1_SYMBOLS)</span><span class="l hl"><i>23</i>                <span class="kw">else</span> -&gt; <span class="kw">throw</span> IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l"><i>24</i>            }</span><span class="l"><i>25</i></span><span class="l"><i>26</i><span class="cm">        /** Las palabras van antes que el identificador porque él también las reconocería, y gana la primera. */</span></span><span class="l hl"><i>27</i>        <span class="kw">private</span> <span class="kw">fun</span> inOrder(</span><span class="l hl"><i>28</i>            words: List&lt;TokenDefinition&gt;,</span><span class="l hl"><i>29</i>            symbols: List&lt;TokenDefinition&gt;,</span><span class="l hl"><i>30</i>        ): List&lt;TokenDefinition&gt; = words + NAMES_AND_LITERALS + symbols</span></pre></div>
+  <div class="code"><pre><span class="l"><i>12</i><span class="kw">class</span> TokenMapper(</span><span class="l hl"><i>13</i>    <span class="kw">val</span> words: Map&lt;String, TokenType&gt;,</span><span class="l hl"><i>14</i>    <span class="kw">val</span> symbols: Map&lt;String, TokenType&gt;,</span><span class="l"><i>15</i>) {</span><span class="l hl"><i>16</i>    <span class="kw">constructor</span>(version: String) : <span class="kw">this</span>(vocabularyOf(version))</span><span class="l"><i>17</i></span><span class="l hl"><i>18</i>    <span class="kw">private</span> <span class="kw">constructor</span>(vocabulary: TokenMapper) : <span class="kw">this</span>(vocabulary.words, vocabulary.symbols)</span><span class="l"><i>19</i></span><span class="l"><i>20</i>    <span class="kw">private</span> <span class="kw">val</span> symbolsLongestFirst = symbols.entries.sortedByDescending { it.key.length }</span><span class="l"><i>21</i></span><span class="l"><i>22</i><span class="cm">    /** El símbolo más largo de la versión que aparece en [line] a partir de [column], o `null` si ninguno. */</span></span><span class="l"><i>23</i>    <span class="kw">fun</span> symbolAt(</span><span class="l"><i>24</i>        line: String,</span><span class="l"><i>25</i>        column: Int,</span><span class="l"><i>26</i>    ): Map.Entry&lt;String, TokenType&gt;? = symbolsLongestFirst.firstOrNull { line.startsWith(it.key, column) }</span><span class="l"><i>27</i></span><span class="l"><i>28</i><span class="cm">    /** Una versión que agrega palabras y símbolos a esta. */</span></span><span class="l hl"><i>29</i>    operator <span class="kw">fun</span> plus(addition: TokenMapper): TokenMapper = TokenMapper(words + addition.words, symbols + addition.symbols)</span><span class="l"><i>30</i></span><span class="l"><i>31</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l"><i>32</i>        <span class="kw">fun</span> forVersion(version: String): TokenMapper = TokenMapper(version)</span><span class="l"><i>33</i></span><span class="l hl"><i>34</i>        <span class="kw">private</span> <span class="kw">fun</span> vocabularyOf(version: String): TokenMapper =</span><span class="l hl"><i>35</i>            <span class="kw">when</span> (version) {</span><span class="l hl"><i>36</i>                <span class="st">&quot;1.0&quot;</span> -&gt; VERSION_1_0</span><span class="l hl"><i>37</i>                <span class="st">&quot;1.1&quot;</span> -&gt; VERSION_1_1</span><span class="l hl"><i>38</i>                <span class="kw">else</span> -&gt; <span class="kw">throw</span> IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l hl"><i>39</i>            }</span></pre></div>
   <ul class="points">
-    <li><strong>The primary constructor takes the list</strong> (:11–12), so a test can build a lexer with any vocabulary ("test custom definitions injection"). The version constructor (:14) is the one production code uses.</li>
-    <li><strong>An unknown version fails immediately</strong> (:23), when the mapper is built and before any source is read.</li>
-    <li><strong><code>inOrder</code></strong> (:27–30) is the one ordering rule every version shares: words, then names and literals, then symbols.</li>
-  </ul>
-  <div class="code"><pre><span class="l"><i>32</i>        <span class="kw">private</span> <span class="kw">val</span> VERSION_1_0_WORDS =</span><span class="l"><i>33</i>            listOf(</span><span class="l"><i>34</i>                TokenDefinition.words(TokenType.KEYWORD, <span class="st">&quot;let&quot;</span>),</span><span class="l"><i>35</i>                TokenDefinition.words(TokenType.FUNCTION, <span class="st">&quot;println&quot;</span>),</span><span class="l"><i>36</i>                TokenDefinition.words(TokenType.DATA_TYPE, <span class="st">&quot;string&quot;</span>, <span class="st">&quot;number&quot;</span>),</span><span class="l"><i>37</i>            )</span><span class="l"><i>38</i></span><span class="l hl"><i>39</i>        <span class="kw">private</span> <span class="kw">val</span> VERSION_1_1_WORDS =</span><span class="l hl"><i>40</i>            VERSION_1_0_WORDS +</span><span class="l hl"><i>41</i>                listOf(</span><span class="l hl"><i>42</i>                    TokenDefinition.words(TokenType.KEYWORD, <span class="st">&quot;const&quot;</span>),</span><span class="l hl"><i>43</i>                    TokenDefinition.words(TokenType.CONDITIONAL, <span class="st">&quot;if&quot;</span>, <span class="st">&quot;else&quot;</span>),</span><span class="l hl"><i>44</i>                    TokenDefinition.words(TokenType.FUNCTION, <span class="st">&quot;readInput&quot;</span>, <span class="st">&quot;readEnv&quot;</span>),</span><span class="l hl"><i>45</i>                    TokenDefinition.words(TokenType.DATA_TYPE, <span class="st">&quot;boolean&quot;</span>),</span><span class="l hl"><i>46</i>                    TokenDefinition.words(TokenType.BOOLEANLITERAL, <span class="st">&quot;true&quot;</span>, <span class="st">&quot;false&quot;</span>),</span><span class="l hl"><i>47</i>                )</span><span class="l"><i>48</i></span><span class="l"><i>49</i>        <span class="kw">private</span> <span class="kw">val</span> NAMES_AND_LITERALS =</span><span class="l"><i>50</i>            listOf(</span><span class="l"><i>51</i>                TokenDefinition(TokenType.IDENTIFIER, <span class="st">&quot;&quot;</span><span class="st">&quot;\b[a-zA-Z_][a-zA-Z0-9_]*\b&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>52</i>                TokenDefinition(TokenType.STRINGLITERAL, <span class="st">&quot;&#x27;[^&#x27;]*&#x27;|\&quot;</span>[^\<span class="st">&quot;]*\&quot;</span>&quot;.toRegex()),</span><span class="l"><i>53</i>                TokenDefinition(TokenType.NUMBERLITERAL, <span class="st">&quot;&quot;</span><span class="st">&quot;[0-9]+(\.[0-9]+)?&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>54</i>            )</span><span class="l"><i>55</i></span><span class="l"><i>56</i>        <span class="kw">private</span> <span class="kw">val</span> VERSION_1_0_SYMBOLS =</span><span class="l"><i>57</i>            listOf(</span><span class="l"><i>58</i>                TokenDefinition(TokenType.PARENTHESIS, <span class="st">&quot;[()]&quot;</span>.toRegex()),</span><span class="l"><i>59</i>                TokenDefinition(TokenType.DECLARATOR, <span class="st">&quot;:&quot;</span>.toRegex()),</span><span class="l hl"><i>60</i><span class="cm">                // Antes que los operadores, que también aceptan `=`: si no, `x=-1` daría un operador `=-`.</span></span><span class="l hl"><i>61</i>                TokenDefinition(TokenType.ASSIGNATION, <span class="st">&quot;=&quot;</span>.toRegex()),</span><span class="l"><i>62</i>                TokenDefinition(TokenType.OPERATOR, <span class="st">&quot;[-+*/%=&gt;&lt;!&amp;|^~]+&quot;</span>.toRegex()),</span><span class="l"><i>63</i>                TokenDefinition(TokenType.PUNCTUATOR, <span class="st">&quot;&quot;</span><span class="st">&quot;[\[\],;.]&quot;</span><span class="st">&quot;&quot;</span>.toRegex()),</span><span class="l"><i>64</i>            )</span><span class="l"><i>65</i></span><span class="l hl"><i>66</i>        <span class="kw">private</span> <span class="kw">val</span> VERSION_1_1_SYMBOLS = VERSION_1_0_SYMBOLS + TokenDefinition(TokenType.PUNCTUATOR, <span class="st">&quot;[{}]&quot;</span>.toRegex())</span></pre></div>
-  <ul class="points">
-    <li><strong>1.1 is 1.0 plus additions</strong> (:39–47, :66): five groups of words and the braces. Nothing is replaced, so the difference between versions reads as a list of what 1.1 adds.</li>
-    <li><strong>The one order that isn't structural</strong> is <code>=</code> before the operators (:60–61), and it's said where it happens.</li>
+    <li><strong>The primary constructor takes the two maps</strong> (:12–15), so a test can build a lexer with any vocabulary ("test custom vocabulary injection"). The version constructor (:16) is the one production code uses; it copies the chosen version's maps (:18).</li>
+    <li><strong><code>plus</code></strong> (:29) is how 1.1 is written as 1.0 plus its additions.</li>
+    <li><strong>An unknown version fails immediately</strong> (:38), when the mapper is built and before any source is read.</li>
   </ul>
 
-  <h3>TokenDefinition.kt</h3>
-  <div class="code"><pre><span class="l"><i>5</i><span class="cm">/** Un tipo de token y el regex que reconoce sus lexemas. */</span></span><span class="l"><i>6</i><span class="kw">class</span> TokenDefinition(</span><span class="l"><i>7</i>    <span class="kw">val</span> type: TokenType,</span><span class="l"><i>8</i>    <span class="kw">val</span> regex: Regex,</span><span class="l"><i>9</i>) {</span><span class="l"><i>10</i>    <span class="kw">companion</span> <span class="kw">object</span> {</span><span class="l"><i>11</i><span class="cm">        /** Palabras enteras: el `\b` de cada lado hace que `let` no se reconozca adentro de `letter`. */</span></span><span class="l"><i>12</i>        <span class="kw">fun</span> words(</span><span class="l"><i>13</i>            type: TokenType,</span><span class="l"><i>14</i>            <span class="kw">vararg</span> words: String,</span><span class="l hl"><i>15</i>        ): TokenDefinition = TokenDefinition(type, words.joinToString(<span class="st">&quot;|&quot;</span>) { <span class="st">&quot;&quot;</span><span class="st">&quot;\b$it\b&quot;</span><span class="st">&quot;&quot;</span> }.toRegex())</span><span class="l"><i>16</i>    }</span><span class="l"><i>17</i>}</span></pre></div>
-  <p>A definition is a type and a regex. <code>words</code> (:15) builds the regex for whole words, which is what every keyword, function name, type name and boolean literal needs.</p>
-
-  <h3>LexerException.kt and the token's value</h3>
+  <h3>LexerException.kt</h3>
   <div class="code"><pre><span class="l"><i>6</i><span class="cm">/** Error de análisis léxico, con la ubicación exacta del lexema inválido. */</span></span><span class="l hl"><i>7</i><span class="kw">class</span> LexerException(</span><span class="l hl"><i>8</i>    message: String,</span><span class="l hl"><i>9</i>    startPosition: TokenPosition? = <span class="kw">null</span>,</span><span class="l hl"><i>10</i>    endPosition: TokenPosition? = <span class="kw">null</span>,</span><span class="l hl"><i>11</i>) : PrintScriptException(message, startPosition, endPosition)</span></pre></div>
-  <div class="code"><pre><span class="l"><i>95</i><span class="cm">    /** El valor que el token lleva de verdad: un string literal pierde las comillas que lo delimitan. */</span></span><span class="l"><i>96</i>    <span class="kw">private</span> <span class="kw">fun</span> valueOf(</span><span class="l"><i>97</i>        tokenType: TokenType,</span><span class="l"><i>98</i>        lexeme: String,</span><span class="l"><i>99</i>    ): String =</span><span class="l"><i>100</i>        <span class="kw">when</span> (tokenType) {</span><span class="l hl"><i>101</i>            TokenType.STRINGLITERAL -&gt; lexeme.removeSurrounding(<span class="st">&quot;\&quot;</span><span class="st">&quot;, &quot;</span>\<span class="st">&quot;&quot;</span>).removeSurrounding(<span class="st">&quot;&#x27;&quot;</span>, <span class="st">&quot;&#x27;&quot;</span>)</span><span class="l"><i>102</i>            <span class="kw">else</span> -&gt; lexeme</span><span class="l"><i>103</i>        }</span></pre></div>
-  <p>String values lose their quotes here (:101), while the token's positions still include them. Downstream code gets the content, and the formatter recovers the quotes from the original line.</p>
 </section>
 
 <section id="decisions">
@@ -426,27 +414,27 @@ td.mono{font-family:var(--mono);font-size:13px}
   <p class="sub">Each with the cost we accepted.</p>
 
   <div class="decision">
+    <h4>A hand-written scanner over the version's vocabulary, not regex</h4>
+    <p>Extending the language means adding an entry to a map (<span class="ref">TokenMapper.kt:41–85</span>), with no regex to write and no order to respect. The scanner reads what's in front of it and decides by the first character (<span class="ref">LineScanner.kt:33–41</span>). An earlier version of this lexer joined one regex per token type into a single pattern, and it needed two ordering rules, a check for skipped text and named groups to work.</p>
+    <p class="cost"><b>Cost</b>About 100 lines of scanning code to explain, all in <code>LineScanner.kt</code>. A new <em>kind</em> of token, such as a comment, would need its own reader; new words and symbols don't.</p>
+  </div>
+
+  <div class="decision">
     <h4>The version decides the vocabulary; the lexer makes no rulings</h4>
-    <p>There's no reserved-word table and no list of words "not allowed in this version". A version is its list of definitions (<span class="ref">TokenMapper.kt:19–24</span>), and a word it doesn't have isn't in the list. Before this change, one reserved table served both versions, so 1.0 lexed <code>if</code> and <code>true</code> as keywords of a language it doesn't have, and a second table existed only to reject <code>const</code>.</p>
-    <p class="cost"><b>Cost</b><code>const</code> under 1.0 now gets the parser's generic <em>Expected a KEYWORD token</em> instead of a tailored message. It's accurate and still positioned at column 1.</p>
+    <p>There's no list of words "not allowed in this version". A version is its maps (<span class="ref">TokenMapper.kt:34–39</span>), and a word it doesn't have isn't in them. The <code>words</code> map isn't a reserved-word table that overrides the version: it <em>is</em> the version.</p>
+    <p class="cost"><b>Cost</b><code>const</code> under 1.0 gets the parser's generic <em>Expected a KEYWORD token</em> instead of a tailored message. It's accurate and still positioned at column 1.</p>
   </div>
 
   <div class="decision">
-    <h4>An ordered list of definitions, not a hand-written scanner</h4>
-    <p>Token types are data. A new token is a new entry, <code>Lexer</code> never changes (Open/Closed), and a version is a different list. A character-by-character scanner would need version checks inside its loop.</p>
-    <p class="cost"><b>Cost</b>Order matters. <code>inOrder</code> makes the recurring case structural (words before names), and the one exception, <code>=</code> before operators, is stated where it is written.</p>
+    <h4>The longest symbol wins</h4>
+    <p>Symbols are tried longest first (<span class="ref">TokenMapper.kt:20</span>), which replaces "put this pattern before that one" with a rule nobody has to maintain.</p>
+    <p class="cost"><b>Cost</b>Nothing today, since every symbol is one character. It's there so the first two-character operator doesn't bring an ordering problem back.</p>
   </div>
 
   <div class="decision">
-    <h4>One pass: the group that matched is the type</h4>
-    <p>The old lexer found each lexeme with the regex and then classified its text a second time. Once the order is right, that second pass could only repeat the regex's decision, or contradict it. Reading the type from the match (<span class="ref">Lexer.kt:90–93</span>) leaves one source of truth.</p>
-    <p class="cost"><b>Cost</b>It relies on group names (<span class="ref">Lexer.kt:109</span>), which are built and read in that one file. Finding the group checks at most 17 groups per token.</p>
-  </div>
-
-  <div class="decision">
-    <h4>One pattern, compiled once per lexer</h4>
-    <p><code>Pattern.compile</code> is expensive, so it runs in the <code>Lexer</code>'s initialiser (<span class="ref">Lexer.kt:24–27</span>), and each line only creates a cheap <code>Matcher</code>. A compiled <code>Pattern</code> is immutable and thread-safe; <code>Matcher</code>s aren't, which is why one is created per line.</p>
-    <p class="cost"><b>Cost</b>Every token type has to be expressible as a regex. PrintScript's all are.</p>
+    <h4>Errors are found where they happen</h4>
+    <p>An invalid character, an unclosed string and a number glued to a name are each reported at their own columns (<span class="ref">LineScanner.kt:57, 66, 74</span>). The regex version had to infer invalid text from the gaps it skipped, so every problem came out as "invalid character".</p>
+    <p class="cost"><b>Cost</b>Three error messages to keep consistent instead of one.</p>
   </div>
 
   <div class="decision">
@@ -454,34 +442,28 @@ td.mono{font-family:var(--mono);font-size:13px}
     <p>This meets the assignment's "sources that don't fit in memory" requirement. Memory is bounded by the longest line, rows come free from the line count, and the TCK's 131,072-line test passes in a 7 MB heap.</p>
     <p class="cost"><b>Cost</b>A token can't span lines, which is fine because PrintScript has no multi-line strings. An error later in a line surfaces before that line's earlier tokens are delivered.</p>
   </div>
-
-  <div class="decision">
-    <h4>Check the gaps instead of adding a catch-all group</h4>
-    <p>The alternative is a last group <code>(.)</code> mapped to UNKNOWN. Checking the text between matches keeps the pattern made only of real token types, and it reports a whole invalid run, trimmed, with correct columns (<span class="ref">Lexer.kt:71–77</span>).</p>
-    <p class="cost"><b>Cost</b>About 20 lines of explicit code, and the check must run in two places: before each token and at the end of the line.</p>
-  </div>
 </section>
 
 <section id="questions">
   <h2>Questions you might get</h2>
   <p class="sub">Short answers, with the line to show.</p>
   <div class="qa">
-    <details><summary>Why doesn't the lexer reject <code>const</code> in 1.0?</summary>
-      <p>Because 1.0 doesn't have it. Which words exist is the version's decision, expressed as its list (<span class="ref">TokenMapper.kt:32–37</span>). The lexer only knows how to scan with whatever list it's given, so under 1.0 <code>const</code> is a name and the parser rejects the statement.</p></details>
-    <details><summary>Why not a lexer generator like JFlex?</summary>
-      <p>The vocabulary is 11–17 definitions, and 1.1 is 1.0 plus additions (<span class="ref">TokenMapper.kt:39–47</span>). A generator adds a grammar file, a build step and generated code to explain, and versioning would mean two grammars.</p></details>
+    <details><summary>Why not regex, or a generator like JFlex?</summary>
+      <p>Both make the vocabulary something you have to know a notation to change. Here a version is two maps (<span class="ref">TokenMapper.kt:41–85</span>), and the scanner that reads them is a few small functions. A generator would also add a grammar file, a build step and generated code, and versioning would mean two grammars.</p></details>
+    <details><summary>How do you add <code>while</code> for 1.2?</summary>
+      <p>Write <code>VERSION_1_2 = VERSION_1_1 + TokenMapper(words = mapOf("while" to …), symbols = emptyMap())</code> and add a <code>"1.2"</code> branch in <code>vocabularyOf</code> (<span class="ref">TokenMapper.kt:34–39</span>). <code>Lexer</code> and <code>LineScanner</code> don't change.</p></details>
     <details><summary>How does it know <code>let</code> is a keyword and <code>letter</code> isn't?</summary>
-      <p>Order plus word boundaries. The words come before IDENTIFIER (<span class="ref">TokenMapper.kt:30</span>), so <code>let</code> is claimed by the KEYWORD group. Every word is wrapped in <code>\b</code> (<span class="ref">TokenDefinition.kt:15</span>), so <code>\blet\b</code> doesn't match inside <code>letter</code>, and the identifier takes the whole word.</p></details>
+      <p>It reads the whole name first (<span class="ref">LineScanner.kt:45</span>) and only then looks it up (:47). <code>letter</code> isn't in the words, so it's an identifier.</p></details>
+    <details><summary>Why doesn't the lexer reject <code>const</code> in 1.0?</summary>
+      <p>Because 1.0 doesn't have it. Which words exist is the version's decision, expressed as its map (<span class="ref">TokenMapper.kt:43–49</span>). Under 1.0 <code>const</code> is a name, and the parser rejects the statement.</p></details>
     <details><summary>Is <code>if</code> a valid variable name in 1.0?</summary>
       <p>Yes. The lexer reads it as an IDENTIFIER, and the parser decides what starts a conditional by token type, not by text (<span class="ref">TokenRoles.kt:22</span>), so <code>let if: number = 1;</code> is an ordinary declaration under 1.0.</p></details>
     <details><summary>Why does a string's value lose its quotes?</summary>
-      <p>Everything downstream wants the content: the interpreter prints it, and the parser checks its type. The positions still cover the quotes, and the formatter re-reads the original text when it needs them (<span class="ref">SourceToken.kt:51</span>).</p></details>
+      <p>Everything downstream wants the content: the interpreter prints it, and the parser checks its type. The positions still cover the quotes (<span class="ref">LineScanner.kt:68</span>), and the formatter re-reads the original text when it needs them (<span class="ref">SourceToken.kt:51</span>).</p></details>
     <details><summary>Is the lexer thread-safe?</summary>
-      <p>A <code>Lexer</code> holds only its definitions and a compiled <code>Pattern</code>, both immutable. Each line creates its own <code>Matcher</code> (<span class="ref">Lexer.kt:41</span>), so one instance can serve several sources. Each returned sequence has its own state and should be consumed by one thread.</p></details>
-    <details><summary>How would you add <code>while</code> for 1.2?</summary>
-      <p>Add a word list that is 1.1's plus <code>words(…, "while")</code>, and a <code>"1.2"</code> branch in <code>definitionsFor</code> (<span class="ref">TokenMapper.kt:19–24</span>). <code>inOrder</code> puts it before IDENTIFIER. <code>Lexer</code> and <code>TokenDefinition</code> don't change.</p></details>
+      <p>A <code>Lexer</code> holds only its vocabulary, which is immutable. Each line gets its own <code>LineScanner</code> (<span class="ref">Lexer.kt:18</span>), so one instance can serve several sources. Each returned sequence has its own state and should be consumed by one thread.</p></details>
     <details><summary>What does <code>execute(input)</code> do?</summary>
-      <p>It splits a whole string into lines and returns the tokens as a list (<span class="ref">Lexer.kt:29</span>). Tests use it for convenience; production code always uses the <code>Sequence</code> or <code>InputStream</code> overloads.</p></details>
+      <p>It splits a whole string into lines and returns the tokens as a list (<span class="ref">Lexer.kt:15</span>). Tests use it for convenience; production code always uses the <code>Sequence</code> or <code>InputStream</code> overloads.</p></details>
   </div>
 </section>
 
@@ -492,33 +474,33 @@ td.mono{font-family:var(--mono);font-size:13px}
   </div>
   <div id="quiz-list">
     <div class="q"><input type="checkbox" id="q1"><label for="q1">Tokenize <code>x=5+letter;</code> (1.0). What types come out?</label>
-      <details><summary>Answer</summary><p>IDENTIFIER <code>x</code>, ASSIGNATION <code>=</code>, NUMBERLITERAL <code>5</code>, OPERATOR <code>+</code>, IDENTIFIER <code>letter</code>, PUNCTUATOR <code>;</code>. No spaces are needed, because the regex finds each boundary itself.</p></details></div>
+      <details><summary>Answer</summary><p>IDENTIFIER <code>x</code>, ASSIGNATION <code>=</code>, NUMBERLITERAL <code>5</code>, OPERATOR <code>+</code>, IDENTIFIER <code>letter</code>, PUNCTUATOR <code>;</code>. No spaces are needed, because each reader stops where its token ends.</p></details></div>
     <div class="q"><input type="checkbox" id="q2"><label for="q2">What error does <code>let x: number = 5 @ 3;</code> give, and which function finds it?</label>
-      <details><summary>Answer</summary><p><code>rejectSkippedText</code>. The next match after <code>5</code> is <code>3</code>, and the skipped text <code>" @ "</code> isn't blank, so it throws <em>Carácter inválido encontrado: '@'</em> at 1-based columns 19–20.</p></details></div>
-    <div class="q"><input type="checkbox" id="q3"><label for="q3">Why does the gap check exist at all?</label>
-      <details><summary>Answer</summary><p><code>Matcher.find</code> doesn't fail on text that matches no pattern; it silently jumps to the next match. Without checking the gaps, invalid characters would simply disappear.</p></details></div>
-    <div class="q"><input type="checkbox" id="q4"><label for="q4">In 1.1, which definition captures <code>true</code>, and why not IDENTIFIER?</label>
-      <details><summary>Answer</summary><p>BOOLEANLITERAL, definition 8. The words come before IDENTIFIER (definition 9), and at each position the first alternative that matches wins.</p></details></div>
+      <details><summary>Answer</summary><p><code>symbolAt</code>. <code>@</code> isn't a letter, a digit or a quote, and no symbol of the version starts with it, so it throws <em>Carácter inválido encontrado: '@'</em> at 1-based columns 19–20.</p></details></div>
+    <div class="q"><input type="checkbox" id="q3"><label for="q3">Why isn't <code>letter</code> read as <code>let</code> followed by <code>ter</code>?</label>
+      <details><summary>Answer</summary><p>The whole name is read before it's looked up in the words. <code>letter</code> isn't a word, so it's one identifier.</p></details></div>
+    <div class="q"><input type="checkbox" id="q4"><label for="q4">In 1.1, how does <code>true</code> become BOOLEANLITERAL?</label>
+      <details><summary>Answer</summary><p>It's read as a name, then looked up in 1.1's words, where it maps to BOOLEANLITERAL. Under 1.0 the lookup finds nothing, so it's an IDENTIFIER.</p></details></div>
     <div class="q"><input type="checkbox" id="q5"><label for="q5">Under 1.0, where are <code>const</code>, <code>if (…) {</code> and <code>boolean</code> each rejected?</label>
       <details><summary>Answer</summary><p><code>const</code> and <code>boolean</code> lex as IDENTIFIERs, and the parser rejects the declaration: no KEYWORD in the first case, no DATA_TYPE in the second. <code>{</code> is rejected by the lexer as an invalid character.</p></details></div>
-    <div class="q"><input type="checkbox" id="q6"><label for="q6">Why are groups looked up by name and not by number?</label>
-      <details><summary>Answer</summary><p>Some definitions have groups of their own, like NUMBERLITERAL's <code>(\.[0-9]+)</code>. They'd shift the numbering, so group <em>n</em> wouldn't be definition <em>n</em>. A name per definition can't drift.</p></details></div>
+    <div class="q"><input type="checkbox" id="q6"><label for="q6">What does <code>println("hola);</code> give?</label>
+      <details><summary>Answer</summary><p><em>String sin cerrar: falta la comilla de cierre</em>, from the opening quote to the end of the line: 1-based columns 9–16.</p></details></div>
     <div class="q"><input type="checkbox" id="q7"><label for="q7">You take 5 tokens from an infinite source. How many lines are read, and why?</label>
       <details><summary>Answer</summary><p>One. The sequence is lazy, and a line is only read when the tokens from the previous line run out. Each line of that source holds exactly 5 tokens.</p></details></div>
-    <div class="q"><input type="checkbox" id="q8"><label for="q8">Why is the pattern compiled in the constructor and not per line?</label>
-      <details><summary>Answer</summary><p>Compiling is the expensive part, and a compiled <code>Pattern</code> is immutable and safe to reuse. Only the cheap, stateful <code>Matcher</code> is created per line.</p></details></div>
-    <div class="q"><input type="checkbox" id="q9"><label for="q9">Add a <code>while</code> keyword for 1.2. Which files change?</label>
-      <details><summary>Answer</summary><p>Only <code>TokenMapper.kt</code>: a 1.2 word list built from 1.1's, and a version branch. <code>Lexer</code> and <code>TokenDefinition</code> stay as they are.</p></details></div>
+    <div class="q"><input type="checkbox" id="q8"><label for="q8">Add a <code>&lt;=</code> operator for 1.2. What changes, and why doesn't <code>&lt;</code> steal it?</label>
+      <details><summary>Answer</summary><p>One symbol entry in the 1.2 vocabulary. Symbols are tried longest first, so at <code>&lt;=</code> the two-character symbol wins over <code>&lt;</code>.</p></details></div>
+    <div class="q"><input type="checkbox" id="q9"><label for="q9">What happens with <code>let x: number = 123abc;</code>?</label>
+      <details><summary>Answer</summary><p><code>numberAt</code> reads <code>123</code>, sees a name character right after it and throws <em>Número inválido: '123abc'</em>, instead of producing a number followed by an identifier.</p></details></div>
   </div>
   <p style="margin-top:14px"><button type="button" class="reset" id="quiz-reset">Clear ticks</button></p>
 </section>
 
 <section id="tests">
   <h2>Tests</h2>
-  <p class="sub">18 tests in 2 files.</p>
+  <p class="sub">23 tests in 2 files.</p>
   <ul class="points tests">
     <li><strong>LexerTests (8):</strong> a first instruction, multi-line input, a sum, decimals, a long operation, streaming from an <code>InputStream</code>, <em>"a keyword from a later version is just an identifier"</em>, and an invalid character rejected with its position.</li>
-    <li><strong>TokenMapperTest (10):</strong> the words of 1.0; the words 1.1 adds; 1.1's words as plain identifiers under 1.0; a word inside a longer name; <code>=</code> found before an operator; multi-character operators; literals; braces only in 1.1; an unsupported version throws; custom definition injection.</li>
+    <li><strong>TokenMapperTest (15):</strong> the words of 1.0; the words 1.1 adds; 1.1's words as plain identifiers under 1.0; a word inside a longer name; <code>=</code> before an operator; the longest symbol wins; an operator the language doesn't have; literals; braces only in 1.1; an unsupported version; a string with the other quote inside; an unclosed string with its position; a number glued to a name; a dot with no digit after it; custom vocabulary injection.</li>
   </ul>
 </section>
 </div>

@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 1c05846 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 192567b · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -183,7 +183,7 @@ td:first-child{white-space:nowrap}
 
       <rect class="n" x="296" y="70" width="150" height="60" rx="5"/>
       <text class="t" x="371" y="96" text-anchor="middle">Lexer</text>
-      <text class="s" x="371" y="116" text-anchor="middle">one regex per line</text>
+      <text class="s" x="371" y="116" text-anchor="middle">scans line by line</text>
 
       <rect class="n" x="576" y="70" width="150" height="60" rx="5"/>
       <text class="t" x="651" y="96" text-anchor="middle">Parser</text>
@@ -307,24 +307,24 @@ td:first-child{white-space:nowrap}
 
     <h3>Lexer: rows 2 and 4 become tokens</h3>
     <div class="tablewrap"><table>
-      <thead><tr><th>Type</th><th>Value</th><th class="num">Row</th><th class="num">Columns</th><th>Matched by</th></tr></thead>
+      <thead><tr><th>Type</th><th>Value</th><th class="num">Row</th><th class="num">Columns</th><th>Read as</th></tr></thead>
       <tbody>
-        <tr><td>KEYWORD</td><td><code>let</code></td><td class="num">2</td><td class="num">0–3</td><td>a word, <span class="ref">TokenMapper.kt:34</span></td></tr>
-        <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">2</td><td class="num">4–5</td><td>identifier regex, :51</td></tr>
-        <tr><td>DECLARATOR</td><td><code>:</code></td><td class="num">2</td><td class="num">5–6</td><td>:59</td></tr>
-        <tr><td>DATA_TYPE</td><td><code>number</code></td><td class="num">2</td><td class="num">7–13</td><td>:36, a word, so tried before IDENTIFIER</td></tr>
-        <tr><td>ASSIGNATION</td><td><code>=</code></td><td class="num">2</td><td class="num">14–15</td><td>:61, listed before OPERATOR</td></tr>
-        <tr><td>IDENTIFIER</td><td><code>a</code></td><td class="num">2</td><td class="num">16–17</td><td>:51</td></tr>
-        <tr><td>OPERATOR</td><td><code>/</code></td><td class="num">2</td><td class="num">18–19</td><td>:62</td></tr>
-        <tr><td>IDENTIFIER</td><td><code>b</code></td><td class="num">2</td><td class="num">20–21</td><td>:51</td></tr>
-        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">2</td><td class="num">21–22</td><td>:63</td></tr>
-        <tr><td>FUNCTION</td><td><code>println</code></td><td class="num">4</td><td class="num">0–7</td><td>a word, :35</td></tr>
-        <tr><td>PARENTHESIS</td><td><code>(</code></td><td class="num">4</td><td class="num">7–8</td><td>:58</td></tr>
-        <tr><td>STRINGLITERAL</td><td><code>Result: </code></td><td class="num">4</td><td class="num">8–18</td><td>:52, quotes stripped by <span class="ref">Lexer.kt:101</span></td></tr>
-        <tr><td>OPERATOR</td><td><code>+</code></td><td class="num">4</td><td class="num">19–20</td><td>:62</td></tr>
-        <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">4</td><td class="num">21–22</td><td>:51</td></tr>
-        <tr><td>PARENTHESIS</td><td><code>)</code></td><td class="num">4</td><td class="num">22–23</td><td>:58</td></tr>
-        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">4</td><td class="num">23–24</td><td>:63</td></tr>
+        <tr><td>KEYWORD</td><td><code>let</code></td><td class="num">2</td><td class="num">0–3</td><td>a word, <span class="ref">TokenMapper.kt:45</span></td></tr>
+        <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">2</td><td class="num">4–5</td><td>a name that isn't a word, <span class="ref">LineScanner.kt:47</span></td></tr>
+        <tr><td>DECLARATOR</td><td><code>:</code></td><td class="num">2</td><td class="num">5–6</td><td>a symbol, <span class="ref">TokenMapper.kt:54</span></td></tr>
+        <tr><td>DATA_TYPE</td><td><code>number</code></td><td class="num">2</td><td class="num">7–13</td><td>a word, <span class="ref">TokenMapper.kt:48</span></td></tr>
+        <tr><td>ASSIGNATION</td><td><code>=</code></td><td class="num">2</td><td class="num">14–15</td><td>a symbol, <span class="ref">TokenMapper.kt:55</span></td></tr>
+        <tr><td>IDENTIFIER</td><td><code>a</code></td><td class="num">2</td><td class="num">16–17</td><td>a name</td></tr>
+        <tr><td>OPERATOR</td><td><code>/</code></td><td class="num">2</td><td class="num">18–19</td><td>a symbol, <span class="ref">TokenMapper.kt:60</span></td></tr>
+        <tr><td>IDENTIFIER</td><td><code>b</code></td><td class="num">2</td><td class="num">20–21</td><td>a name</td></tr>
+        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">2</td><td class="num">21–22</td><td>a symbol, <span class="ref">TokenMapper.kt:56</span></td></tr>
+        <tr><td>FUNCTION</td><td><code>println</code></td><td class="num">4</td><td class="num">0–7</td><td>a word, <span class="ref">TokenMapper.kt:46</span></td></tr>
+        <tr><td>PARENTHESIS</td><td><code>(</code></td><td class="num">4</td><td class="num">7–8</td><td>a symbol, <span class="ref">TokenMapper.kt:52</span></td></tr>
+        <tr><td>STRINGLITERAL</td><td><code>Result: </code></td><td class="num">4</td><td class="num">8–18</td><td>a string, quotes stripped by <span class="ref">LineScanner.kt:68</span></td></tr>
+        <tr><td>OPERATOR</td><td><code>+</code></td><td class="num">4</td><td class="num">19–20</td><td>a symbol, <span class="ref">TokenMapper.kt:57</span></td></tr>
+        <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">4</td><td class="num">21–22</td><td>a name</td></tr>
+        <tr><td>PARENTHESIS</td><td><code>)</code></td><td class="num">4</td><td class="num">22–23</td><td>a symbol, <span class="ref">TokenMapper.kt:53</span></td></tr>
+        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">4</td><td class="num">23–24</td><td>a symbol, <span class="ref">TokenMapper.kt:56</span></td></tr>
       </tbody>
     </table></div>
     <p>Two things to point out. Row 3 is empty, so it produces no tokens and the parser never sees it. And the string's value is 8 characters long while its columns span 10, because the quotes are stripped from the value but the positions still cover them. That difference is why the formatter keeps each token's original text.</p>
@@ -410,35 +410,35 @@ println("Result: " + c);</pre></td>
 <section class="mod" id="lexer">
   <div class="modhead"><h2><code>lexer</code></h2><span class="meta">depends on commons</span></div>
   <div class="prose">
-    <p>The lexer turns text into a lazy stream of <code>Token</code>s, rejecting any character it can't recognise with an exact position. Which words exist is decided by the version's list of token definitions; the lexer itself makes no version rulings.</p>
+    <p>The lexer turns text into a lazy stream of <code>Token</code>s. Each version is a vocabulary of words and symbols, the lexer reads the source against it character by character, and anything outside the vocabulary is rejected with an exact position. There's no regex.</p>
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Pick the vocabulary for the version.</strong> <span class="ref">TokenMapper.kt:14</span> builds a mapper from a version string, and <code>definitionsFor</code> (:19–24) picks that version's list. <code>inOrder</code> (:27–30) assembles every version the same way: words, then names and literals, then symbols. There's no reserved-word or disallowed-word table. A word 1.0 doesn't have simply isn't in its list.</div></li>
-      <li><div><strong>Compile one big regex.</strong> <span class="ref">Lexer.kt:24–27</span> joins every definition's regex into a single alternation, one named group per definition: <code>(?&lt;definition0&gt;p0)|(?&lt;definition1&gt;p1)|…</code>. At each position the first alternative that matches wins, so words are tried before IDENTIFIER, and <code>=</code> (ASSIGNATION) before the general OPERATOR class (<span class="ref">TokenMapper.kt:60–61</span>).</div></li>
-      <li><div><strong>Stream the lines.</strong> <span class="ref">Lexer.kt:31</span> is <code>lines.mapIndexed(::tokenizeLine).flatten()</code>. Sequences are lazy, so a line is read only when the parser asks for tokens past the previous one. The <code>InputStream</code> overload (:33–34) wraps a <code>BufferedReader.lineSequence()</code>.</div></li>
-      <li><div><strong>Match inside a line.</strong> <span class="ref">Lexer.kt:36–52</span> loops over <code>matcher.find()</code>. Each match becomes a token (:46), with its start and end positions taken from the match (:86).</div></li>
-      <li><div><strong>Catch what the regex skipped.</strong> <code>Matcher.find</code> doesn't fail on garbage; it just jumps past it. <span class="ref">Lexer.kt:61–79</span> inspects the gap before each match (:45) and the tail of the line (:49), and any non-blank text in those gaps becomes <em>"Carácter inválido encontrado"</em> with its exact columns. This is the only way the lexer rejects anything.</div></li>
-      <li><div><strong>Read the type from the match.</strong> <span class="ref">Lexer.kt:90–93</span> finds the one group that took part in the match, and its definition's type is the token's type. Groups are looked up by name (:109) rather than number, because NUMBERLITERAL's own group <code>(\.[0-9]+)</code> would shift the numbering.</div></li>
-      <li><div><strong>Clean the value.</strong> <span class="ref">Lexer.kt:96–103</span> strips the quotes from string literals. The formatter needs those quotes back, which is why it keeps the original text (see <a href="#formatter">formatter</a>).</div></li>
+      <li><div><strong>Pick the vocabulary for the version.</strong> <span class="ref">TokenMapper.kt:16</span> builds a mapper from a version string, and <code>vocabularyOf</code> (:34–39) picks that version's two maps: its words (:43–49) and its symbols (:50–63), each with the token type it produces. A word 1.0 doesn't have simply isn't in its map.</div></li>
+      <li><div><strong>Stream the lines.</strong> <span class="ref">Lexer.kt:17–18</span> maps each line to a <code>LineScanner</code> and flattens the result. Sequences are lazy, so a line is read only when the parser asks for tokens past the previous one. The <code>InputStream</code> overload (:20–21) wraps a <code>BufferedReader.lineSequence()</code>.</div></li>
+      <li><div><strong>Walk the line.</strong> <span class="ref">LineScanner.kt:18–31</span> skips blanks, reads one token at a time, and continues where each token ends. Positions are the columns where the token started and ended.</div></li>
+      <li><div><strong>Let the first character decide.</strong> <span class="ref">LineScanner.kt:33–41</span>: a letter or <code>_</code> starts a name, a digit a number, a quote a string, and anything else must be a symbol.</div></li>
+      <li><div><strong>Names.</strong> The whole name is read first (<span class="ref">LineScanner.kt:45</span>) and then looked up in the version's words (:47). If it isn't there, it's an IDENTIFIER. That's why <code>letter</code> isn't <code>let</code> + <code>ter</code>.</div></li>
+      <li><div><strong>Numbers and strings.</strong> A number is digits with optional decimals (<span class="ref">LineScanner.kt:50–60</span>), and one glued to a name, like <code>123abc</code>, is rejected (:55–58). A string ends at the next quote of the same kind (:64), fails if there isn't one (:65–66), and drops its quotes from the value while its positions keep them (:68).</div></li>
+      <li><div><strong>Symbols.</strong> The longest symbol of the version that starts at that column wins (<span class="ref">TokenMapper.kt:20–26</span>). If none does, the character is invalid (<span class="ref">LineScanner.kt:74</span>): <em>"Carácter inválido encontrado"</em>, with its exact columns.</div></li>
     </ol>
 
     <h3>1.0 vs 1.1</h3>
-    <p><span class="ref">TokenMapper.kt:39–47</span> is 1.0's words plus <code>const</code>, <code>if</code>/<code>else</code>, <code>readInput</code>/<code>readEnv</code>, <code>boolean</code> and <code>true</code>/<code>false</code>, and :66 adds the <code>{ }</code> punctuators. Nothing is replaced. Under 1.0 those words are plain identifiers, so <code>const x : number = 8;</code> reaches the parser, which rejects it: <code>Expected a KEYWORD token but found none.</code> at line 1, column 1. Braces aren't in the 1.0 vocabulary, so an <code>if</code> program under 1.0 fails right in the lexer with <code>Carácter inválido encontrado: '{'</code>. I checked both by running the CLI.</p>
+    <p><span class="ref">TokenMapper.kt:66–85</span> is 1.0 plus eight words (<code>const</code>, <code>if</code>/<code>else</code>, <code>readInput</code>/<code>readEnv</code>, <code>boolean</code>, <code>true</code>/<code>false</code>) and the <code>{ }</code> punctuators. Nothing is replaced. Under 1.0 those words are plain identifiers, so <code>const x : number = 8;</code> reaches the parser, which rejects it: <code>Expected a KEYWORD token but found none.</code> at line 1, column 1. Braces aren't in the 1.0 vocabulary, so an <code>if</code> program under 1.0 fails right in the lexer with <code>Carácter inválido encontrado: '{'</code>. I checked both by running the CLI.</p>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>An ordered list of token definitions per version<small>TokenMapper.kt:19–30 · TokenDefinition.kt:6</small></dt><dd>A new token kind is a new entry, and <code>Lexer</code> itself doesn't change (Open/Closed). A version is just a different list.</dd></div>
-      <div class="decision"><dt>Lazy, line-granular lexing<small>Lexer.kt:31</small></dt><dd>Memory is bounded by the longest line, not by the file. This is what lets the TCK's 131,072-line test run in a 7 MB heap.</dd></div>
-      <div class="decision"><dt>The version decides the vocabulary; the lexer makes no rulings<small>TokenMapper.kt:32–47</small></dt><dd>There are no reserved or disallowed tables. Before, one reserved table served both versions, so 1.0 lexed <code>if</code> and <code>true</code> as keywords of features it doesn't have, and a second table existed only to reject <code>const</code>.</dd></div>
+      <div class="decision"><dt>A hand-written scanner over the version's vocabulary, not regex<small>LineScanner.kt:33–41 · TokenMapper.kt:41–85</small></dt><dd>Adding a word or a symbol is one map entry, with no regex to write and no order to respect. The version supplies the tables, so the scanner has no version checks in its loop.</dd></div>
+      <div class="decision"><dt>Lazy, line-granular lexing<small>Lexer.kt:17–18</small></dt><dd>Memory is bounded by the longest line, not by the file. This is what lets the TCK's 131,072-line test run in a 7 MB heap.</dd></div>
+      <div class="decision"><dt>The version decides the vocabulary; the lexer makes no rulings<small>TokenMapper.kt:34–39</small></dt><dd>There's no list of words "not allowed in this version". The <code>words</code> map isn't a reserved-word table overriding the version: it <em>is</em> the version.</dd></div>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
-      <li><strong>Order-sensitive alternation.</strong> <code>inOrder</code> makes "words before names" structural. The only hand-placed order is <code>=</code> before the operators, and it's stated where it's written (<span class="ref">TokenMapper.kt:60</span>).</li>
-      <li><strong>A generic error for <code>const</code> under 1.0.</strong> The parser's <em>Expected a KEYWORD token</em> replaces the old tailored lexer message. It's accurate and positioned, just less descriptive.</li>
-      <li><strong>One pass: the type is read from the match</strong> (<span class="ref">Lexer.kt:90–93</span>). A second classification pass could only repeat the regex's decision or contradict it. The cost is a lookup over at most 17 named groups per token.</li>
+      <li><strong>Scanning code to explain.</strong> About 100 lines in <code>LineScanner.kt</code>, and a new <em>kind</em> of token, such as a comment, would need its own reader. New words and symbols don't.</li>
+      <li><strong>Only the operators the language has.</strong> <code>%</code> or <code>!</code> are invalid characters in the lexer instead of passing through and failing later. Earlier, but the message says "invalid character", not "unsupported operator".</li>
+      <li><strong>A generic error for <code>const</code> under 1.0.</strong> The parser's <em>Expected a KEYWORD token</em> replaces the tailored lexer message that the old table of disallowed words produced. It's accurate and positioned, just less descriptive.</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 18 in LexerTests and TokenMapperTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 23 in LexerTests and TokenMapperTest.</p>
   </div>
 </section>
 
@@ -646,7 +646,7 @@ fun asType(dataType: String): Any = when (dataType) {
     <div class="tablewrap"><table>
       <thead><tr><th>Module</th><th>What changes between 1.0 and 1.1</th><th>Where</th></tr></thead>
       <tbody>
-        <tr><td>lexer</td><td>Token vocabulary: which words and symbols the version has</td><td><span class="ref">TokenMapper.kt:19–24</span></td></tr>
+        <tr><td>lexer</td><td>Token vocabulary: which words and symbols the version has</td><td><span class="ref">TokenMapper.kt:34–39</span></td></tr>
         <tr><td>parser</td><td><code>ConditionalFactory</code> in the list or not</td><td><span class="ref">ParserFactory.kt:20–42</span></td></tr>
         <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:14–47</span></td></tr>
         <tr><td>linter</td><td><code>inputonly</code> rule allowed or not</td><td><span class="ref">RuleFactory.kt:23–31</span></td></tr>
@@ -720,11 +720,11 @@ fun asType(dataType: String): Any = when (dataType) {
     <p>Graders rarely ask "what does this do?". They ask "why this and not that?". Each entry names the alternative a grader is likely to suggest, why ours fits this project better, and the cost of our choice. Naming the cost yourself shows you weighed the options; claiming there is none invites the follow-up question.</p>
 
     <div class="challenge">
-      <h4>Lexer: an ordered list of regex definitions per version</h4>
-      <p class="over">instead of a hand-written, character-by-character scanner</p>
+      <h4>Lexer: a hand-written scanner over the version's vocabulary</h4>
+      <p class="over">instead of regex patterns or a lexer generator</p>
       <div class="cols">
-        <div><h5>Why</h5><p>Token kinds are data, not control flow. Version 1.1 is 1.0 plus five groups of words and the braces (<span class="ref">TokenMapper.kt:39–47</span>, :66). A hand-written scanner would need version checks inside its loop.</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>Pattern order matters (words before identifiers, <code>=</code> before operators), and invalid text needs the explicit gap check at <span class="ref">Lexer.kt:61–79</span> because regex matching skips it silently.</p></div>
+        <div><h5>Why</h5><p>Extending the language is adding an entry to a map (<span class="ref">TokenMapper.kt:41–85</span>), with no regex notation to know and no order to respect. Version 1.1 is 1.0 plus eight words and the braces. The version supplies the tables, so the scanner has no version checks in its loop.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>About 100 lines of scanning code (<span class="ref">LineScanner.kt:18–92</span>) to explain, and a new <em>kind</em> of token, such as a comment, would need its own reader.</p></div>
       </div>
     </div>
 
@@ -816,11 +816,11 @@ fun asType(dataType: String): Any = when (dataType) {
   <div class="modhead"><h2>Likely questions</h2><span class="meta">short answers with the line to show</span></div>
   <div class="prose qa">
     <details><summary>How would you add PrintScript 1.2 with a <code>while</code> loop?</summary>
-      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:74</span>, <span class="ref">Statements.kt:85</span>) until it's handled. Add a 1.2 word list that is 1.1's plus <code>while</code>, with a <code>"1.2"</code> branch (<span class="ref">TokenMapper.kt:19–24</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
+      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:74</span>, <span class="ref">Statements.kt:85</span>) until it's handled. Add a 1.2 vocabulary that is 1.1's plus the word <code>while</code>, with a <code>"1.2"</code> branch (<span class="ref">TokenMapper.kt:34–39</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
     <details><summary>Why doesn't the parser depend on the lexer?</summary>
       <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:48–51</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
     <details><summary>Where are the SOLID principles?</summary>
-      <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the token-definition, factory, evaluator and rule lists, where a version is just a list. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:29</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
+      <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the vocabulary maps and the factory, evaluator and rule lists, where a version is just data. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:29</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
     <details><summary>Which design patterns did you use?</summary>
       <p>Strategy (evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:49</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
     <details><summary>How do you know it doesn't load the whole file?</summary>

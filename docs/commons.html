@@ -166,7 +166,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
       <tr><td class="t">PrintScriptException</td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role catches">catches</span></td></tr>
     </tbody>
   </table></div>
-  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">Lexer.kt:81–87</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:29</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
+  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">LineScanner.kt:84–89</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:29</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
 </section>
 
 <section id="code">
@@ -276,7 +276,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
     <details><summary>Why are positions nullable in the exception?</summary>
       <p>Some errors have no token at hand. An empty file fails with "No valid code" (<span class="ref">StatementSplitter.kt:90</span>), and there's no position to give. <code>describe()</code> handles that case (:22).</p></details>
     <details><summary>Why doesn't <code>commons</code> contain the lexer's token rules?</summary>
-      <p>What a token <em>is</em> is shared; how to <em>recognise</em> one is lexer behaviour and changes per version (<span class="ref">TokenMapper.kt:19–24</span>). Keeping behaviour out is what lets the parser depend on <code>commons</code> without depending on the lexer.</p></details>
+      <p>What a token <em>is</em> is shared; how to <em>recognise</em> one is lexer behaviour and changes per version (<span class="ref">TokenMapper.kt:34–39</span>). Keeping behaviour out is what lets the parser depend on <code>commons</code> without depending on the lexer.</p></details>
   </div>
 </section>
 
