@@ -4,6 +4,9 @@ import ast.ASTNode
 import ast.BinaryNode
 import ast.LiteralNode
 import parser.ParserException
+import parser.closesParenthesis
+import parser.isOperator
+import parser.opensParenthesis
 import token.Token
 
 class OperationFactory {
@@ -12,7 +15,7 @@ class OperationFactory {
             return createLiteralNode(listTokens[0])
         }
         val tokens =
-            if (listTokens.first().value == "(" && listTokens.last().value == ")") {
+            if (listTokens.first().opensParenthesis && listTokens.last().closesParenthesis) {
                 removeFirstAndLastParentheses(
                     listTokens,
                 )
@@ -39,8 +42,8 @@ class OperationFactory {
     ): ASTNode? {
         val openParentheses = emptyList<Token>().toMutableList()
         for (token in tokens) {
-            if (token.value == "(") openParentheses.add(token)
-            if (token.value == ")") openParentheses.removeLast()
+            if (token.opensParenthesis) openParentheses.add(token)
+            if (token.closesParenthesis) openParentheses.removeLast()
             if (isOperator(token) && openParentheses.isEmpty()) {
                 return BinaryNode(
                     left = createAST(tokens.subList(0, tokens.indexOf(token))),
@@ -55,10 +58,10 @@ class OperationFactory {
 
     private fun removeFirstAndLastParentheses(tokens: List<Token>): List<Token> {
         val parentheses = emptyList<String>().toMutableList()
-        if (tokens.first().value == "(") parentheses.add("(")
+        if (tokens.first().opensParenthesis) parentheses.add("(")
         for (token in tokens.subList(1, tokens.size - 1)) {
-            if (token.value == "(") parentheses.add("(")
-            if (token.value == ")") parentheses.removeLast()
+            if (token.opensParenthesis) parentheses.add("(")
+            if (token.closesParenthesis) parentheses.removeLast()
             if (parentheses.isEmpty()) return tokens
         }
         return tokens.subList(1, tokens.size - 1)
@@ -67,7 +70,7 @@ class OperationFactory {
     private fun createLiteralNode(token: Token): ASTNode =
         LiteralNode(value = token.value, type = token.getType(), position = token.getPosition())
 
-    private fun isMultiplicationOrDivision(token: Token) = token.value == "*" || token.value == "/"
+    private fun isMultiplicationOrDivision(token: Token) = token.isOperator("*") || token.isOperator("/")
 
-    private fun isAdditionOrSubtraction(token: Token) = token.value == "+" || token.value == "-"
+    private fun isAdditionOrSubtraction(token: Token) = token.isOperator("+") || token.isOperator("-")
 }
