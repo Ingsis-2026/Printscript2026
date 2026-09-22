@@ -25,7 +25,7 @@ internal class StatementSplitter(
                 // retenida hasta poder mirar este token.
                 if (blockJustClosed) {
                     blockJustClosed = false
-                    if (token.value == "else") {
+                    if (token.continuesConditional) {
                         current.add(token)
                         continue
                     }
@@ -35,12 +35,12 @@ internal class StatementSplitter(
                 }
 
                 when {
-                    token.value == "{" -> {
+                    token.opensBlock -> {
                         openBraces++
                         current.add(token)
                     }
 
-                    token.value == "}" && openBraces > 0 -> {
+                    token.closesBlock && openBraces > 0 -> {
                         openBraces--
                         current.add(token)
                         if (openBraces == 0) blockJustClosed = true
@@ -48,7 +48,7 @@ internal class StatementSplitter(
 
                     // El "}" que cierra el bloque que envuelve a este cuerpo no forma parte de
                     // la última sentencia: la termina. Por eso esa sentencia puede omitir el ";".
-                    token.value == "}" && insideBlock -> {
+                    token.closesBlock && insideBlock -> {
                         if (current.isNotEmpty()) {
                             yield(current.toList())
                             emittedAny = true
@@ -56,20 +56,20 @@ internal class StatementSplitter(
                         }
                     }
 
-                    token.value == "}" -> throw unmatchedBrace(token)
+                    token.closesBlock -> throw unmatchedBrace(token)
 
                     // Dentro de un bloque los tokens se acumulan tal cual: el ";" que separa
                     // sus sentencias lo necesita quien parsee el cuerpo, y un "if" anidado no
                     // abre una sentencia nueva en este nivel.
                     openBraces > 0 -> current.add(token)
 
-                    token.value == "if" -> {
+                    token.startsConditional -> {
                         // Una sentencia pendiente antes de un "if" quedó sin terminador.
                         if (current.isNotEmpty()) throw unterminatedStatement(current)
                         current.add(token)
                     }
 
-                    token.value == ";" ->
+                    token.endsStatement ->
                         if (current.isNotEmpty()) {
                             yield(current.toList())
                             emittedAny = true
@@ -82,7 +82,7 @@ internal class StatementSplitter(
 
             if (current.isNotEmpty()) {
                 val last = current.last()
-                if (last.value != "}" && last.value != "{") throw unterminatedStatement(current)
+                if (!last.closesBlock && !last.opensBlock) throw unterminatedStatement(current)
                 yield(current.toList())
                 emittedAny = true
             }
