@@ -115,11 +115,11 @@ class PrintScriptCliTest {
     }
 
     @Test
-    fun `rechaza en 1 punto 0 una palabra reservada de 1 punto 1, con su ubicacion`() {
+    fun `rechaza en 1 punto 0 una declaracion const, con su ubicacion`() {
         val exitCode = cli().run(listOf("validation", "$resources/constDeclaration.ps"))
 
         assertEquals(PrintScriptCli.EXIT_ERROR, exitCode)
-        assertTrue(output.errorText().contains("Const declarations are not allowed in version 1.0"))
+        assertTrue(output.errorText().contains("Expected a KEYWORD token"))
         assertTrue(output.errorText().contains("línea 1, columna 1"))
     }
 

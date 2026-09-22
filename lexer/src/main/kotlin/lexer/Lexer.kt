@@ -6,29 +6,25 @@ import token.TokenType
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
- * Convierte código fuente en [Token]s.
+ * Convierte código fuente en [Token]s, una línea por vez.
  *
- * Cómo funciona: al construirse le pide al [TokenMapper] un único regex que es la unión de los
- * regex de todos los tipos de token ([anyTokenPattern]). Con ese regex recorre cada línea de
- * izquierda a derecha; cada match es un lexema, y dónde empieza y termina ese match es la
- * posición del token en el fuente. Con el texto del lexema ya aislado, le vuelve a preguntar al
- * [TokenMapper] de qué tipo es.
- *
- * O sea, dos etapas: el regex combinado resuelve *dónde* está cada lexema ([findLexemes]) y el
- * [TokenMapper] resuelve *qué* es ([toToken]). Hacen falta las dos porque el regex no alcanza
- * para decidir el tipo: a una palabra reservada como "true" la encuentra el regex de
- * identificadores y sin embargo no es un identificador.
- *
- * Lo que el regex no reconoce no hace fallar la búsqueda: queda como un hueco entre dos matches,
- * y por eso los huecos se revisan aparte (ver [rejectSkippedText]).
+ * Las definiciones de la versión se unen en un solo regex, con un grupo por definición. Cada match
+ * es un lexema: dónde empieza y termina es la posición del token, y el grupo que lo capturó dice de
+ * qué tipo es. Ante dos definiciones que reconocen el mismo texto gana la primera de la lista.
  */
 class Lexer(
-    private val tokenMapper: TokenMapper,
+    tokenMapper: TokenMapper,
 ) {
-    private val anyTokenPattern: Pattern = tokenMapper.combinedPattern()
+    private val definitions: List<TokenDefinition> = tokenMapper.definitions
+
+    private val anyTokenPattern: Pattern =
+        Pattern.compile(
+            definitions.withIndex().joinToString("|") { (index, definition) -> "(?<${groupOf(index)}>${definition.regex.pattern})" },
+        )
 
     fun execute(input: String): List<Token> = convertToTokens(input.lineSequence()).toList()
 
@@ -37,40 +33,23 @@ class Lexer(
     fun convertToTokens(inputStream: InputStream): Sequence<Token> =
         convertToTokens(BufferedReader(InputStreamReader(inputStream)).lineSequence())
 
-    /** Una línea se convierte en sus tokens en dos pasos: encontrar sus lexemas y resolver qué es cada uno. */
     private fun tokenizeLine(
         row: Int,
         lineContent: String,
-    ): List<Token> = findLexemes(lineContent, row).map(::toToken).toList()
+    ): List<Token> {
+        val tokens = mutableListOf<Token>()
+        val matcher = anyTokenPattern.matcher(lineContent)
+        var scannedUpTo = 0
 
-    /**
-     * Paso 1: los lexemas de la línea, en orden, verificando que entre uno y otro no haya quedado
-     * texto sin reconocer.
-     *
-     * Se entregan de a uno y no todos juntos para que cada lexema se convierta en token apenas se
-     * lo encuentra: así, si una línea tiene más de un problema, se reporta el que aparece primero.
-     */
-    private fun findLexemes(
-        lineContent: String,
-        row: Int,
-    ): Sequence<Lexeme> =
-        sequence {
-            val matcher = anyTokenPattern.matcher(lineContent)
-            var scannedUpTo = 0
-
-            while (matcher.find()) {
-                rejectSkippedText(lineContent, row, from = scannedUpTo, to = matcher.start())
-                yield(
-                    Lexeme(
-                        text = matcher.group(),
-                        start = TokenPosition(row, matcher.start()),
-                        end = TokenPosition(row, matcher.end()),
-                    ),
-                )
-                scannedUpTo = matcher.end()
-            }
-            rejectSkippedText(lineContent, row, from = scannedUpTo, to = lineContent.length)
+        while (matcher.find()) {
+            rejectSkippedText(lineContent, row, from = scannedUpTo, to = matcher.start())
+            tokens.add(tokenFoundBy(matcher, row))
+            scannedUpTo = matcher.end()
         }
+        rejectSkippedText(lineContent, row, from = scannedUpTo, to = lineContent.length)
+
+        return tokens
+    }
 
     /**
      * Rechaza el texto que el patrón no reconoció.
@@ -99,32 +78,33 @@ class Lexer(
         )
     }
 
-    /** Paso 2: un lexema ya ubicado se convierte en el token que le corresponde. */
-    private fun toToken(lexeme: Lexeme): Token {
-        val tokenType = resolveType(lexeme)
-        return Token(tokenType, extractTokenValue(tokenType, lexeme.text), lexeme.start, lexeme.end)
+    private fun tokenFoundBy(
+        matcher: Matcher,
+        row: Int,
+    ): Token {
+        val type = typeCapturedBy(matcher)
+        return Token(type, valueOf(type, matcher.group()), TokenPosition(row, matcher.start()), TokenPosition(row, matcher.end()))
     }
 
-    private fun resolveType(lexeme: Lexeme): TokenType =
-        when (val resolution = tokenMapper.resolve(lexeme.text)) {
-            is TokenResolution.Recognized -> resolution.type
-            is TokenResolution.Rejected -> throw LexerException(resolution.reason, lexeme.start, lexeme.end)
-        }
+    /** `start` es -1 para los grupos que no participaron del match. */
+    private fun typeCapturedBy(matcher: Matcher): TokenType {
+        val capturing = definitions.indices.first { index -> matcher.start(groupOf(index)) != -1 }
+        return definitions[capturing].type
+    }
 
     /** El valor que el token lleva de verdad: un string literal pierde las comillas que lo delimitan. */
-    private fun extractTokenValue(
+    private fun valueOf(
         tokenType: TokenType,
-        rawValue: String,
+        lexeme: String,
     ): String =
         when (tokenType) {
-            TokenType.STRINGLITERAL -> rawValue.removeSurrounding("\"", "\"").removeSurrounding("'", "'")
-            else -> rawValue
+            TokenType.STRINGLITERAL -> lexeme.removeSurrounding("\"", "\"").removeSurrounding("'", "'")
+            else -> lexeme
         }
 
-    /** Un texto que el patrón reconoció, ya ubicado en el fuente pero todavía sin clasificar. */
-    private data class Lexeme(
-        val text: String,
-        val start: TokenPosition,
-        val end: TokenPosition,
-    )
+    /**
+     * Cada definición se busca por nombre y no por número de grupo, porque su regex puede tener
+     * grupos propios (el de los decimales de NUMBERLITERAL) que correrían la numeración.
+     */
+    private fun groupOf(definitionIndex: Int): String = "definition$definitionIndex"
 }
