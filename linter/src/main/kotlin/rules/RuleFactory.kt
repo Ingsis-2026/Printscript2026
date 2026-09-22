@@ -13,10 +13,10 @@ class RuleFactory {
         version: LinterVersion,
     ): Rule =
         when (ruleName.lowercase()) {
-            "camelcase" -> CamelCaseRule()
-            "snakecase" -> SnakeCaseRule()
-            "printonly" -> PrintOnlyRule()
-            "inputonly" -> requireAtLeast(LinterVersion.VERSION_1_1, version) { InputOnlyRule() }
+            "camelcase" -> IdentifierFormatRule(IdentifierFormat.CAMEL_CASE)
+            "snakecase" -> IdentifierFormatRule(IdentifierFormat.SNAKE_CASE)
+            "printonly" -> CallArgumentRule("println", PRINTLN_MESSAGE)
+            "inputonly" -> requireAtLeast(LinterVersion.VERSION_1_1, version) { CallArgumentRule("readInput", READ_INPUT_MESSAGE) }
             else -> throw IllegalArgumentException("Rule not available for this version")
         }
 
@@ -29,5 +29,10 @@ class RuleFactory {
             throw IllegalArgumentException("Rule not available for this version")
         }
         return rule()
+    }
+
+    private companion object {
+        const val PRINTLN_MESSAGE = "Println must not be called with an expression"
+        const val READ_INPUT_MESSAGE = "ReadInputs must not be called with an expression"
     }
 }

@@ -6,20 +6,11 @@ class LinterOutput {
 
     private val brokenRules: MutableList<BrokenRule> = mutableListOf()
 
-    /** Representación textual de cada violación, derivada de la lista tipada. */
-    val brokenRulesList: List<String>
-        get() = brokenRules.map { formatBrokenRule(it) }
-
     fun addBrokenRule(brokenRule: BrokenRule) {
         isCorrect = false
         brokenRules.add(brokenRule)
     }
 
-    private fun formatBrokenRule(brokenRule: BrokenRule): String {
-        val position = brokenRule.errorPosition
-        return "Broken rule: ${brokenRule.ruleDescription} at ${position.row}:${position.column}"
-    }
-
-    /** Las violaciones se conservan tipadas; [brokenRulesList] deriva su texto de acá. */
+    /** Devuelve una copia, para que quien recibe el reporte no pueda modificarlo. */
     fun getBrokenRules(): List<BrokenRule> = brokenRules.toList()
 }

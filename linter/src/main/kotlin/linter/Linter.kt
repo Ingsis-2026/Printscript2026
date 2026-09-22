@@ -1,10 +1,9 @@
 package linter
 
 import ast.ASTNode
-import ast.Tokenizer
 import rules.Rule
 import rules.RuleFactory
-import rules.RuleValidator
+import rules.statementsOf
 
 class Linter(
     private var version: LinterVersion,
@@ -12,9 +11,6 @@ class Linter(
     private var rules: List<Rule> = listOf()
     private val jsonReader = RuleJsonReader()
     private val ruleFactory = RuleFactory()
-    private val tokenizer = Tokenizer()
-    private val validator = RuleValidator()
-    private val fileManager = OutputFileManager()
 
     fun readJson(jsonContent: String) {
         val ruleNames = jsonReader.getRuleNamesFromJson(jsonContent)
@@ -24,32 +20,26 @@ class Linter(
     /**
      * Analiza el programa consumiendo el flujo de nodos sentencia por sentencia.
      *
-     * Las reglas actuales evalúan cada sentencia de forma independiente, así que alcanza con
-     * re-tokenizar una a la vez: nunca se retiene el AST completo. Lo único que crece es el
-     * reporte, acotado por la cantidad de violaciones y no por el tamaño del fuente.
+     * Cada regla mira una sentencia por vez, así que nunca se retiene el AST completo. Lo único
+     * que crece es el reporte, acotado por la cantidad de violaciones y no por el tamaño del
+     * fuente.
+     *
+     * Los dos `for` anidados son el orden en que salen las violaciones: por sentencia, y dentro
+     * de cada una por regla.
      */
     fun check(trees: Sequence<ASTNode>): LinterOutput {
         val linterOutput = LinterOutput()
-        for (statementTokens in tokenizer.parseToTokens(trees)) {
-            for (brokenRule in validator.checkRule(rules, listOf(statementTokens))) {
-                linterOutput.addBrokenRule(brokenRule)
+        for (statement in trees.flatMap { statementsOf(it) }) {
+            for (rule in rules) {
+                for (brokenRule in rule.check(statement)) {
+                    linterOutput.addBrokenRule(brokenRule)
+                }
             }
         }
         return linterOutput
     }
 
     fun check(trees: List<ASTNode>): LinterOutput = check(trees.asSequence())
-
-    fun writeToFile(
-        content: String,
-        filePath: String,
-    ) {
-        fileManager.saveToFile(content, filePath)
-    }
-
-    fun createTxtContent(brokenRules: List<BrokenRule>): String = fileManager.createTxtReport(brokenRules)
-
-    fun createHtmlContent(brokenRules: List<BrokenRule>): String = fileManager.createHtmlReport(brokenRules)
 
     fun getRules(): List<Rule> = rules
 }

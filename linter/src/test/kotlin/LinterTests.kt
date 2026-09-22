@@ -16,30 +16,11 @@ class LinterTests {
     private val linter = Linter(version)
 
     @Test
-    fun `writeToFile writes content to specified file`() {
-        val content = "Sample content to write to file"
-        val filePath = "test_output.txt"
-
-        // Call the writeToFile method
-        linter.writeToFile(content, filePath)
-
-        // Verify the content of the file
-        val writtenContent = File(filePath).readText()
-        assertEquals(content, writtenContent, "The file content should match the expected content")
-
-        // Clean up the test file
-        File(filePath).delete()
-    }
-
-    @Test
     fun `check should return empty LinterOutput when no rules are broken`() {
-        // Assuming that Tokenizer and RuleValidator are set to return no broken rules for this test case
-        val astNodes = listOf<ASTNode>() // Use a valid AST structure based on your implementation
+        val astNodes = listOf<ASTNode>()
 
-        // Execute the check method
         val result = linter.check(astNodes)
 
-        // Verify that there are no broken rules
         assertTrue(result.isCorrect, "LinterOutput should be correct when no rules are broken")
         assertTrue(result.getBrokenRules().isEmpty(), "No broken rules should be present")
     }
@@ -108,35 +89,11 @@ class LinterTests {
     @Test
     fun `test BrokenRule with negative position`() {
         val ruleDescription = "Unexpected token"
-        val errorPosition = TokenPosition(-1, -1) // Assuming negative positions are valid in your context
+        val errorPosition = TokenPosition(-1, -1)
         val brokenRule = BrokenRule(ruleDescription, errorPosition)
 
         val expectedString = "Broken rule: $ruleDescription at $errorPosition"
         assertEquals(expectedString, brokenRule.toString())
-    }
-
-    @Test
-    fun `test createTxtContent generates correct content`() {
-        val linter = Linter(LinterVersion.VERSION_1_0)
-        val brokenRules = listOf(BrokenRule("Example rule", TokenPosition(1, 1)))
-
-        // Create the content based on broken rules
-        val content = linter.createTxtContent(brokenRules)
-
-        // Validate that the content is as expected (this will depend on your implementation)
-        assertTrue(content.contains("Example rule"), "Content should include the broken rule description")
-    }
-
-    @Test
-    fun `test createHtmlContent generates correct content`() {
-        val linter = Linter(LinterVersion.VERSION_1_0)
-        val brokenRules = listOf(BrokenRule("Example rule", TokenPosition(1, 1)))
-
-        // Create the HTML content based on broken rules
-        val content = linter.createHtmlContent(brokenRules)
-
-        // Validate that the content is as expected
-        assertTrue(content.contains("<html>"), "HTML content should be valid")
     }
 
     @Test

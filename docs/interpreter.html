@@ -476,7 +476,7 @@ ConditionalEvaluator ← Conditional
   <p class="sub">Short answers, with the line to show.</p>
   <div class="qa">
     <details><summary>Why not a Visitor pattern?</summary>
-      <p>A Visitor needs a method per node type on every visitor, so adding a node changes them all. With evaluators, adding a node adds a class, and versions are just lists. The cost is losing compile-time exhaustiveness; the <code>Tokenizer</code> in <code>commons</code>, where exhaustiveness matters more, uses a <code>when</code> instead.</p></details>
+      <p>A Visitor needs a method per node type on every visitor, so adding a node changes them all. With evaluators, adding a node adds a class, and versions are just lists. The cost is losing compile-time exhaustiveness; the linter's walks over the AST, where exhaustiveness matters more, use a <code>when</code> instead.</p></details>
     <details><summary>Why does a division by zero point at the <code>/</code> and not at the declaration?</summary>
       <p>The error is thrown inside <code>BinaryEvaluator</code>. The innermost <code>execute</code>, the one for the <code>BinaryNode</code>, catches it first and adds that node's position, the operator. The outer call for the declaration sees a position already set and rethrows it unchanged (<span class="ref">Interpreter.kt:32</span>).</p></details>
     <details><summary>Why keep <code>Int</code> and <code>Double</code> apart if PrintScript has one <code>number</code>?</summary>

@@ -133,7 +133,7 @@ td:first-child{white-space:nowrap}
     <li><a href="#parser"><span>parser</span><span>727</span></a></li>
     <li><a href="#interpreter"><span>interpreter</span><span>734</span></a></li>
     <li><a href="#formatter"><span>formatter</span><span>427</span></a></li>
-    <li><a href="#linter"><span>linter</span><span>369</span></a></li>
+    <li><a href="#linter"><span>linter</span><span>360</span></a></li>
     <li><a href="#cli"><span>cli</span><span>729</span></a></li>
   </ol>
   <p class="grp">Across modules</p>
@@ -282,7 +282,7 @@ td:first-child{white-space:nowrap}
 
       <rect class="n" x="40" y="266" width="1058" height="52" rx="5"/>
       <text class="t" x="569" y="288" text-anchor="middle">commons</text>
-      <text class="s" x="569" y="307" text-anchor="middle">Token · TokenPosition · TokenType · ASTNode · Tokenizer · PrintScriptException</text>
+      <text class="s" x="569" y="307" text-anchor="middle">Token · TokenPosition · TokenType · ASTNode · PrintScriptException</text>
     </svg>
     </div>
     <figcaption>Figure 2: component diagram as declared in each <code>build.gradle.kts</code>. Solid arrows from <code>cli</code> are <code>implementation</code> dependencies. The highlighted modules, parser and interpreter, compile against <code>commons</code> alone: the parser never imports the lexer, and the interpreter never imports the parser. The code that connects them lives at the edges, in <span class="ref">ParsingPipeline.kt:48</span> and in the TCK's <span class="ref">Pipeline.java:25</span>.</figcaption>
@@ -353,12 +353,12 @@ PrintNode                                  <span class="c">@4:0</span>
     </table></div>
     <p>The printer receives <code>Result: 3</code>, which is exactly the output the PDF expects. In the CLI the printer is <code>OutputPrinter</code> writing to stdout; in the TCK it's the test's <code>PrintEmitter</code>. The interpreter code is identical in both.</p>
 
-    <h3>Linter: the same nodes, flattened</h3>
-<pre>IDENTIFIER:a@0,4   NUMBERLITERAL:12@0,16
-IDENTIFIER:b@1,4   NUMBERLITERAL:4@1,16
-IDENTIFIER:c@2,4   IDENTIFIER:a@2,16   OPERATOR:/@2,18   IDENTIFIER:b@2,20
-FUNCTION:println@4,0   STRINGLITERAL:Result: @4,8   OPERATOR:+@4,19   IDENTIFIER:c@4,21</pre>
-    <p><code>Tokenizer</code> keeps only what rules need: identifiers, literals, operators and calls. The <code>let</code> keyword and the type are dropped. With <code>snake case</code> and the println rule on, all identifiers pass. The last statement is flagged, <em>"Println must not be called with an expression"</em> at 4,0, which the user sees as línea 5, columna 1. So the assignment's own example violates that rule, and it makes a good live demo.</p>
+    <h3>Linter: the same nodes, read as they are</h3>
+<pre>DeclarationNode a   <span class="c">@0:4</span>    identifier a                  <span class="c">@0:4</span>
+DeclarationNode b   <span class="c">@1:4</span>    identifier b                  <span class="c">@1:4</span>
+DeclarationNode c   <span class="c">@2:4</span>    identifiers c, a, b           <span class="c">@2:4 @2:16 @2:20</span>
+PrintNode           <span class="c">@4:0</span>    argument is a BinaryNode  →   flagged</pre>
+    <p>The linter reads the very same nodes the interpreter just ran — nothing is converted first. The identifier rules ask where the names are; the println rule asks one question about one node, <em>is the argument a <code>BinaryNode</code> or another call</em>. With <code>snake case</code> and the println rule on, all identifiers pass and the last statement is flagged, <em>"Println must not be called with an expression"</em> at 4,0, which the user sees as línea 5, columna 1. So the assignment's own example violates that rule, and it makes a good live demo.</p>
 
     <h3>Formatter: only what the rules govern changes</h3>
     <p>This is a messier version of the same program, formatted with three rules on: space after the colon, spaces around <code>=</code>, spaces around operators.</p>
@@ -383,13 +383,12 @@ println("Result: " + c);</pre></td>
 <section class="mod" id="commons">
   <div class="modhead"><h2><code>commons</code></h2><span class="meta">no dependencies · consumed via api(project(":commons"))</span></div>
   <div class="prose">
-    <p>This module holds the shared vocabulary: tokens, positions, the AST and the base error type. It contains no behaviour beyond <code>Tokenizer</code> and error formatting. Every other module declares it with <code>api</code>, so anything that depends on the lexer also gets <code>Token</code> without declaring it again.</p>
+    <p>This module holds the shared vocabulary: tokens, positions, the AST and the base error type. It contains no behaviour beyond error formatting. Every other module declares it with <code>api</code>, so anything that depends on the lexer also gets <code>Token</code> without declaring it again.</p>
 
     <h3>What's in it</h3>
     <ol class="steps">
       <li><div><strong>Tokens.</strong> <span class="ref">TokenType.kt:3</span> lists 16 categories (IDENTIFIER, KEYWORD, DATA_TYPE, FUNCTION, CONDITIONAL…). <span class="ref">TokenPosition.kt:3</span> is a 0-based <code>(row, column)</code>. <span class="ref">Token.kt:7–12</span> is an immutable data class carrying both a start and an end position. Having the end position is what lets errors report the full range the assignment asks for (<span class="ref">Token.kt:17–21</span>).</div></li>
       <li><div><strong>The AST.</strong> <span class="ref">ASTNode.kt:7</span> is a <code>sealed class</code> in which every node has a <code>position</code>. There are nine node types: <code>LiteralNode</code> :11, <code>BinaryNode</code> :17, <code>PrintNode</code> :24, <code>DeclarationNode</code> :29, <code>AssignationNode</code> :39, <code>BlockNode</code> :46, <code>ConditionalNode</code> :51, <code>FunctionNode</code> :58, and <code>NilNode</code> :65, a null object used for "no value". <code>ConditionalNode.condition</code> is typed <code>LiteralNode</code>, which encodes the 1.1 rule that an <code>if</code> takes only a boolean variable or literal.</div></li>
-      <li><div><strong>Tokenizer.</strong> <span class="ref">Tokenizer.kt:9</span> flattens AST nodes back into token lists, lazily. The <code>when</code> in <span class="ref">Tokenizer.kt:26–36</span> is exhaustive over the sealed class, so adding a node type won't compile until this function handles it. Only the linter uses it.</div></li>
       <li><div><strong>Errors.</strong> <span class="ref">PrintScriptException.kt:14–18</span> is an abstract <code>RuntimeException</code> with optional start and end positions. <code>describe()</code> at :20 converts to 1-based coordinates and prints <em>"desde línea X, columna Y hasta línea …"</em>, or a single point when start equals end (:29). <code>LexerException</code>, <code>ParserException</code> and <code>InterpreterException</code> all extend it.</div></li>
     </ol>
 
@@ -401,10 +400,9 @@ println("Result: " + c);</pre></td>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
-      <li><strong>Why is <code>Tokenizer</code> in <code>commons</code>?</strong> It only reads <code>commons</code> types, so any future tool that needs a flat view of the AST (a highlighter, a new analyzer) can reuse it without depending on the linter. Today only the linter uses it, so arguing it belongs in <code>linter</code> is fair; say the choice favoured reuse.</li>
       <li><strong>Why one exception type with nullable positions?</strong> Some errors have no token at hand, such as an empty program (<span class="ref">StatementSplitter.kt:97</span>). Nullable positions let those share the same hierarchy instead of needing a second error type.</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 26 in TokenTests, TokenizerTests, ASTNodeTests and PrintScriptExceptionTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 20 in TokenTests, ASTNodeTests and PrintScriptExceptionTest.</p>
   </div>
 </section>
 
@@ -580,13 +578,13 @@ fun asType(dataType: String): Any = when (dataType) {
     <ol class="steps">
       <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:19–22</span> passes the config to <span class="ref">RuleJsonReader.kt:29–42</span>, which uses Jackson and ignores unknown keys (:8). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (:33) and returns rule <em>names</em>, not rule objects.</div></li>
       <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:6–21</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:19, :23–31), and asking for it under 1.0 is a configuration error.</div></li>
-      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:31–39</span> turns each statement back into tokens with <code>commons.Tokenizer</code> and runs every rule on that one statement. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
+      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:30–40</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
       <li><div><strong>The rules.</strong>
         <ul class="plain" style="margin-top:6px">
           <li><span class="ref">CamelCaseRule.kt:10–22</span>: an identifier must start lowercase and contain no <code>_</code>.</li>
           <li><span class="ref">SnakeCaseRule.kt:10–21</span>: only lowercase letters and <code>_</code>, with no <code>__</code>.</li>
           <li><span class="ref">PrintOnlyRule.kt:9–18</span>: a statement that starts with <code>println</code> must not contain an operator or a nested call. The predicates are in <span class="ref">TokenPredicates.kt:9, 18</span>.</li>
-          <li><span class="ref">InputOnlyRule.kt:9–17</span>: the same check for the arguments of <code>readinput</code>. The Tokenizer lowercases function names (<span class="ref">Tokenizer.kt:86</span>), hence the lowercase match at :23.</li>
+          <li>The same class configured for <code>readInput</code>. The name is matched case-insensitively against the spelling the source used — nothing lowercases it first.</li>
         </ul></div></li>
       <li><div><strong>Collect.</strong> <span class="ref">LinterOutput.kt:13–24</span> stores typed <code>BrokenRule(description, position)</code> values. <code>OutputFileManager</code> can write .txt or .html reports, but neither the CLI nor the TCK uses it.</div></li>
     </ol>
@@ -676,12 +674,12 @@ fun asType(dataType: String): Any = when (dataType) {
     <div class="tablewrap" style="margin-top:20px"><table>
       <thead><tr><th>Module</th><th class="num">Main LOC</th><th class="num">Tests</th><th class="num">Coverage</th></tr></thead>
       <tbody>
-        <tr><td>commons</td><td class="num">242</td><td class="num">26</td><td class="num">90.3%</td></tr>
+        <tr><td>commons</td><td class="num">153</td><td class="num">20</td><td class="num">94.4%</td></tr>
         <tr><td>lexer</td><td class="num">242</td><td class="num">21</td><td class="num">90.8%</td></tr>
         <tr><td>parser</td><td class="num">727</td><td class="num">61</td><td class="num">91.7%</td></tr>
         <tr><td>interpreter</td><td class="num">734</td><td class="num">127</td><td class="num">90.3%</td></tr>
         <tr><td>formatter</td><td class="num">427</td><td class="num">33</td><td class="num">93.4%</td></tr>
-        <tr><td>linter</td><td class="num">369</td><td class="num">58</td><td class="num">91.0%</td></tr>
+        <tr><td>linter</td><td class="num">360</td><td class="num">44</td><td class="num">98.1%</td></tr>
         <tr><td>cli</td><td class="num">729</td><td class="num">68</td><td class="num">93.1%</td></tr>
       </tbody>
     </table></div>
@@ -752,7 +750,7 @@ fun asType(dataType: String): Any = when (dataType) {
       <p class="over">instead of a Visitor, or one large <code>when</code> over the sealed class</p>
       <div class="cols">
         <div><h5>Why</h5><p>A new node type is a new class plus a registration, and <code>Interpreter</code> never changes. Which constructs a version supports is visible in one list (<span class="ref">InterpreterFactory.kt:14–47</span>). A Visitor would force every visitor to change with each new node.</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>Dispatch happens at run time, and each evaluator casts its node (<span class="ref">BinaryEvaluator.kt:15</span>), so a missing evaluator is a run-time error instead of a compile error. The <code>Tokenizer</code>, where exhaustiveness matters more, uses the <code>when</code> instead.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Dispatch happens at run time, and each evaluator casts its node (<span class="ref">BinaryEvaluator.kt:15</span>), so a missing evaluator is a run-time error instead of a compile error. The linter's walks over the AST, where exhaustiveness matters more, use a <code>when</code> instead.</p></div>
       </div>
     </div>
 
@@ -817,7 +815,7 @@ fun asType(dataType: String): Any = when (dataType) {
   <div class="modhead"><h2>Likely questions</h2><span class="meta">short answers with the line to show</span></div>
   <div class="prose qa">
     <details><summary>How would you add PrintScript 1.2 with a <code>while</code> loop?</summary>
-      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags <span class="ref">Tokenizer.kt:26</span> until it's handled. Add a <code>version12Strategies()</code> map with <code>while</code> (<span class="ref">TokenMapper.kt:61</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
+      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:71</span>, <span class="ref">Statements.kt:83</span>) until it's handled. Add a <code>version12Strategies()</code> map with <code>while</code> (<span class="ref">TokenMapper.kt:61</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
     <details><summary>Why doesn't the parser depend on the lexer?</summary>
       <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:48–51</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
     <details><summary>Where are the SOLID principles?</summary>
@@ -837,7 +835,7 @@ fun asType(dataType: String): Any = when (dataType) {
     <details><summary>How is it tested?</summary>
       <p>Three layers. First, 394 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
-      <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. Move <code>Tokenizer</code> into the linter if nothing else adopts it. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
+      <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>
       <p>With lazy execution, the statements before the error have already run and printed, and then the error stops the run with its position. Validation mode reads the whole file without executing anything, so it's the way to check a file first.</p></details>
   </div>
