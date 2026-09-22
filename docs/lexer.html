@@ -163,7 +163,7 @@ td.mono{font-family:var(--mono);font-size:13px}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ bb204d3 · study sheet 2 of 8</p>
+  <p class="eyebrow">Printscript2026 @ 1c05846 · study sheet 2 of 8</p>
   <h1><code>lexer</code></h1>
   <p class="lede">Turns source text into a lazy stream of tokens, one line at a time. Which words exist is decided only by the version chosen, and anything it can't recognise becomes an error with exact columns.</p>
   <ul class="meta">
@@ -473,7 +473,7 @@ td.mono{font-family:var(--mono);font-size:13px}
     <details><summary>How does it know <code>let</code> is a keyword and <code>letter</code> isn't?</summary>
       <p>Order plus word boundaries. The words come before IDENTIFIER (<span class="ref">TokenMapper.kt:30</span>), so <code>let</code> is claimed by the KEYWORD group. Every word is wrapped in <code>\b</code> (<span class="ref">TokenDefinition.kt:15</span>), so <code>\blet\b</code> doesn't match inside <code>letter</code>, and the identifier takes the whole word.</p></details>
     <details><summary>Is <code>if</code> a valid variable name in 1.0?</summary>
-      <p>For the lexer, yes: it's an IDENTIFIER. The parser still refuses <code>let if: number = 1;</code>, because its <code>StatementSplitter</code> recognises an <code>if</code> by its text, not its token type (<span class="ref">StatementSplitter.kt:66</span>). That's a gap in the parser, not the lexer.</p></details>
+      <p>Yes. The lexer reads it as an IDENTIFIER, and the parser decides what starts a conditional by token type, not by text (<span class="ref">TokenRoles.kt:22</span>), so <code>let if: number = 1;</code> is an ordinary declaration under 1.0.</p></details>
     <details><summary>Why does a string's value lose its quotes?</summary>
       <p>Everything downstream wants the content: the interpreter prints it, and the parser checks its type. The positions still cover the quotes, and the formatter re-reads the original text when it needs them (<span class="ref">SourceToken.kt:51</span>).</p></details>
     <details><summary>Is the lexer thread-safe?</summary>
