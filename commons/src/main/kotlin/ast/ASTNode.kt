@@ -51,7 +51,8 @@ data class BlockNode(
 data class ConditionalNode(
     val condition: LiteralNode,
     val thenBlock: ASTNode,
-    val elseBlock: ASTNode? = null,
+    /** Un `if` sin `else` lo lleva en [NilNode]: "sin else" se escribe de una sola forma. */
+    val elseBlock: ASTNode = NilNode,
     override val position: TokenPosition,
 ) : ASTNode()
 

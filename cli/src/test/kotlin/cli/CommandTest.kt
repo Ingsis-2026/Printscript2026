@@ -147,8 +147,7 @@ class CommandTest {
         fileName: String,
         version: LinterVersion,
     ): Linter {
-        val linter = Linter(version)
-        linter.readJson(File("src/test/resources/$fileName").readText())
+        val linter = Linter.forConfig(version, File("src/test/resources/$fileName").readText())
         return linter
     }
 }

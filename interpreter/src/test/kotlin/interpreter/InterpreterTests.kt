@@ -322,27 +322,37 @@ class InterpreterTests {
     @Test
     fun `test greater than exception`() {
         val left = LiteralNode("10", TokenType.NUMBERLITERAL, position)
-        val right = LiteralNode("true", TokenType.BOOLEAN, position)
-        val operatorToken = Token(TokenType.OPERATOR, ">", position, position) // Create a token for ">"
+        val right = LiteralNode("true", TokenType.BOOLEANLITERAL, position)
+        val operatorToken = Token(TokenType.OPERATOR, ">", position, position)
         val node = BinaryNode(left, right, operatorToken, position)
         val interpreter = Interpreter(printer, reader)
 
-        assertThrows(RuntimeException::class.java) {
-            interpreter.execute(node)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                interpreter.execute(node)
+            }
+        assertTrue(
+            exception.message!!.contains("Unsupported operands for >"),
+            "debe rechazarlo la comparación, no el literal: ${exception.message}",
+        )
     }
 
     @Test
     fun `test less than exception`() {
         val left = LiteralNode("10", TokenType.NUMBERLITERAL, position)
-        val right = LiteralNode("true", TokenType.BOOLEAN, position)
-        val operatorToken = Token(TokenType.OPERATOR, "<", position, position) // Create a token for "<"
+        val right = LiteralNode("true", TokenType.BOOLEANLITERAL, position)
+        val operatorToken = Token(TokenType.OPERATOR, "<", position, position)
         val node = BinaryNode(left, right, operatorToken, position)
         val interpreter = Interpreter(printer, reader)
 
-        assertThrows(RuntimeException::class.java) {
-            interpreter.execute(node)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                interpreter.execute(node)
+            }
+        assertTrue(
+            exception.message!!.contains("Unsupported operands for <"),
+            "debe rechazarlo la comparación, no el literal: ${exception.message}",
+        )
     }
 
     @Test
@@ -1152,7 +1162,7 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader)
         val condition = LiteralNode("false", TokenType.BOOLEANLITERAL, position)
         val thenBlock = PrintNode(LiteralNode("should not run", TokenType.STRINGLITERAL, position), position)
-        val node = ConditionalNode(condition, thenBlock, null, position)
+        val node = ConditionalNode(condition, thenBlock, position = position)
         val result = interpreter.execute(node)
         assertEquals(Unit, result)
     }

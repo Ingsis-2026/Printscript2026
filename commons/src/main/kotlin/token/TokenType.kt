@@ -11,10 +11,8 @@ enum class TokenType {
     DECLARATOR,
     ASSIGNATION,
     PARENTHESIS,
-    BOOLEAN,
     DATA_TYPE,
     FUNCTION,
     CONDITIONAL,
-    LITERAL,
     UNKNOWN,
 }

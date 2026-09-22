@@ -1,42 +1,27 @@
 package linter
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.io.File
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class FormattingRules {
-    @JsonProperty("identifier_format")
-    var identifier: String? = null
-
-    @JsonProperty("mandatory-variable-or-literal-in-println")
-    var isEnablePrintOnly: Boolean = false
-
-    @JsonProperty("mandatory-variable-or-literal-in-readInput")
-    var isEnableInputOnly: Boolean = false
-}
+import rules.RuleName
 
 /**
  * Lee la configuración del linter y la traduce a nombres de regla.
  *
  * Devuelve nombres —no instancias— porque el único constructor de reglas es
- * [rules.RuleFactory], que además aplica el filtro por versión.
+ * [rules.RuleFactory], que además aplica el filtro por versión. Los nombres son un [RuleName] y
+ * no un texto: los únicos strings que quedan acá son los que escribe el usuario en el archivo.
  */
 class RuleJsonReader {
-    fun getRuleNamesFromFile(path: String): List<String> = getRuleNamesFromJson(File(path).readText())
+    fun getRuleNamesFromJson(jsonContent: String): List<RuleName> {
+        val config = jacksonObjectMapper().readValue(jsonContent, LinterConfig::class.java)
+        val ruleNames = mutableListOf<RuleName>()
 
-    fun getRuleNamesFromJson(jsonContent: String): List<String> {
-        val formattingRules = jacksonObjectMapper().readValue(jsonContent, FormattingRules::class.java)
-        val ruleNames = mutableListOf<String>()
-
-        when (formattingRules.identifier?.replace(" ", "")?.lowercase()) {
-            "camelcase" -> ruleNames.add("camelcase")
-            "snakecase" -> ruleNames.add("snakecase")
+        when (config.identifierFormat?.replace(" ", "")?.lowercase()) {
+            "camelcase" -> ruleNames.add(RuleName.CAMEL_CASE)
+            "snakecase" -> ruleNames.add(RuleName.SNAKE_CASE)
         }
 
-        if (formattingRules.isEnablePrintOnly) ruleNames.add("printonly")
-        if (formattingRules.isEnableInputOnly) ruleNames.add("inputonly")
+        if (config.mandatoryVariableOrLiteralInPrintln) ruleNames.add(RuleName.PRINT_ONLY)
+        if (config.mandatoryVariableOrLiteralInReadInput) ruleNames.add(RuleName.INPUT_ONLY)
 
         return ruleNames
     }

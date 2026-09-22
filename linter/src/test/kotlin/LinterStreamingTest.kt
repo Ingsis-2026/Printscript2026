@@ -31,11 +31,7 @@ class LinterStreamingTest {
                 }
     }
 
-    private fun linter(): Linter {
-        val linter = Linter(LinterVersion.VERSION_1_0)
-        linter.readJson("""{"identifier_format": "camelCase"}""")
-        return linter
-    }
+    private fun linter(): Linter = Linter.forConfig(LinterVersion.VERSION_1_0, """{"identifier_format": "camelCase"}""")
 
     @Test
     fun `a huge source can be analysed and every violation reported`() {

@@ -22,7 +22,7 @@ class ParserTests {
             listOf(
                 Token(TokenType.IDENTIFIER, "var", TokenPosition(0, 4), TokenPosition(1, 9)),
                 Token(TokenType.ASSIGNATION, "=", TokenPosition(0, 19), TokenPosition(1, 20)),
-                Token(TokenType.LITERAL, "hello", TokenPosition(0, 21), TokenPosition(1, 27)),
+                Token(TokenType.STRINGLITERAL, "hello", TokenPosition(0, 21), TokenPosition(1, 27)),
                 Token(TokenType.PUNCTUATOR, ";", TokenPosition(0, 28), TokenPosition(1, 29)),
             )
 
@@ -185,12 +185,12 @@ class ParserTests {
             listOf(
                 Token(TokenType.CONDITIONAL, "if", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
-                Token(TokenType.LITERAL, "true", startPos, endPos),
+                Token(TokenType.BOOLEANLITERAL, "true", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
                 // Missing opening brace {
                 Token(TokenType.KEYWORD, "println", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
-                Token(TokenType.LITERAL, "\"if block\"", startPos, endPos),
+                Token(TokenType.STRINGLITERAL, "\"if block\"", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ";", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "}", startPos, endPos),
@@ -206,12 +206,12 @@ class ParserTests {
             listOf(
                 Token(TokenType.CONDITIONAL, "if", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
-                Token(TokenType.LITERAL, "true", startPos, endPos),
+                Token(TokenType.BOOLEANLITERAL, "true", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "{", startPos, endPos),
                 Token(TokenType.KEYWORD, "println", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
-                Token(TokenType.LITERAL, "\"if block\"", startPos, endPos),
+                Token(TokenType.STRINGLITERAL, "\"if block\"", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ";", startPos, endPos),
                 // Missing closing brace }
