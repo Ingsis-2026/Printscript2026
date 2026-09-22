@@ -5,6 +5,8 @@ import ast.FunctionNode
 import ast.LiteralNode
 import ast.NilNode
 import factories.DeclarationFactory
+import lexer.Lexer
+import lexer.TokenMapper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import token.Token
@@ -24,7 +26,7 @@ class DeclarationFactoryTest {
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.IDENTIFIER, "x", startPos, endPos),
                 Token(TokenType.DATA_TYPE, "number", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "42", startPos, endPos),
             )
 
@@ -41,7 +43,7 @@ class DeclarationFactoryTest {
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.IDENTIFIER, "text", startPos, endPos),
                 Token(TokenType.DATA_TYPE, "string", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"Hello\"", startPos, endPos),
             )
 
@@ -58,7 +60,7 @@ class DeclarationFactoryTest {
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.IDENTIFIER, "flag", startPos, endPos),
                 Token(TokenType.DATA_TYPE, "boolean", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.BOOLEANLITERAL, "true", startPos, endPos),
             )
 
@@ -75,7 +77,7 @@ class DeclarationFactoryTest {
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.IDENTIFIER, "num", startPos, endPos),
                 Token(TokenType.DATA_TYPE, "number", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"Not a number\"", startPos, endPos),
             )
 
@@ -93,7 +95,7 @@ class DeclarationFactoryTest {
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.IDENTIFIER, "str", startPos, endPos),
                 Token(TokenType.DATA_TYPE, "string", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "123", startPos, endPos),
             )
 
@@ -110,7 +112,7 @@ class DeclarationFactoryTest {
             listOf(
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.DATA_TYPE, "number", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "42", startPos, endPos),
             )
 
@@ -127,7 +129,7 @@ class DeclarationFactoryTest {
             listOf(
                 Token(TokenType.KEYWORD, "let", startPos, endPos),
                 Token(TokenType.IDENTIFIER, "x", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "=", startPos, endPos),
+                Token(TokenType.ASSIGNATION, "=", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "42", startPos, endPos),
             )
 
@@ -194,5 +196,14 @@ class DeclarationFactoryTest {
 
         assertEquals("number", result.dataTypeValue)
         assertEquals("readEnv", (result.expr as FunctionNode).functionName)
+    }
+
+    @Test
+    fun `a string that reads like an equals sign is the declared value`() {
+        val tokens = Lexer(TokenMapper("1.0")).execute("let s: string = \"=\";").dropLast(1)
+
+        val value = (declarationFactory.createAST(tokens) as DeclarationNode).expr as LiteralNode
+        assertEquals(TokenType.STRINGLITERAL, value.type)
+        assertEquals("=", value.value)
     }
 }
