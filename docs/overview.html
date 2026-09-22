@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 192567b · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 82b61b4 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -464,13 +464,13 @@ println("Result: " + c);</pre></td>
         <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>The left side is the tokens before <code>=</code> (:61), the right side the tokens after (:59). The right side goes to FunctionFactory or OperationFactory (:63–68).</td></tr>
         <tr><td><span class="ref">PrintlnFactory.kt:10</span></td><td>Needs at least 4 tokens (:45–46). Takes what's between the first <code>(</code> and the last <code>)</code> (:15–22) and passes it to OperationFactory (:28).</td></tr>
         <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td><code>readInput</code>/<code>readEnv</code>: the argument is the tokens between the parentheses (:12), parsed as an expression (:16).</td></tr>
-        <tr><td><span class="ref">OperationFactory.kt:10</span></td><td>Handles precedence by splitting the expression. It tries <code>+ -</code> first (:22), then <code>* /</code> (:23), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:36–54), and fully wrapping parentheses are removed (:56–65).</td></tr>
+        <tr><td><span class="ref">OperationFactory.kt:12</span></td><td>Handles precedence by splitting the expression. It tries <code>+ -</code> first (:25), then <code>* /</code> (:26), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:39–57), and fully wrapping parentheses are removed (:59–68). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–26</span>).</td></tr>
         <tr><td><span class="ref">ConditionalFactory.kt:18</span></td><td>Reads the condition token after <code>(</code> (:38–45), then finds the matching <code>}</code> by counting depth (:116–130). The block body goes to a <em>sub-parser</em> (:69–79), which is how nested <code>if</code>s work. The <code>else</code> must immediately follow the then-block (:87–99), and <code>else if</code> is rejected (:95–97).</td></tr>
       </tbody>
     </table></div>
 
     <h3>How precedence falls out of splitting</h3>
-<pre><span class="c">// OperationFactory.kt:22–23: the lowest precedence becomes the root</span>
+<pre><span class="c">// OperationFactory.kt:25–26: the lowest precedence becomes the root</span>
 return splitOnOperator(tokens, ::isAdditionOrSubtraction)
     ?: splitOnOperator(tokens, ::isMultiplicationOrDivision)
     ?: throw ParserException("Error in operation", …)</pre>
@@ -830,7 +830,7 @@ fun asType(dataType: String): Any = when (dataType) {
     <details><summary>Why is the formatter not built on the AST?</summary>
       <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
-      <p>By splitting at the lowest-precedence operator first (<span class="ref">OperationFactory.kt:22–23</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">OperationFactory.kt:56–65</span>).</p></details>
+      <p>By splitting at the lowest-precedence operator first (<span class="ref">OperationFactory.kt:25–26</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">OperationFactory.kt:59–68</span>).</p></details>
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
