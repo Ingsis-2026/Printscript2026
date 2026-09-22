@@ -133,7 +133,7 @@ td:first-child{white-space:nowrap}
     <li><a href="#parser"><span>parser</span><span>727</span></a></li>
     <li><a href="#interpreter"><span>interpreter</span><span>734</span></a></li>
     <li><a href="#formatter"><span>formatter</span><span>427</span></a></li>
-    <li><a href="#linter"><span>linter</span><span>360</span></a></li>
+    <li><a href="#linter"><span>linter</span><span>395</span></a></li>
     <li><a href="#cli"><span>cli</span><span>729</span></a></li>
   </ol>
   <p class="grp">Across modules</p>
@@ -578,7 +578,7 @@ fun asType(dataType: String): Any = when (dataType) {
     <ol class="steps">
       <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:19–22</span> passes the config to <span class="ref">RuleJsonReader.kt:29–42</span>, which uses Jackson and ignores unknown keys (:8). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (:33) and returns rule <em>names</em>, not rule objects.</div></li>
       <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:6–21</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:19, :23–31), and asking for it under 1.0 is a configuration error.</div></li>
-      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:30–40</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
+      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:38–48</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
       <li><div><strong>The rules.</strong>
         <ul class="plain" style="margin-top:6px">
           <li><span class="ref">CamelCaseRule.kt:10–22</span>: an identifier must start lowercase and contain no <code>_</code>.</li>
@@ -679,7 +679,7 @@ fun asType(dataType: String): Any = when (dataType) {
         <tr><td>parser</td><td class="num">727</td><td class="num">61</td><td class="num">91.7%</td></tr>
         <tr><td>interpreter</td><td class="num">734</td><td class="num">127</td><td class="num">90.3%</td></tr>
         <tr><td>formatter</td><td class="num">427</td><td class="num">33</td><td class="num">93.4%</td></tr>
-        <tr><td>linter</td><td class="num">360</td><td class="num">44</td><td class="num">98.1%</td></tr>
+        <tr><td>linter</td><td class="num">395</td><td class="num">44</td><td class="num">99.3%</td></tr>
         <tr><td>cli</td><td class="num">729</td><td class="num">68</td><td class="num">93.1%</td></tr>
       </tbody>
     </table></div>
@@ -815,7 +815,7 @@ fun asType(dataType: String): Any = when (dataType) {
   <div class="modhead"><h2>Likely questions</h2><span class="meta">short answers with the line to show</span></div>
   <div class="prose qa">
     <details><summary>How would you add PrintScript 1.2 with a <code>while</code> loop?</summary>
-      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:71</span>, <span class="ref">Statements.kt:83</span>) until it's handled. Add a <code>version12Strategies()</code> map with <code>while</code> (<span class="ref">TokenMapper.kt:61</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
+      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:74</span>, <span class="ref">Statements.kt:85</span>) until it's handled. Add a <code>version12Strategies()</code> map with <code>while</code> (<span class="ref">TokenMapper.kt:61</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
     <details><summary>Why doesn't the parser depend on the lexer?</summary>
       <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:48–51</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
     <details><summary>Where are the SOLID principles?</summary>

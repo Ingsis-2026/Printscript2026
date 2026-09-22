@@ -112,8 +112,7 @@ class LinterEndToEndTests {
 
     @Test
     fun `check twice on the same linter does not duplicate violations`() {
-        val linter = Linter(LinterVersion.VERSION_1_0)
-        linter.readJson("""{"identifier_format": "camelCase"}""")
+        val linter = Linter.forConfig(LinterVersion.VERSION_1_0, """{"identifier_format": "camelCase"}""")
         val trees = parser.execute(lexer.execute("let my_variable : number = 5;"))
 
         val first = linter.check(trees).getBrokenRules().size

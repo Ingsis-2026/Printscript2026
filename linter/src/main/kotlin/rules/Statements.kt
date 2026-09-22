@@ -65,14 +65,16 @@ internal fun callOf(node: ASTNode): Call? =
 /**
  * Las sentencias que [node] contiene en sus bloques.
  *
+ * El `if` es la única sentencia con cuerpo, y [statementsIn] es el único lugar que abre un
+ * bloque, así que un [BlockNode] nunca llega hasta acá.
+ *
  * El `when` es exhaustivo a propósito: [ASTNode] es una clase sellada, así que agregar un tipo
  * de nodo deja de compilar acá hasta que se decida si tiene cuerpo.
  */
 private fun bodyOf(node: ASTNode): Sequence<ASTNode> =
     when (node) {
         is ConditionalNode -> statementsIn(node.thenBlock) + statementsIn(node.elseBlock)
-        is BlockNode -> node.nodes.asSequence()
-        is LiteralNode, is BinaryNode, is PrintNode, is DeclarationNode,
+        is BlockNode, is LiteralNode, is BinaryNode, is PrintNode, is DeclarationNode,
         is AssignationNode, is FunctionNode, is NilNode,
         -> emptySequence()
     }

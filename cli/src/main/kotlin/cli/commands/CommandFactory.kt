@@ -80,9 +80,7 @@ class CommandFactory(
             requireNotNull(LinterVersion.fromString(arguments.version)) {
                 "El linter no soporta la versión ${arguments.version}."
             }
-        val linter = Linter(linterVersion)
-        linter.readJson(File(configPathOf(arguments)).readText())
-        return linter
+        return Linter.forConfig(linterVersion, File(configPathOf(arguments)).readText())
     }
 
     /** El parseo de argumentos ya exigió la configuración para las operaciones que la piden. */

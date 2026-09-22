@@ -69,8 +69,7 @@ class NestedStatementTests {
         source: String,
         config: String,
     ): List<BrokenRule> {
-        val linter = Linter(requireNotNull(LinterVersion.fromString(VERSION)))
-        linter.readJson(config)
+        val linter = Linter.forConfig(requireNotNull(LinterVersion.fromString(VERSION)), config)
         return linter.check(nodesOf(source)).getBrokenRules()
     }
 

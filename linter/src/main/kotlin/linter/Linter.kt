@@ -6,12 +6,20 @@ import rules.RuleFactory
 import rules.statementsOf
 
 class Linter(
-    private var version: LinterVersion,
+    private val version: LinterVersion,
 ) {
     private var rules: List<Rule> = listOf()
     private val jsonReader = RuleJsonReader()
     private val ruleFactory = RuleFactory()
 
+    /**
+     * Configura el linter con las reglas del archivo.
+     *
+     * Hasta que se la llame, el linter no tiene reglas y [check] no encuentra nada, así que
+     * quien construya uno acá adentro conviene que use [forConfig] y no pase por ese estado
+     * intermedio. Este camino existe porque el adaptador del TCK construye el linter primero y
+     * le pasa la configuración después.
+     */
     fun readJson(jsonContent: String) {
         val ruleNames = jsonReader.getRuleNamesFromJson(jsonContent)
         rules = ruleFactory.createRules(ruleNames, version)
@@ -42,4 +50,12 @@ class Linter(
     fun check(trees: List<ASTNode>): LinterOutput = check(trees.asSequence())
 
     fun getRules(): List<Rule> = rules
+
+    companion object {
+        /** Un linter que ya tiene sus reglas: no existe el momento en que no revisa nada. */
+        fun forConfig(
+            version: LinterVersion,
+            jsonContent: String,
+        ): Linter = Linter(version).apply { readJson(jsonContent) }
+    }
 }
