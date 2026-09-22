@@ -110,8 +110,7 @@ class LinterPositionTests {
         return linter.check(nodesOf(source)).getBrokenRules()
     }
 
-    private fun nodesOf(source: String): List<ASTNode> =
-        Parser.forVersion(VERSION).execute(Lexer(TokenMapper(VERSION)).convertToTokens(source))
+    private fun nodesOf(source: String): List<ASTNode> = Parser.forVersion(VERSION).execute(Lexer(TokenMapper(VERSION)).execute(source))
 
     private companion object {
         const val VERSION = "1.1"

@@ -125,14 +125,21 @@ class LexerTests {
     }
 
     @Test
-    fun `test a keyword from a later version is rejected with its position`() {
+    fun `test a keyword from a later version is just an identifier`() {
+        val tokens = lexer.execute("const x : number = 8;")
+
+        assertEquals(Token(TokenType.IDENTIFIER, "const", TokenPosition(0, 0), TokenPosition(0, 5)), tokens[0])
+    }
+
+    @Test
+    fun `test an invalid character is rejected with its position`() {
         val exception =
             assertFailsWith<LexerException> {
-                lexer.execute("const x : number = 8;")
+                lexer.execute("let x: number = 5 @ 3;")
             }
 
-        assertEquals("Const declarations are not allowed in version 1.0", exception.message)
-        assertEquals(TokenPosition(0, 0), exception.startPosition)
-        assertEquals(TokenPosition(0, 5), exception.endPosition)
+        assertEquals("Carácter inválido encontrado: '@'", exception.message)
+        assertEquals(TokenPosition(0, 18), exception.startPosition)
+        assertEquals(TokenPosition(0, 19), exception.endPosition)
     }
 }

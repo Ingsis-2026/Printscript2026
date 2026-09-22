@@ -7,8 +7,13 @@ import ast.LiteralNode
 import ast.NilNode
 import parser.Parser
 import parser.ParserException
+import parser.closesBlock
+import parser.closesParenthesis
+import parser.continuesConditional
+import parser.opensBlock
+import parser.opensParenthesis
+import parser.startsConditional
 import token.Token
-import token.TokenType
 
 class ConditionalFactory(
     private val subParserProvider: () -> Parser = { Parser() },
@@ -28,7 +33,7 @@ class ConditionalFactory(
         )
     }
 
-    override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.CONDITIONAL && it.value == "if" }
+    override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.startsConditional }
 
     private fun readCondition(tokens: List<Token>): LiteralNode {
         val conditionToken = tokens[openParenIndex(tokens) + 1]
@@ -42,13 +47,13 @@ class ConditionalFactory(
     /** Índice del `)` que cierra la condición, a partir del cual se busca el bloque. */
     private fun readConditionEnd(tokens: List<Token>): Int {
         val open = openParenIndex(tokens)
-        val close = tokens.indexOfFirst { it.value == ")" }
+        val close = tokens.indexOfFirst { it.closesParenthesis }
         if (close <= open) throw error(tokens, "Error parsing conditional: missing or misordered parentheses")
         return close
     }
 
     private fun openParenIndex(tokens: List<Token>): Int {
-        val open = tokens.indexOfFirst { it.value == "(" }
+        val open = tokens.indexOfFirst { it.opensParenthesis }
         if (open < 0 || open + 1 >= tokens.size) {
             throw error(tokens, "Error parsing conditional: missing or misordered parentheses")
         }
@@ -84,10 +89,10 @@ class ConditionalFactory(
         thenClose: Int,
     ): ASTNode {
         val elseToken = tokens.getOrNull(thenClose + 1) ?: return NilNode
-        if (elseToken.value != "else") return NilNode
+        if (!elseToken.continuesConditional) return NilNode
 
         val elseOpen = openingBraceFrom(tokens, thenClose + 1)
-        if (tokens.subList(thenClose + 2, elseOpen).any { it.value == "if" }) {
+        if (tokens.subList(thenClose + 2, elseOpen).any { it.startsConditional }) {
             throw error(tokens, "Error parsing block: \"else if\" is not supported")
         }
         return blockOf(tokens, elseOpen, matchingBrace(tokens, elseOpen))
@@ -97,7 +102,7 @@ class ConditionalFactory(
         tokens: List<Token>,
         from: Int,
     ): Int {
-        val offset = tokens.subList(from, tokens.size).indexOfFirst { it.value == "{" }
+        val offset = tokens.subList(from, tokens.size).indexOfFirst { it.opensBlock }
         if (offset < 0) throw error(tokens, "Error parsing block: missing or unbalanced braces")
         return from + offset
     }
@@ -114,12 +119,11 @@ class ConditionalFactory(
     ): Int {
         var depth = 0
         for (index in openIndex until tokens.size) {
-            when (tokens[index].value) {
-                "{" -> depth++
-                "}" -> {
-                    depth--
-                    if (depth == 0) return index
-                }
+            val token = tokens[index]
+            if (token.opensBlock) depth++
+            if (token.closesBlock) {
+                depth--
+                if (depth == 0) return index
             }
         }
         throw error(tokens, "Error parsing block: missing or unbalanced braces")

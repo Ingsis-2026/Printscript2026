@@ -184,14 +184,14 @@ class ParserTests {
         val tokens =
             listOf(
                 Token(TokenType.CONDITIONAL, "if", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.BOOLEANLITERAL, "true", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
                 // Missing opening brace {
                 Token(TokenType.KEYWORD, "println", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"if block\"", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ";", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "}", startPos, endPos),
             )
@@ -205,14 +205,14 @@ class ParserTests {
         val tokens =
             listOf(
                 Token(TokenType.CONDITIONAL, "if", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.BOOLEANLITERAL, "true", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, "{", startPos, endPos),
                 Token(TokenType.KEYWORD, "println", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"if block\"", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
                 Token(TokenType.PUNCTUATOR, ";", startPos, endPos),
                 // Missing closing brace }
             )

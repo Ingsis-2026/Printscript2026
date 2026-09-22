@@ -3,6 +3,8 @@ package parser
 import ast.BinaryNode
 import ast.LiteralNode
 import factories.OperationFactory
+import lexer.Lexer
+import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -42,11 +44,11 @@ class OperationFactoryTest {
     fun `test addition with parentheses`() {
         val tokens =
             listOf(
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "3", startPos, endPos),
                 Token(TokenType.OPERATOR, "+", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
         val result = factory.createAST(tokens)
         assertTrue(result is BinaryNode)
@@ -77,5 +79,33 @@ class OperationFactoryTest {
         assertEquals("*", rightNode.operator.value)
         assertEquals("3", (rightNode.left as LiteralNode).value)
         assertEquals("4", (rightNode.right as LiteralNode).value)
+    }
+
+    private fun parseExpression(source: String) = factory.createAST(Lexer(TokenMapper("1.0")).execute(source))
+
+    @Test
+    fun `a string that reads like a parenthesis is an operand`() {
+        val result = parseExpression("\"(\" + 1") as BinaryNode
+
+        assertEquals("+", result.operator.value)
+        assertEquals(TokenType.STRINGLITERAL, (result.left as LiteralNode).type)
+        assertEquals("(", (result.left as LiteralNode).value)
+    }
+
+    @Test
+    fun `a string that reads like an operator is an operand`() {
+        val result = parseExpression("\"a\" + \"+\" + \"b\"") as BinaryNode
+
+        val middle = (result.right as BinaryNode).left as LiteralNode
+        assertEquals(TokenType.STRINGLITERAL, middle.type)
+        assertEquals("+", middle.value)
+    }
+
+    @Test
+    fun `real parentheses still group`() {
+        val result = parseExpression("(1 + 2) * 3") as BinaryNode
+
+        assertEquals("*", result.operator.value)
+        assertEquals("+", (result.left as BinaryNode).operator.value)
     }
 }

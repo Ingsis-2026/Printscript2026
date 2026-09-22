@@ -20,7 +20,7 @@ class DeclarationFactory : ASTFactory {
             tokens.find { it.getType() == TokenType.DATA_TYPE }
                 ?: throw error(tokens, "Expected a DATA_TYPE or DATA_TYPE token but found none.")
 
-        val initialPositionExpression = tokens.indexOfFirst { it.value == "=" } + 1
+        val initialPositionExpression = tokens.indexOfFirst { it.getType() == TokenType.ASSIGNATION } + 1
         val expressionTokens: List<Token>? = findExpressionTokens(initialPositionExpression, tokens)
 
         val expressionNode: ASTNode = if (expressionTokens == null) NilNode else findExpressionNode(expressionTokens)

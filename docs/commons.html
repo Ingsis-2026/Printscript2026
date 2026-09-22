@@ -166,7 +166,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
       <tr><td class="t">PrintScriptException</td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role catches">catches</span></td></tr>
     </tbody>
   </table></div>
-  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">Lexer.kt:58–70</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:29</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
+  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">LineScanner.kt:84–89</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:29</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
 </section>
 
 <section id="code">
@@ -215,15 +215,15 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
   <div class="tablewrap"><table>
     <thead><tr><th>Node</th><th>Source example</th><th>Built by</th><th>Position stored</th><th>Run by</th></tr></thead>
     <tbody>
-      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">OperationFactory.kt:67</span> and others</td><td>the token</td><td>LiteralEvaluator</td></tr>
-      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">OperationFactory.kt:45</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
+      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">OperationFactory.kt:70</span> and others</td><td>the token</td><td>LiteralEvaluator</td></tr>
+      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">OperationFactory.kt:48</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
       <tr><td class="t">PrintNode</td><td><code>println(x)</code></td><td><span class="ref">PrintlnFactory.kt:29</span></td><td><code>println</code></td><td>PrintEvaluator</td></tr>
       <tr><td class="t">DeclarationNode</td><td><code>let c: number = a / b</code></td><td><span class="ref">DeclarationFactory.kt:36</span></td><td>the identifier</td><td>DeclarationEvaluator</td></tr>
       <tr><td class="t">AssignationNode</td><td><code>a = a / b</code></td><td><span class="ref">AssignationFactory.kt:41</span></td><td>the <code>=</code></td><td>AssignmentEvaluator</td></tr>
-      <tr><td class="t">BlockNode</td><td><code>{ println(x); }</code></td><td><span class="ref">ConditionalFactory.kt:70</span></td><td>first token inside</td><td>BlockEvaluator</td></tr>
-      <tr><td class="t">ConditionalNode</td><td><code>if (b) { … } else { … }</code></td><td><span class="ref">ConditionalFactory.kt:23</span></td><td>the condition</td><td>ConditionalEvaluator</td></tr>
+      <tr><td class="t">BlockNode</td><td><code>{ println(x); }</code></td><td><span class="ref">ConditionalFactory.kt:77</span></td><td>first token inside</td><td>BlockEvaluator</td></tr>
+      <tr><td class="t">ConditionalNode</td><td><code>if (b) { … } else { … }</code></td><td><span class="ref">ConditionalFactory.kt:32</span></td><td>the condition</td><td>ConditionalEvaluator</td></tr>
       <tr><td class="t">FunctionNode</td><td><code>readInput("n?")</code></td><td><span class="ref">FunctionFactory.kt:18</span></td><td>the function name</td><td>FunctionEvaluator</td></tr>
-      <tr><td class="t">NilNode</td><td><code>let x: number;</code> · no <code>else</code></td><td><span class="ref">DeclarationFactory.kt:26</span> <span class="ref">ConditionalFactory.kt:86</span></td><td>fixed (0, 0)</td><td>NilEvaluator → <code>null</code></td></tr>
+      <tr><td class="t">NilNode</td><td><code>let x: number;</code> · no <code>else</code></td><td><span class="ref">DeclarationFactory.kt:26</span> <span class="ref">ConditionalFactory.kt:91–92</span></td><td>fixed (0, 0)</td><td>NilEvaluator → <code>null</code></td></tr>
     </tbody>
   </table></div>
   <p>The position each node stores is a choice about <em>where errors point</em>. A declaration points at its name (<span class="ref">DeclarationFactory.kt:43</span>), so <em>"La variable 'x' ya ha sido declarada"</em> underlines <code>x</code> rather than <code>let</code>. A binary node points at its operator, so <em>"Division by zero"</em> lands on the <code>/</code>.</p>
@@ -274,9 +274,9 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
     <details><summary>If <code>declType</code> is always KEYWORD, why store it?</summary>
       <p>The node mirrors the token's (type, value) pair, and only the value is used: <code>declValue</code> is <code>"let"</code> or <code>"const"</code>, which the interpreter reads to block reassigning a <code>const</code> (<span class="ref">DeclarationEvaluator.kt:33</span>). The same goes for <code>AssignationNode.valType</code>. Removing those fields would be a safe simplification.</p></details>
     <details><summary>Why are positions nullable in the exception?</summary>
-      <p>Some errors have no token at hand. An empty file fails with "No valid code" (<span class="ref">StatementSplitter.kt:97</span>), and there's no position to give. <code>describe()</code> handles that case (:22).</p></details>
+      <p>Some errors have no token at hand. An empty file fails with "No valid code" (<span class="ref">StatementSplitter.kt:90</span>), and there's no position to give. <code>describe()</code> handles that case (:22).</p></details>
     <details><summary>Why doesn't <code>commons</code> contain the lexer's token rules?</summary>
-      <p>What a token <em>is</em> is shared; how to <em>recognise</em> one is lexer behaviour and changes per version (<span class="ref">TokenMapper.kt:74</span>). Keeping behaviour out is what lets the parser depend on <code>commons</code> without depending on the lexer.</p></details>
+      <p>What a token <em>is</em> is shared; how to <em>recognise</em> one is lexer behaviour and changes per version (<span class="ref">TokenMapper.kt:34–39</span>). Keeping behaviour out is what lets the parser depend on <code>commons</code> without depending on the lexer.</p></details>
   </div>
 </section>
 
