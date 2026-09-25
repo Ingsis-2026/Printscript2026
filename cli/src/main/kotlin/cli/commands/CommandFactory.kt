@@ -17,7 +17,6 @@ import formatter.FormatterBuilder
 import formatter.FormatterBuilderPS
 import interpreter.Reader
 import linter.Linter
-import linter.LinterVersion
 import java.io.File
 
 /**
@@ -75,13 +74,7 @@ class CommandFactory(
         return FileSink(outputPath)
     }
 
-    private fun buildLinter(arguments: CliArguments): Linter {
-        val linterVersion =
-            requireNotNull(LinterVersion.fromString(arguments.version)) {
-                "El linter no soporta la versión ${arguments.version}."
-            }
-        return Linter.forConfig(linterVersion, File(configPathOf(arguments)).readText())
-    }
+    private fun buildLinter(arguments: CliArguments): Linter = Linter.forConfig(arguments.version, File(configPathOf(arguments)).readText())
 
     /** El parseo de argumentos ya exigió la configuración para las operaciones que la piden. */
     private fun configPathOf(arguments: CliArguments): String =

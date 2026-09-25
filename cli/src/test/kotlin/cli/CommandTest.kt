@@ -9,9 +9,9 @@ import cli.io.OutputPrinter
 import cli.pipeline.ParsingPipeline
 import formatter.FormatterBuilderPS
 import linter.Linter
-import linter.LinterVersion
 import org.junit.jupiter.api.Test
 import parser.ParserException
+import version.Version
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
 class CommandTest {
     private val output = CapturingOutput()
 
-    private fun pipeline(version: String = "1.0") = ParsingPipeline(version)
+    private fun pipeline(version: Version = Version.V1_0) = ParsingPipeline(version)
 
     @Test
     fun `validation informa la cantidad de sentencias`() {
@@ -53,7 +53,7 @@ class CommandTest {
     fun `analyzing concuerda el numero con la cantidad de problemas`() {
         val source = InMemorySource("uno.ps", "let Uno : number = 1;")
 
-        AnalyzingCommand(source, pipeline(), linter("linterRules.json", LinterVersion.VERSION_1_0), output).execute()
+        AnalyzingCommand(source, pipeline(), linter("linterRules.json", Version.V1_0), output).execute()
 
         assertTrue(output.errorText().contains("Se encontraron 1 problema en uno.ps"))
     }
@@ -82,7 +82,7 @@ class CommandTest {
         expected.forEach { (fileName, expectedOutput) ->
             val commandOutput = CapturingOutput()
             val source = InMemorySource(fileName, File("src/test/resources/$fileName").readText())
-            ExecutionCommand(source, pipeline(), "1.0", OutputPrinter(commandOutput), ScriptedReader(), commandOutput).execute()
+            ExecutionCommand(source, pipeline(), Version.V1_0, OutputPrinter(commandOutput), ScriptedReader(), commandOutput).execute()
 
             assertEquals(expectedOutput, commandOutput.resultText(), "salida inesperada para $fileName")
         }
@@ -92,7 +92,14 @@ class CommandTest {
     fun `execution lee la entrada del usuario con readInput en 1 punto 1`() {
         val source = InMemorySource("entrada.ps", "let x : string = readInput(\"nombre: \");\nprintln(x);")
 
-        ExecutionCommand(source, pipeline("1.1"), "1.1", OutputPrinter(output), ScriptedReader(listOf("Ana")), output).execute()
+        ExecutionCommand(
+            source,
+            pipeline(Version.V1_1),
+            Version.V1_1,
+            OutputPrinter(output),
+            ScriptedReader(listOf("Ana")),
+            output,
+        ).execute()
 
         assertTrue(output.results.contains("Ana"))
     }
@@ -100,7 +107,7 @@ class CommandTest {
     @Test
     fun `formatting entrega cada sentencia formateada al destino`() {
         val sink = RecordingSink()
-        val formatter = FormatterBuilderPS().build("src/test/resources/formatterRules.yaml", "1.0")
+        val formatter = FormatterBuilderPS().build("src/test/resources/formatterRules.yaml", Version.V1_0)
         val source = InMemorySource("p.ps", "let x:number=8;")
 
         val status = FormattingCommand(source, formatter, sink, output).execute()
@@ -114,7 +121,7 @@ class CommandTest {
     fun `analyzing informa cada regla incumplida con su ubicacion`() {
         val source = InMemorySource("ejemplo1.ps", File("src/test/resources/example1.ps").readText())
 
-        val status = AnalyzingCommand(source, pipeline(), linter("linterRules.json", LinterVersion.VERSION_1_0), output).execute()
+        val status = AnalyzingCommand(source, pipeline(), linter("linterRules.json", Version.V1_0), output).execute()
 
         assertEquals(CommandStatus.FAILURE, status)
         assertTrue(output.errorText().contains("Se encontraron 1 problema en ejemplo1.ps"))
@@ -125,7 +132,7 @@ class CommandTest {
     fun `analyzing termina bien cuando el fuente cumple las reglas`() {
         val source = InMemorySource("limpio.ps", "let unaVariable : number = 8;")
 
-        val status = AnalyzingCommand(source, pipeline(), linter("linterRules.json", LinterVersion.VERSION_1_0), output).execute()
+        val status = AnalyzingCommand(source, pipeline(), linter("linterRules.json", Version.V1_0), output).execute()
 
         assertEquals(CommandStatus.SUCCESS, status)
         assertTrue(output.infoText().contains("No se encontraron problemas en limpio.ps"))
@@ -135,17 +142,17 @@ class CommandTest {
     fun `analyzing pluraliza el reporte`() {
         val source = InMemorySource("varios.ps", "let Uno : number = 1;\nlet Dos : number = 2;")
 
-        AnalyzingCommand(source, pipeline(), linter("linterRules.json", LinterVersion.VERSION_1_0), output).execute()
+        AnalyzingCommand(source, pipeline(), linter("linterRules.json", Version.V1_0), output).execute()
 
         assertTrue(output.errorText().contains("Se encontraron 2 problemas"))
     }
 
     private fun execution(source: InMemorySource) =
-        ExecutionCommand(source, pipeline(), "1.0", OutputPrinter(output), ScriptedReader(), output)
+        ExecutionCommand(source, pipeline(), Version.V1_0, OutputPrinter(output), ScriptedReader(), output)
 
     private fun linter(
         fileName: String,
-        version: LinterVersion,
+        version: Version,
     ): Linter {
         val linter = Linter.forConfig(version, File("src/test/resources/$fileName").readText())
         return linter

@@ -1,6 +1,6 @@
 package rules
 
-import linter.LinterVersion
+import version.Version
 
 /**
  * Las reglas que el linter sabe construir, una por ajuste del archivo de configuración.
@@ -10,10 +10,10 @@ import linter.LinterVersion
  * error de configuración, y una versión posterior a la que la introdujo la sigue admitiendo.
  */
 enum class RuleName(
-    val since: LinterVersion,
+    val since: Version,
 ) {
-    CAMEL_CASE(LinterVersion.VERSION_1_0),
-    SNAKE_CASE(LinterVersion.VERSION_1_0),
-    PRINT_ONLY(LinterVersion.VERSION_1_0),
-    INPUT_ONLY(LinterVersion.VERSION_1_1),
+    CAMEL_CASE(Version.V1_0),
+    SNAKE_CASE(Version.V1_0),
+    PRINT_ONLY(Version.V1_0),
+    INPUT_ONLY(Version.V1_1),
 }

@@ -4,10 +4,14 @@ import ast.ASTNode
 import rules.Rule
 import rules.RuleFactory
 import rules.statementsOf
+import version.Version
 
 class Linter(
-    private val version: LinterVersion,
+    private val version: Version,
 ) {
+    /** Para el adaptador del TCK, que construye el linter con un [LinterVersion]. */
+    constructor(version: LinterVersion) : this(version.version)
+
     private var rules: List<Rule> = listOf()
     private val jsonReader = RuleJsonReader()
     private val ruleFactory = RuleFactory()
@@ -54,7 +58,7 @@ class Linter(
     companion object {
         /** Un linter que ya tiene sus reglas: no existe el momento en que no revisa nada. */
         fun forConfig(
-            version: LinterVersion,
+            version: Version,
             jsonContent: String,
         ): Linter = Linter(version).apply { readJson(jsonContent) }
     }

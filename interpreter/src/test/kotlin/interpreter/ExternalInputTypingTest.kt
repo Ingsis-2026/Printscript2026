@@ -40,7 +40,7 @@ class ExternalInputTypingTest {
         vararg input: String,
     ): Interpreter {
         val interpreter = Interpreter.forVersion("1.1", printer, readerOf(*input))
-        val tokens = Lexer(TokenMapper.forVersion("1.1")).execute(source)
+        val tokens = Lexer(TokenMapper("1.1")).execute(source)
         Parser.forVersion("1.1").execute(tokens).forEach { interpreter.execute(it) }
         return interpreter
     }
