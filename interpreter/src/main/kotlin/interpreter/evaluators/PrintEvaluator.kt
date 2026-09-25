@@ -21,6 +21,6 @@ class PrintEvaluator : NodeEvaluator {
         val resolved = if (value is ExternalInput) value.asType(DataType.STRING) else value
 
         interpreter.printer.print(resolved.toString())
-        return Unit
+        return null
     }
 }

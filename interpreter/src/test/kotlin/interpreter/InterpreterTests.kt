@@ -1164,7 +1164,7 @@ class InterpreterTests {
         val thenBlock = PrintNode(LiteralNode("should not run", TokenType.STRINGLITERAL, position), position)
         val node = ConditionalNode(condition, thenBlock, position = position)
         val result = interpreter.execute(node)
-        assertEquals(Unit, result)
+        assertNull(result)
     }
 
     @Test

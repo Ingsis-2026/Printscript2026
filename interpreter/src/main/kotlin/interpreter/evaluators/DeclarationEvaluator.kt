@@ -22,7 +22,7 @@ class DeclarationEvaluator : NodeEvaluator {
 
         val value =
             if (declarationNode.expr is NilNode) {
-                Unit
+                null
             } else {
                 interpreter.execute(declarationNode.expr) ?: throw InterpreterException("Expresión inválida en la declaración")
             }
@@ -37,7 +37,7 @@ class DeclarationEvaluator : NodeEvaluator {
         // El tipo de un valor leído de afuera lo fija la variable que lo recibe.
         val resolved = if (value is ExternalInput) value.asType(declarationNode.dataType) else value
 
-        if (resolved != Unit) {
+        if (resolved != null) {
             interpreter.variables.assign(declarationNode.id, resolved)
         }
 
