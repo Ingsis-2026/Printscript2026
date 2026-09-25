@@ -1,5 +1,7 @@
 package interpreter
 
+import ast.DataType
+
 /**
  * Valor traído de afuera del programa por `readInput` o `readEnv`, todavía sin interpretar.
  */
@@ -7,19 +9,18 @@ data class ExternalInput(
     val text: String,
     val origin: String,
 ) {
-    fun asType(dataType: String): Any =
+    fun asType(dataType: DataType): Any =
         when (dataType) {
-            "string" -> text
-            "number" -> text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
-            "boolean" ->
+            DataType.STRING -> text
+            DataType.NUMBER -> text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
+            DataType.BOOLEAN ->
                 when (text) {
                     "true" -> true
                     "false" -> false
                     else -> throw cannotInterpretAs(dataType)
                 }
-            else -> throw InterpreterException("$origin no puede devolver un valor de tipo $dataType")
         }
 
-    private fun cannotInterpretAs(dataType: String) =
-        InterpreterException("$origin devolvió \"$text\", que no puede interpretarse como $dataType")
+    private fun cannotInterpretAs(dataType: DataType) =
+        InterpreterException("$origin devolvió \"$text\", que no puede interpretarse como ${dataType.keyword}")
 }
