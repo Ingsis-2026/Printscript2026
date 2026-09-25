@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 82b61b4 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 067ab04 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -388,7 +388,7 @@ println("Result: " + c);</pre></td>
     <h3>What's in it</h3>
     <ol class="steps">
       <li><div><strong>Tokens.</strong> <span class="ref">TokenType.kt:3</span> lists 14 categories (IDENTIFIER, KEYWORD, DATA_TYPE, FUNCTION, CONDITIONAL…), each one the lexer can emit. <span class="ref">TokenPosition.kt:3</span> is a 0-based <code>(row, column)</code>. <span class="ref">Token.kt:7–12</span> is an immutable data class carrying both a start and an end position. Having the end position is what lets errors report the full range the assignment asks for (<span class="ref">Token.kt:17–21</span>).</div></li>
-      <li><div><strong>The AST.</strong> <span class="ref">ASTNode.kt:7</span> is a <code>sealed class</code> in which every node has a <code>position</code>. There are nine node types: <code>LiteralNode</code> :11, <code>BinaryNode</code> :17, <code>PrintNode</code> :24, <code>DeclarationNode</code> :29, <code>AssignationNode</code> :39, <code>BlockNode</code> :46, <code>ConditionalNode</code> :51, <code>FunctionNode</code> :58, and <code>NilNode</code> :66, a null object used for "no value". <code>ConditionalNode.condition</code> is typed <code>LiteralNode</code>, which encodes the 1.1 rule that an <code>if</code> takes only a boolean variable or literal.</div></li>
+      <li><div><strong>The AST.</strong> <span class="ref">ASTNode.kt:7</span> is a <code>sealed class</code> in which every node has a <code>position</code>. There are nine node types: <code>LiteralNode</code> :11, <code>BinaryNode</code> :17, <code>PrintNode</code> :24, <code>DeclarationNode</code> :29, <code>AssignationNode</code> :38, <code>BlockNode</code> :45, <code>ConditionalNode</code> :50, <code>FunctionNode</code> :58, and <code>NilNode</code> :65, a null object used for "no value". A declaration's type is a <code>DataType</code> (<span class="ref">DataType.kt:4</span>), the enum every module uses for <code>number</code>, <code>string</code> and <code>boolean</code>. <code>ConditionalNode.condition</code> is typed <code>LiteralNode</code>, which encodes the 1.1 rule that an <code>if</code> takes only a boolean variable or literal.</div></li>
       <li><div><strong>Errors.</strong> <span class="ref">PrintScriptException.kt:14–18</span> is an abstract <code>RuntimeException</code> with optional start and end positions. <code>describe()</code> at :20 converts to 1-based coordinates and prints <em>"desde línea X, columna Y hasta línea …"</em>, or a single point when start equals end (:29). <code>LexerException</code>, <code>ParserException</code> and <code>InterpreterException</code> all extend it.</div></li>
     </ol>
 
@@ -460,7 +460,7 @@ println("Result: " + c);</pre></td>
     <div class="tablewrap"><table>
       <thead><tr><th>Factory</th><th>How it builds</th></tr></thead>
       <tbody>
-        <tr><td><span class="ref">DeclarationFactory.kt:12</span></td><td>Finds the keyword, identifier and type (:13–21). The expression is everything after <code>=</code> (:23–26). It does a static literal-vs-type check (:60–90), skipped when the value is a <code>readInput</code>/<code>readEnv</code> call because the type isn't known until run time (:29–34). The node's position is the identifier (:43).</td></tr>
+        <tr><td><span class="ref">DeclarationFactory.kt:13</span></td><td>Finds the keyword, identifier and type (:14–22), and turns the type's text into a <code>DataType</code> (:23–25). The expression is everything after <code>=</code> (:27–30). It does a static literal-vs-type check (:58–77), skipped when the value is a <code>readInput</code>/<code>readEnv</code> call because the type isn't known until run time (:32–34). The node's position is the identifier (:42).</td></tr>
         <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>The left side is the tokens before <code>=</code> (:61), the right side the tokens after (:59). The right side goes to FunctionFactory or OperationFactory (:63–68).</td></tr>
         <tr><td><span class="ref">PrintlnFactory.kt:10</span></td><td>Needs at least 4 tokens (:45–46). Takes what's between the first <code>(</code> and the last <code>)</code> (:15–22) and passes it to OperationFactory (:28).</td></tr>
         <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td><code>readInput</code>/<code>readEnv</code>: the argument is the tokens between the parentheses (:12), parsed as an expression (:16).</td></tr>
@@ -506,20 +506,19 @@ return splitOnOperator(tokens, ::isAdditionOrSubtraction)
       <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:17–34</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:19). An identifier is looked up and throws "Undefined variable" if missing (:30–32).</div></li>
       <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:19–27</span> dispatches on the operator, one named operation per branch. <code>+</code> tries string concatenation first (:30–36), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :115–117, and multiplying or dividing a string is rejected at :47–49 and :57–59.</div></li>
       <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:18–44</span> rejects a name that is already taken (:19–21) and records the <code>Declaration</code> even when there's no value (:32–35). It types an <code>ExternalInput</code> using the declared type (:38).</div></li>
-      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:17–27</span> refuses to reassign a <code>const</code> (:48–51) and refuses a value of a different PrintScript type (:55–58). Int and Double both count as <code>number</code>.</div></li>
-      <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:16–23</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:16–29</span> requires a <code>Boolean</code> (:18–20). <span class="ref">BlockEvaluator.kt:16–18</span> runs children in order, and <code>NilEvaluator</code> returns null.</div></li>
+      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:17–27</span> refuses to reassign a <code>const</code> (:48–51) and refuses a value of a different PrintScript type (:53–56). Int and Double both count as <code>number</code>.</div></li>
+      <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:17–24</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:15–27</span> requires a <code>Boolean</code> (:18–20). <span class="ref">BlockEvaluator.kt:16–18</span> runs children in order. <code>NilEvaluator</code> returns <code>null</code>, like every node that produces no value (<span class="ref">NodeEvaluator.kt:22–25</span>).</div></li>
       <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:33–42</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:44–51). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
     </ol>
 
     <h3>The typed-input trick</h3>
-<pre><span class="c">// ExternalInput.kt:10–21: the destination decides the type</span>
-fun asType(dataType: String): Any = when (dataType) {
-    "string"  -&gt; text
-    "number"  -&gt; text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
-    "boolean" -&gt; when (text) { "true" -&gt; true; "false" -&gt; false; else -&gt; throw cannotInterpretAs(dataType) }
-    else      -&gt; throw InterpreterException(…)
+<pre><span class="c">// ExternalInput.kt:12–22: the destination decides the type</span>
+fun asType(dataType: DataType): Any = when (dataType) {
+    DataType.STRING  -&gt; text
+    DataType.NUMBER  -&gt; text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
+    DataType.BOOLEAN -&gt; when (text) { "true" -&gt; true; "false" -&gt; false; else -&gt; throw cannotInterpretAs(dataType) }
 }</pre>
-    <p>The 1.1 spec says <code>readInput</code> returns a type compatible with the variable it's assigned to, or <code>string</code> inside <code>println</code>, and that execution fails if, say, <code>"Hola"</code> arrives for a <code>boolean</code>. So the raw text travels until someone who knows the target type converts it: the declaration (:36), the assignment (<span class="ref">AssignmentEvaluator.kt:33–43</span>) or <code>println</code> (<span class="ref">PrintEvaluator.kt:20</span>). The doc comment at <span class="ref">ExternalInput.kt:3–11</span> records the earlier bug this fixed: a <code>5</code> typed into a string variable used to become a number.</p>
+    <p>The 1.1 spec says <code>readInput</code> returns a type compatible with the variable it's assigned to, or <code>string</code> inside <code>println</code>, and that execution fails if, say, <code>"Hola"</code> arrives for a <code>boolean</code>. So the raw text travels until someone who knows the target type converts it: the declaration (<span class="ref">DeclarationEvaluator.kt:38</span>), the assignment (<span class="ref">AssignmentEvaluator.kt:31–41</span>) or <code>println</code> (<span class="ref">PrintEvaluator.kt:21</span>). The type arrives as a <code>DataType</code>, so the <code>when</code> has one branch per PrintScript type and no fallback for a type that doesn't exist.</p>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
@@ -759,7 +758,7 @@ fun asType(dataType: String): Any = when (dataType) {
       <h4>Runtime values are plain Kotlin <code>Int</code>, <code>Double</code>, <code>String</code>, <code>Boolean</code></h4>
       <p class="over">instead of a PrintScript value hierarchy (<code>NumberValue</code>, <code>StringValue</code>…)</p>
       <div class="cols">
-        <div><h5>Why</h5><p>There are fewer classes, arithmetic and concatenation use Kotlin's own operators, and printing is <code>toString()</code>. The mapping back to PrintScript types is one small function (<span class="ref">AssignmentEvaluator.kt:64–70</span>).</p></div>
+        <div><h5>Why</h5><p>There are fewer classes, arithmetic and concatenation use Kotlin's own operators, and printing is <code>toString()</code>. The mapping back to a PrintScript <code>DataType</code> is one small function (<span class="ref">AssignmentEvaluator.kt:60–66</span>).</p></div>
         <div><h5 class="cost">Cost we accept</h5><p>Evaluators use <code>is</code> checks, and Int/Double promotion needs explicit handling (<span class="ref">ArithmeticOperations.kt:24–36</span>). <code>readInput</code>'s untyped text needed its own wrapper, <code>ExternalInput</code>.</p></div>
       </div>
     </div>
@@ -826,7 +825,7 @@ fun asType(dataType: String): Any = when (dataType) {
     <details><summary>How do you know it doesn't load the whole file?</summary>
       <p>The TCK runs 131,072 statements in a 7 MB heap (<span class="ref">InterpreterLargeFileTest.java:22</span>), and there are dedicated unit tests in each module: StreamingPipelineTest, FormatterStreamingTest, LinterStreamingTest and the CLI's StreamingTest. In the code, every stage signature takes and returns a <code>Sequence</code>.</p></details>
     <details><summary>How does <code>readInput</code> know what type to return?</summary>
-      <p>It doesn't. It returns raw text wrapped in <code>ExternalInput</code>, and the destination converts it: the declaration, the assignment, or <code>println</code> as a string (<span class="ref">ExternalInput.kt:16–27</span>). An unparseable value fails there, positioned at the node.</p></details>
+      <p>It doesn't. It returns raw text wrapped in <code>ExternalInput</code>, and the destination converts it: the declaration, the assignment, or <code>println</code> as a string (<span class="ref">ExternalInput.kt:12–22</span>). An unparseable value fails there, positioned at the node.</p></details>
     <details><summary>Why is the formatter not built on the AST?</summary>
       <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
