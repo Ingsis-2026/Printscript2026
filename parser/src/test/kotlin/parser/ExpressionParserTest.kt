@@ -1,12 +1,14 @@
 package parser
 
 import ast.BinaryNode
+import ast.FunctionNode
 import ast.LiteralNode
 import lexer.Lexer
 import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import token.Token
 import token.TokenPosition
 import token.TokenType
@@ -106,5 +108,42 @@ class ExpressionParserTest {
 
         assertEquals("*", result.operator.value)
         assertEquals("+", (result.left as BinaryNode).operator.value)
+    }
+
+    private fun parseExpression11(source: String) = parser.parse(Lexer(TokenMapper("1.1")).execute(source))
+
+    @Test
+    fun `any number of enclosing parentheses is the expression inside`() {
+        val result = parseExpression("((5))") as LiteralNode
+
+        assertEquals("5", result.value)
+    }
+
+    @Test
+    fun `parentheses that close before the end do not enclose the expression`() {
+        val result = parseExpression("(1) + (2)") as BinaryNode
+
+        assertEquals("+", result.operator.value)
+    }
+
+    @Test
+    fun `a call's argument is itself an expression`() {
+        val result = parseExpression11("readInput(\"a\" + \"b\")") as FunctionNode
+
+        assertEquals("readInput", result.functionName)
+        assertEquals("+", (result.expression as BinaryNode).operator.value)
+    }
+
+    @Test
+    fun `a call without an argument is rejected where it is written`() {
+        val exception = assertThrows<ParserException> { parseExpression11("readInput()") }
+
+        assertEquals("readInput needs an argument", exception.message)
+        assertEquals(TokenPosition(0, 0), exception.startPosition)
+    }
+
+    @Test
+    fun `an operator without a right operand is a parser error, not a crash`() {
+        assertThrows<ParserException> { parseExpression("1 +") }
     }
 }
