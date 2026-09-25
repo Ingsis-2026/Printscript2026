@@ -166,7 +166,7 @@ h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40p
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 47e0757 · study sheet 3 of 8</p>
+  <p class="eyebrow">Printscript2026 @ fe77af9 · study sheet 3 of 8</p>
   <h1><code>parser</code></h1>
   <p class="lede">Groups the token stream into statements and turns each statement into an AST node, lazily. It has two halves: a state machine that decides where a statement ends, and a chain of factories that each know how to build one kind of statement.</p>
   <ul class="meta">
@@ -260,7 +260,7 @@ h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40p
   <div class="tablewrap"><table>
     <thead><tr><th>Who calls it</th><th>Where</th><th>What consumes the nodes</th></tr></thead>
     <tbody>
-      <tr><td>CLI</td><td><span class="ref">ParsingPipeline.kt:50</span></td><td>validation (counts), execution (interpreter), analyzing (linter)</td></tr>
+      <tr><td>CLI</td><td><span class="ref">ParsingPipeline.kt:51</span></td><td>validation (counts), execution (interpreter), analyzing (linter)</td></tr>
       <tr><td>TCK</td><td><span class="ref">Pipeline.java:27</span></td><td>interpreter and linter adapters</td></tr>
     </tbody>
   </table></div>
@@ -317,11 +317,11 @@ println("done");</pre>
 <section id="chain">
   <h2>Part 2 · Choosing a factory</h2>
   <p class="sub">For each statement, <code>Parser</code> uses the first factory whose <code>canHandle</code> returns true.</p>
-  <div class="code"><pre><span class="l hl"><i>21</i>    <span class="kw">fun</span> execute(tokens: Sequence&lt;Token&gt;): Sequence&lt;ASTNode&gt; = nodesOf(StatementSplitter().split(tokens))</span><span class="l"><i>22</i></span><span class="l"><i>23</i><span class="cm">    /** Variante que materializa el resultado, para los usos que ya tienen todo en memoria. */</span></span><span class="l"><i>24</i>    <span class="kw">fun</span> execute(tokens: List&lt;Token&gt;): List&lt;ASTNode&gt; = execute(tokens.asSequence()).toList()</span><span class="l"><i>25</i></span><span class="l"><i>26</i><span class="cm">    /**</span></span><span class="l"><i>27</i><span class="cm">     * Parsea el cuerpo de un bloque, que llega con el `}` que lo cierra.</span></span><span class="l"><i>28</i><span class="cm">     *</span></span><span class="l"><i>29</i><span class="cm">     * Se distingue de [execute] porque en el nivel superior un `}` sin bloque abierto es un</span></span><span class="l"><i>30</i><span class="cm">     * error, mientras que acá es el cierre del bloque que envuelve al cuerpo: termina la</span></span><span class="l"><i>31</i><span class="cm">     * última sentencia, que por eso puede omitir el `;`.</span></span><span class="l"><i>32</i><span class="cm">     */</span></span><span class="l hl"><i>33</i>    <span class="kw">fun</span> executeBlockBody(tokens: List&lt;Token&gt;): List&lt;ASTNode&gt; =</span><span class="l hl"><i>34</i>        nodesOf(StatementSplitter(insideBlock = true).split(tokens.asSequence())).toList()</span><span class="l"><i>35</i></span><span class="l hl"><i>36</i>    <span class="kw">private</span> <span class="kw">fun</span> nodesOf(statements: Sequence&lt;List&lt;Token&gt;&gt;): Sequence&lt;ASTNode&gt; = statements.map { createNode(it) }</span><span class="l"><i>37</i></span><span class="l"><i>38</i>    <span class="kw">private</span> <span class="kw">fun</span> createNode(statement: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>39</i>        <span class="kw">val</span> astFactory =</span><span class="l hl"><i>40</i>            determineFactory(statement)</span><span class="l hl"><i>41</i>                ?: throw ParserException(<span class="st">&quot;Can&#x27;t handle this sentence&quot;</span>, statement)</span><span class="l hl"><i>42</i>        <span class="kw">return</span> astFactory.createAST(statement)</span><span class="l"><i>43</i>    }</span><span class="l"><i>44</i></span><span class="l hl"><i>45</i>    <span class="kw">private</span> <span class="kw">fun</span> determineFactory(tokens: List&lt;Token&gt;): ASTFactory? = factories.find { it.canHandle(tokens) }</span></pre></div>
+  <div class="code"><pre><span class="l hl"><i>25</i>    <span class="kw">fun</span> execute(tokens: Sequence&lt;Token&gt;): Sequence&lt;ASTNode&gt; = nodesOf(StatementSplitter().split(tokens))</span><span class="l"><i>26</i></span><span class="l"><i>27</i><span class="cm">    /** Variante que materializa el resultado, para los usos que ya tienen todo en memoria. */</span></span><span class="l"><i>28</i>    <span class="kw">fun</span> execute(tokens: List&lt;Token&gt;): List&lt;ASTNode&gt; = execute(tokens.asSequence()).toList()</span><span class="l"><i>29</i></span><span class="l"><i>30</i><span class="cm">    /**</span></span><span class="l"><i>31</i><span class="cm">     * Parsea el cuerpo de un bloque, que llega con el `}` que lo cierra.</span></span><span class="l"><i>32</i><span class="cm">     *</span></span><span class="l"><i>33</i><span class="cm">     * Se distingue de [execute] porque en el nivel superior un `}` sin bloque abierto es un</span></span><span class="l"><i>34</i><span class="cm">     * error, mientras que acá es el cierre del bloque que envuelve al cuerpo: termina la</span></span><span class="l"><i>35</i><span class="cm">     * última sentencia, que por eso puede omitir el `;`.</span></span><span class="l"><i>36</i><span class="cm">     */</span></span><span class="l hl"><i>37</i>    <span class="kw">fun</span> executeBlockBody(tokens: List&lt;Token&gt;): List&lt;ASTNode&gt; =</span><span class="l hl"><i>38</i>        nodesOf(StatementSplitter(insideBlock = true).split(tokens.asSequence())).toList()</span><span class="l"><i>39</i></span><span class="l hl"><i>40</i>    <span class="kw">private</span> <span class="kw">fun</span> nodesOf(statements: Sequence&lt;List&lt;Token&gt;&gt;): Sequence&lt;ASTNode&gt; = statements.map { createNode(it) }</span><span class="l"><i>41</i></span><span class="l"><i>42</i>    <span class="kw">private</span> <span class="kw">fun</span> createNode(statement: List&lt;Token&gt;): ASTNode {</span><span class="l hl"><i>43</i>        <span class="kw">val</span> astFactory =</span><span class="l hl"><i>44</i>            determineFactory(statement)</span><span class="l hl"><i>45</i>                ?: throw ParserException(<span class="st">&quot;Can&#x27;t handle this sentence&quot;</span>, statement)</span><span class="l hl"><i>46</i>        <span class="kw">return</span> astFactory.createAST(statement)</span><span class="l"><i>47</i>    }</span><span class="l"><i>48</i></span><span class="l hl"><i>49</i>    <span class="kw">private</span> <span class="kw">fun</span> determineFactory(tokens: List&lt;Token&gt;): ASTFactory? = factories.find { it.canHandle(tokens) }</span></pre></div>
   <ul class="points">
-    <li><strong><code>execute(Sequence)</code></strong> (:21) is the real entry point. <code>execute(List)</code> (:24) just wraps it for callers that already have everything in memory.</li>
-    <li><strong><code>executeBlockBody</code></strong> (:33–34) is the same thing with <code>insideBlock = true</code>. <code>ConditionalFactory</code> calls it for block bodies.</li>
-    <li><strong>Nothing matches</strong> → <em>"Can't handle this sentence"</em>, spanning the whole statement (:41–45).</li>
+    <li><strong><code>execute(Sequence)</code></strong> (:25) is the real entry point. <code>execute(List)</code> (:28) just wraps it for callers that already have everything in memory.</li>
+    <li><strong><code>executeBlockBody</code></strong> (:37–38) is the same thing with <code>insideBlock = true</code>. <code>ConditionalFactory</code> calls it for block bodies.</li>
+    <li><strong>Nothing matches</strong> → <em>"Can't handle this sentence"</em>, spanning the whole statement (:45–49).</li>
   </ul>
 
   <h3>Why the order matters: real <code>canHandle</code> answers</h3>
@@ -344,7 +344,7 @@ println("done");</pre>
     <li><strong>Declaration before Assignation:</strong> <code>let c: number = …</code> contains a <code>=</code>.</li>
     <li><strong>Function last:</strong> a <code>readInput</code> call nested in a declaration or assignment must go to that factory. <code>FunctionFactory</code> only builds a call that stands alone.</li>
   </ul>
-  <div class="code"><pre><span class="l"><i>20</i>    <span class="kw">fun</span> forVersion(version: String): Parser =</span><span class="l hl"><i>21</i>        <span class="kw">when</span> (version) {</span><span class="l hl"><i>22</i>            <span class="st">&quot;1.0&quot;</span> -&gt;</span><span class="l hl"><i>23</i>                Parser(</span><span class="l hl"><i>24</i>                    listOf(</span><span class="l hl"><i>25</i>                        PrintlnFactory(),</span><span class="l hl"><i>26</i>                        DeclarationFactory(),</span><span class="l hl"><i>27</i>                        AssignationFactory(),</span><span class="l hl"><i>28</i>                        FunctionFactory(),</span><span class="l hl"><i>29</i>                    ),</span><span class="l hl"><i>30</i>                )</span><span class="l hl"><i>31</i>            <span class="st">&quot;1.1&quot;</span> -&gt;</span><span class="l hl"><i>32</i>                Parser(</span><span class="l hl"><i>33</i>                    listOf(</span><span class="l hl"><i>34</i>                        ConditionalFactory { forVersion(<span class="st">&quot;1.1&quot;</span>) },</span><span class="l hl"><i>35</i>                        PrintlnFactory(),</span><span class="l hl"><i>36</i>                        DeclarationFactory(),</span><span class="l hl"><i>37</i>                        AssignationFactory(),</span><span class="l hl"><i>38</i>                        FunctionFactory(),</span><span class="l hl"><i>39</i>                    ),</span><span class="l hl"><i>40</i>                )</span><span class="l"><i>41</i>            <span class="kw">else</span> -&gt; throw IllegalArgumentException(<span class="st">&quot;Unsupported version: $version&quot;</span>)</span><span class="l"><i>42</i>        }</span></pre></div>
+  <div class="code"><pre><span class="l"><i>11</i>object ParserFactory {</span><span class="l"><i>12</i><span class="cm">    /** Las sentencias que la versión sabe construir. 1.1 es 1.0 más el `if`, que va primero. */</span></span><span class="l hl"><i>13</i>    <span class="kw">fun</span> factoriesFor(version: Version): List&lt;ASTFactory&gt; =</span><span class="l hl"><i>14</i>        <span class="kw">when</span> (version) {</span><span class="l hl"><i>15</i>            Version.V1_0 -&gt; listOf(PrintlnFactory(), DeclarationFactory(), AssignationFactory(), FunctionFactory())</span><span class="l hl"><i>16</i>            Version.V1_1 -&gt; listOf(ConditionalFactory { Parser.forVersion(Version.V1_1) }) + factoriesFor(Version.V1_0)</span><span class="l"><i>17</i>        }</span><span class="l"><i>18</i>}</span></pre></div>
   <p>The version is nothing more than which list you get. 1.0 is the same list without <code>ConditionalFactory</code>, so an <code>if</code> reaching the 1.0 parser has no factory to build it.</p>
 </section>
 
@@ -485,7 +485,7 @@ println("done");</pre>
 
   <div class="decision">
     <h4>An ordered chain of responsibility</h4>
-    <p>A new construct is a new factory added to a list, and <code>Parser</code> doesn't change (Open/Closed). The language version is the list itself (<span class="ref">ParserFactory.kt:20–42</span>).</p>
+    <p>A new construct is a new factory added to a list, and <code>Parser</code> doesn't change (Open/Closed). The language version is the list itself (<span class="ref">ParserFactory.kt:13–17</span>).</p>
     <p class="cost"><b>Cost</b><code>canHandle</code> checks are coarse, so the list order carries meaning, as the matrix shows. Reordering the list changes behaviour.</p>
   </div>
 
@@ -497,7 +497,7 @@ println("done");</pre>
 
   <div class="decision">
     <h4>Blocks parsed by a sub-parser created through a lambda</h4>
-    <p>Recursion comes for free, since blocks inside blocks follow the same rules. The lambda (<span class="ref">ConditionalFactory.kt:20</span>) delays building the sub-parser until a block actually appears. Building it eagerly would loop forever: <code>forVersion("1.1")</code> creates a <code>ConditionalFactory</code>, which would create another parser for 1.1, and so on. Tests can also pass in a fake parser.</p>
+    <p>Recursion comes for free, since blocks inside blocks follow the same rules. The lambda (<span class="ref">ConditionalFactory.kt:20</span>) delays building the sub-parser until a block actually appears. Building it eagerly would loop forever: <code>Parser.forVersion(Version.V1_1)</code> creates a <code>ConditionalFactory</code>, which would create another parser for 1.1, and so on. Tests can also pass in a fake parser.</p>
     <p class="cost"><b>Cost</b>A whole <code>if</code> statement is held in memory while it's parsed. Blocks are small compared with files, so streaming still holds at file scale.</p>
   </div>
 
@@ -528,7 +528,7 @@ println("done");</pre>
   <div class="decision">
     <h4>One splitter with an <code>insideBlock</code> flag</h4>
     <p>The top level and block bodies follow the same rules except for one: whether a <code>}</code> ends the last statement or is an error (<span class="ref">StatementSplitter.kt:51–59</span>). One flag avoids maintaining two nearly identical state machines.</p>
-    <p class="cost"><b>Cost</b>A boolean argument changes behaviour, so the call site has to name it (<code>insideBlock = true</code>, <span class="ref">Parser.kt:34</span>) to stay readable.</p>
+    <p class="cost"><b>Cost</b>A boolean argument changes behaviour, so the call site has to name it (<code>insideBlock = true</code>, <span class="ref">Parser.kt:38</span>) to stay readable.</p>
   </div>
 </section>
 

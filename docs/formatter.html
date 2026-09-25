@@ -168,7 +168,7 @@ td .c{color:var(--muted)}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 2fb5a82 · study sheet 5 of 8</p>
+  <p class="eyebrow">Printscript2026 @ fe77af9 · study sheet 5 of 8</p>
   <h1><code>formatter</code></h1>
   <p class="lede">Rewrites the gaps between tokens according to a rules file and leaves everything no active rule governs exactly as written. It uses the lexer, never the parser, and it emits the result line by line.</p>
   <ul class="meta">
@@ -205,7 +205,7 @@ td .c{color:var(--muted)}
   <div class="tablewrap"><table>
     <thead><tr><th>Caller</th><th>Builds with</th><th>Formats with</th></tr></thead>
     <tbody>
-      <tr><td>CLI</td><td><span class="ref">CommandFactory.kt:68</span> <code>build(configPath, version)</code></td><td><code>formatLines</code>, written line by line to stdout or a file (<span class="ref">FormattingCommand.kt:21</span>)</td></tr>
+      <tr><td>CLI</td><td><span class="ref">CommandFactory.kt:67</span> <code>build(configPath, version)</code></td><td><code>formatLines</code>, written line by line to stdout or a file (<span class="ref">FormattingCommand.kt:21</span>)</td></tr>
       <tr><td>TCK</td><td><span class="ref">FormatterAdapter.java:24</span> <code>build(configStream, version)</code></td><td><code>format(String)</code>, then written to the TCK's <code>Writer</code> (:25)</td></tr>
     </tbody>
   </table></div>
@@ -322,8 +322,8 @@ td .c{color:var(--muted)}
     <li><strong>The TCK's rule names are constants</strong> (:24–34), so the file's vocabulary lives in one place.</li>
     <li><strong>Two config keys, one field</strong> (:57–69): <code>enforce-spacing-around-equals</code> and <code>enforce-no-spacing-around-equals</code> both set <code>spaceAroundEquals</code>, so they can't contradict each other. If both are present, the first check (spacing) wins. Braces work the same way.</li>
   </ul>
-  <div class="code"><pre><span class="l"><i>9</i>open <span class="kw">class</span> FormatterBuilderPS : FormatterBuilder {</span><span class="l"><i>10</i>    <span class="kw">override</span> <span class="kw">fun</span> build(</span><span class="l"><i>11</i>        rulesPath: String,</span><span class="l"><i>12</i>        version: String,</span><span class="l hl"><i>13</i>    ): Formatter = build(RulesReader().readFile(rulesPath), version)</span><span class="l"><i>14</i></span><span class="l"><i>15</i><span class="cm">    /** Variante para quien ya tiene la configuración en un flujo y no en un archivo. */</span></span><span class="l"><i>16</i>    <span class="kw">fun</span> build(</span><span class="l"><i>17</i>        config: InputStream,</span><span class="l"><i>18</i>        version: String,</span><span class="l hl"><i>19</i>    ): Formatter = build(RulesReader().read(config), version)</span><span class="l"><i>20</i></span><span class="l"><i>21</i>    <span class="kw">fun</span> build(</span><span class="l"><i>22</i>        rules: FormattingRules,</span><span class="l"><i>23</i>        version: String,</span><span class="l hl"><i>24</i>    ): Formatter = TokenFormatter(rules, Lexer(TokenMapper(version)))</span><span class="l"><i>25</i>}</span></pre></div>
-  <p>Three ways to build: from a path (CLI), from a stream (TCK), or from rules already in memory (tests). They all end in <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code> (:24). The formatter gets a lexer for the chosen version, which is how 1.1 source with braces becomes formattable.</p>
+  <div class="code"><pre><span class="l"><i>10</i>open <span class="kw">class</span> FormatterBuilderPS : FormatterBuilder {</span><span class="l"><i>11</i>    <span class="kw">override</span> <span class="kw">fun</span> build(</span><span class="l"><i>12</i>        rulesPath: String,</span><span class="l"><i>13</i>        version: Version,</span><span class="l hl"><i>14</i>    ): Formatter = build(RulesReader().readFile(rulesPath), version)</span><span class="l"><i>15</i></span><span class="l"><i>16</i><span class="cm">    /** Para el TCK, que tiene la configuración en un flujo y la versión como texto. */</span></span><span class="l"><i>17</i>    <span class="kw">fun</span> build(</span><span class="l"><i>18</i>        config: InputStream,</span><span class="l"><i>19</i>        version: String,</span><span class="l hl"><i>20</i>    ): Formatter = build(RulesReader().read(config), Version.parse(version))</span><span class="l"><i>21</i></span><span class="l"><i>22</i>    <span class="kw">fun</span> build(</span><span class="l"><i>23</i>        rules: FormattingRules,</span><span class="l"><i>24</i>        version: Version,</span><span class="l hl"><i>25</i>    ): Formatter = TokenFormatter(rules, Lexer(TokenMapper(version)))</span><span class="l"><i>26</i>}</span></pre></div>
+  <p>Three ways to build: from a path (CLI), from a stream (TCK), or from rules already in memory (tests). They all end in <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code> (:25). The stream overload takes the version as text, because that's how the TCK passes it (:16–20); the other two take a <code>Version</code>. The formatter gets a lexer for the chosen version, which is how 1.1 source with braces becomes formattable.</p>
 </section>
 
 <section id="loop">
@@ -465,7 +465,7 @@ td .c{color:var(--muted)}
     <details><summary>Does the formatter report syntax errors?</summary>
       <p>Only lexical ones: an invalid character like <code>@</code> still throws a positioned <code>LexerException</code>, because the formatter uses the lexer. Grammar errors are the validation operation's job.</p></details>
     <details><summary>How does 1.1 code with braces get formatted under version 1.0?</summary>
-      <p>It doesn't: the builder creates a lexer for the requested version (<span class="ref">FormatterBuilderPS.kt:24</span>), and the 1.0 lexer rejects <code>{</code>. The version controls the formatter the same way it controls every other tool.</p></details>
+      <p>It doesn't: the builder creates a lexer for the requested version (<span class="ref">FormatterBuilderPS.kt:25</span>), and the 1.0 lexer rejects <code>{</code>. The version controls the formatter the same way it controls every other tool.</p></details>
   </div>
 </section>
 
