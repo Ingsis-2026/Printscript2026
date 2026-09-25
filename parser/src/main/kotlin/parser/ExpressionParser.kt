@@ -62,7 +62,7 @@ internal object ExpressionParser {
         return null
     }
 
-    /** Si el `(` del principio es el que cierra el `)` del final, como en `(a + b)` y no en `(a) + (b)`. */
+    /** Si el `)` del final es el que cierra el `(` del principio: en `(a + b)` sí, en `(a) + (b)` no. */
     private fun isEnclosedInParentheses(tokens: List<Token>): Boolean {
         if (tokens.size < 2 || !tokens.first().opensParenthesis || !tokens.last().closesParenthesis) return false
         var depth = 0
