@@ -5,7 +5,6 @@ import ast.DeclarationNode
 import ast.PrintNode
 import factories.AssignationFactory
 import factories.ConditionalFactory
-import factories.OperationFactory
 import factories.PrintlnFactory
 import lexer.Lexer
 import lexer.TokenMapper
@@ -147,7 +146,7 @@ class PositionedErrorTest {
                 token(TokenType.NUMBERLITERAL, "2"),
             )
 
-        val exception = assertThrows<ParserException> { OperationFactory().createAST(tokens) }
+        val exception = assertThrows<ParserException> { ExpressionParser.parse(tokens) }
 
         assertEquals("Error in operation", exception.message)
         assertEquals(startPos, exception.startPosition)
