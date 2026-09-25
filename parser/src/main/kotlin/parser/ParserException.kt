@@ -1,6 +1,7 @@
 package parser
 
 import diagnostics.PrintScriptException
+import token.Token
 import token.TokenPosition
 
 /**
@@ -13,4 +14,8 @@ class ParserException(
     message: String,
     startPosition: TokenPosition? = null,
     endPosition: TokenPosition? = null,
-) : PrintScriptException(message, startPosition, endPosition)
+) : PrintScriptException(message, startPosition, endPosition) {
+    /** Un error ubicado en el tramo que ocupan [tokens]: desde el inicio del primero hasta el fin del último. */
+    constructor(message: String, tokens: List<Token>) :
+        this(message, tokens.firstOrNull()?.getPosition(), tokens.lastOrNull()?.getFinalPosition())
+}

@@ -2,7 +2,6 @@ package parser
 
 import ast.BinaryNode
 import ast.LiteralNode
-import factories.OperationFactory
 import lexer.Lexer
 import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -12,15 +11,15 @@ import token.Token
 import token.TokenPosition
 import token.TokenType
 
-class OperationFactoryTest {
+class ExpressionParserTest {
     private val startPos = TokenPosition(0, 0)
     private val endPos = TokenPosition(0, 1)
-    private val factory = OperationFactory()
+    private val parser = ExpressionParser
 
     @Test
     fun `test single literal`() {
         val tokens = listOf(Token(TokenType.NUMBERLITERAL, "5", startPos, endPos))
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
         assertTrue(result is LiteralNode)
         assertEquals("5", (result as LiteralNode).value)
     }
@@ -33,7 +32,7 @@ class OperationFactoryTest {
                 Token(TokenType.OPERATOR, "+", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
             )
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
         assertTrue(result is BinaryNode)
         assertEquals("+", (result as BinaryNode).operator.value)
         assertEquals("3", (result.left as LiteralNode).value)
@@ -50,7 +49,7 @@ class OperationFactoryTest {
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
                 Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
         assertTrue(result is BinaryNode)
         assertEquals("+", (result as BinaryNode).operator.value)
         assertEquals("3", (result.left as LiteralNode).value)
@@ -67,7 +66,7 @@ class OperationFactoryTest {
                 Token(TokenType.OPERATOR, "*", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
             )
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
 
         assertTrue(result is BinaryNode)
         assertEquals("+", (result as BinaryNode).operator.value)
@@ -81,7 +80,7 @@ class OperationFactoryTest {
         assertEquals("4", (rightNode.right as LiteralNode).value)
     }
 
-    private fun parseExpression(source: String) = factory.createAST(Lexer(TokenMapper("1.0")).execute(source))
+    private fun parseExpression(source: String) = parser.parse(Lexer(TokenMapper("1.0")).execute(source))
 
     @Test
     fun `a string that reads like a parenthesis is an operand`() {
