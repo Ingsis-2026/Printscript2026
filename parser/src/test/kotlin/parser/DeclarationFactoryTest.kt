@@ -1,5 +1,6 @@
 package parser
 
+import ast.DataType
 import ast.DeclarationNode
 import ast.FunctionNode
 import ast.LiteralNode
@@ -174,7 +175,7 @@ class DeclarationFactoryTest {
 
         val result = declarationFactory.createAST(tokens) as DeclarationNode
 
-        assertEquals("boolean", result.dataTypeValue)
+        assertEquals(DataType.BOOLEAN, result.dataType)
         assertEquals("readInput", (result.expr as FunctionNode).functionName)
     }
 
@@ -194,7 +195,7 @@ class DeclarationFactoryTest {
 
         val result = declarationFactory.createAST(tokens) as DeclarationNode
 
-        assertEquals("number", result.dataTypeValue)
+        assertEquals(DataType.NUMBER, result.dataType)
         assertEquals("readEnv", (result.expr as FunctionNode).functionName)
     }
 

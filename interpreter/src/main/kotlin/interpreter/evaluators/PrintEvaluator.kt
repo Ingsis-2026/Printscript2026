@@ -1,6 +1,7 @@
 package interpreter.evaluators
 
 import ast.ASTNode
+import ast.DataType
 import ast.PrintNode
 import interpreter.ExternalInput
 import interpreter.Interpreter
@@ -17,7 +18,7 @@ class PrintEvaluator : NodeEvaluator {
         val value = interpreter.execute(printNode.expression) ?: throw InterpreterException("Invalid expression in PrintNode")
 
         // Un valor leído de afuera dentro de un println es un string, según la consigna.
-        val resolved = if (value is ExternalInput) value.asType("string") else value
+        val resolved = if (value is ExternalInput) value.asType(DataType.STRING) else value
 
         interpreter.printer.print(resolved.toString())
         return Unit

@@ -30,8 +30,7 @@ data class DeclarationNode(
     val declType: TokenType,
     val declValue: String,
     val id: String,
-    val dataType: TokenType,
-    val dataTypeValue: String,
+    val dataType: DataType,
     val expr: ASTNode,
     override val position: TokenPosition,
 ) : ASTNode()

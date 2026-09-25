@@ -5,6 +5,7 @@ import ast.AssignationNode
 import ast.BinaryNode
 import ast.BlockNode
 import ast.ConditionalNode
+import ast.DataType
 import ast.DeclarationNode
 import ast.FunctionNode
 import ast.LiteralNode
@@ -68,7 +69,7 @@ class InterpreterTests {
     @Test
     fun testDeclaration() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = DeclarationNode(TokenType.KEYWORD, "let", "x", TokenType.DATA_TYPE, "number", expression, position)
+        val node = DeclarationNode(TokenType.KEYWORD, "let", "x", DataType.NUMBER, expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
         assertEquals(42, interpreter.variables.valueOf("x"))
@@ -372,7 +373,7 @@ class InterpreterTests {
     @Test
     fun `test declaration node`() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = DeclarationNode(TokenType.KEYWORD, "let", "x", TokenType.DATA_TYPE, "number", expression, position)
+        val node = DeclarationNode(TokenType.KEYWORD, "let", "x", DataType.NUMBER, expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
         assertEquals(42, interpreter.variables.valueOf("x"))
@@ -511,22 +512,22 @@ class InterpreterTests {
 
     @Test
     fun `an external input is read as the type its destination declares`() {
-        assertEquals("5", ExternalInput("5", "readInput").asType("string"))
-        assertEquals(5, ExternalInput("5", "readInput").asType("number"))
-        assertEquals(123.45, ExternalInput("123.45", "readInput").asType("number"))
-        assertEquals(true, ExternalInput("true", "readInput").asType("boolean"))
-        assertEquals("true", ExternalInput("true", "readInput").asType("string"))
+        assertEquals("5", ExternalInput("5", "readInput").asType(DataType.STRING))
+        assertEquals(5, ExternalInput("5", "readInput").asType(DataType.NUMBER))
+        assertEquals(123.45, ExternalInput("123.45", "readInput").asType(DataType.NUMBER))
+        assertEquals(true, ExternalInput("true", "readInput").asType(DataType.BOOLEAN))
+        assertEquals("true", ExternalInput("true", "readInput").asType(DataType.STRING))
     }
 
     @Test
     fun `an external input that does not match the expected type fails`() {
         val exception =
             assertThrows(RuntimeException::class.java) {
-                ExternalInput("Hola", "readInput").asType("boolean")
+                ExternalInput("Hola", "readInput").asType(DataType.BOOLEAN)
             }
 
         assertEquals("readInput devolvió \"Hola\", que no puede interpretarse como boolean", exception.message)
-        assertThrows(RuntimeException::class.java) { ExternalInput("Hola", "readEnv").asType("number") }
+        assertThrows(RuntimeException::class.java) { ExternalInput("Hola", "readEnv").asType(DataType.NUMBER) }
     }
 
     @Test
@@ -941,7 +942,7 @@ class InterpreterTests {
             assertThrows(RuntimeException::class.java) {
                 interpreter.execute(newNode)
             }
-        assertEquals("Invalid expression for type numberliteral", exception.message)
+        assertEquals("Invalid expression for type number", exception.message)
     }
 
     @Test
@@ -949,7 +950,7 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader)
 
         // Asignación inicial de una constante
-        interpreter.variables.declare("constVar", Declaration("const", "string"))
+        interpreter.variables.declare("constVar", Declaration("const", DataType.STRING))
         interpreter.variables.assign("constVar", "FixedValue")
 
         // Intento de reasignar una constante
@@ -1102,8 +1103,7 @@ class InterpreterTests {
                 TokenType.KEYWORD,
                 "let",
                 "uninit",
-                TokenType.DATA_TYPE,
-                "number",
+                DataType.NUMBER,
                 NilNode,
                 position,
             )
@@ -1124,8 +1124,8 @@ class InterpreterTests {
         val result = interpreter.execute(node) as ExternalInput
 
         // Un "100" tipeado no es un número por sí solo: lo es si su destino lo declara así.
-        assertEquals(100, result.asType("number"))
-        assertEquals("100", result.asType("string"))
+        assertEquals(100, result.asType(DataType.NUMBER))
+        assertEquals("100", result.asType(DataType.STRING))
     }
 
     @Test
@@ -1171,8 +1171,8 @@ class InterpreterTests {
     fun `test already declared variable throws`() {
         val interpreter = Interpreter(printer, reader)
         val expr = LiteralNode("1", TokenType.NUMBERLITERAL, position)
-        val node1 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", TokenType.DATA_TYPE, "number", expr, position)
-        val node2 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", TokenType.DATA_TYPE, "number", expr, position)
+        val node1 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", DataType.NUMBER, expr, position)
+        val node2 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", DataType.NUMBER, expr, position)
         interpreter.execute(node1)
         assertThrows(RuntimeException::class.java) {
             interpreter.execute(node2)
@@ -1182,7 +1182,7 @@ class InterpreterTests {
     @Test
     fun `test reassign const variable throws`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.variables.declare("c", Declaration("const", "number"))
+        interpreter.variables.declare("c", Declaration("const", DataType.NUMBER))
         interpreter.variables.assign("c", 10)
         val assignNode =
             AssignationNode(

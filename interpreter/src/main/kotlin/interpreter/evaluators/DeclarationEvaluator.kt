@@ -31,11 +31,11 @@ class DeclarationEvaluator : NodeEvaluator {
         // para resolver un readInput y para rechazar la reasignación de un const.
         interpreter.variables.declare(
             declarationNode.id,
-            Declaration(declarationNode.declValue, declarationNode.dataTypeValue),
+            Declaration(declarationNode.declValue, declarationNode.dataType),
         )
 
         // El tipo de un valor leído de afuera lo fija la variable que lo recibe.
-        val resolved = if (value is ExternalInput) value.asType(declarationNode.dataTypeValue) else value
+        val resolved = if (value is ExternalInput) value.asType(declarationNode.dataType) else value
 
         if (resolved != Unit) {
             interpreter.variables.assign(declarationNode.id, resolved)

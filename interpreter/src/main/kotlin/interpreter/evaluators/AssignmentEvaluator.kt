@@ -2,10 +2,10 @@ package interpreter.evaluators
 
 import ast.ASTNode
 import ast.AssignationNode
+import ast.DataType
 import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
-import token.TokenType
 
 class AssignmentEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is AssignationNode
@@ -50,28 +50,18 @@ class AssignmentEvaluator : NodeEvaluator {
             throw InterpreterException("No es posible reasignar una variable de tipo ${declaration.keyword}")
         }
 
-        // Una variable sólo admite valores de su mismo tipo de PrintScript, y "number"
-        // abarca enteros y decimales: reasignar 5 con 2.5 es válido.
         val existing = interpreter.variables.valueOf(id) ?: return
-        if (printScriptTypeOf(existing) != printScriptTypeOf(value)) {
-            throw InterpreterException("Invalid expression for type ${literalTypeNameOf(existing)}")
+        if (dataTypeOf(existing) != dataTypeOf(value)) {
+            throw InterpreterException("Invalid expression for type ${dataTypeOf(existing).keyword}")
         }
     }
 
-    /** Tipo de PrintScript del valor: number (enteros y decimales), string o boolean. */
-    private fun printScriptTypeOf(value: Any): TokenType =
+    /** Un Int y un Double son el mismo `number`: reasignar 5 con 2.5 es válido. */
+    private fun dataTypeOf(value: Any): DataType =
         when (value) {
-            is Number -> TokenType.NUMBERLITERAL
-            is String -> TokenType.STRINGLITERAL
-            is Boolean -> TokenType.BOOLEANLITERAL
-            else -> TokenType.UNKNOWN
+            is Number -> DataType.NUMBER
+            is String -> DataType.STRING
+            is Boolean -> DataType.BOOLEAN
+            else -> throw InterpreterException("El valor $value no tiene un tipo de PrintScript")
         }
-
-    /**
-     * Nombre del TokenType literal asociado al valor, sólo para los mensajes de error.
-     *
-     * Devuelve el nombre del enum en minúsculas, así que el mensaje dice "numberliteral" y no
-     * "number". Los tests fijan esa redacción textualmente: es intencional, no un descuido.
-     */
-    private fun literalTypeNameOf(value: Any): String = printScriptTypeOf(value).name.lowercase()
 }
