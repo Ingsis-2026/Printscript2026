@@ -1,11 +1,11 @@
 import lexer.Lexer
 import lexer.TokenMapper
 import linter.Linter
-import linter.LinterVersion
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import parser.Parser
+import version.Version
 
 /**
  * El linter debe analizar el programa sin retener el AST completo: consume el flujo de nodos
@@ -31,7 +31,7 @@ class LinterStreamingTest {
                 }
     }
 
-    private fun linter(): Linter = Linter.forConfig(LinterVersion.VERSION_1_0, """{"identifier_format": "camelCase"}""")
+    private fun linter(): Linter = Linter.forConfig(Version.V1_0, """{"identifier_format": "camelCase"}""")
 
     @Test
     fun `a huge source can be analysed and every violation reported`() {

@@ -1,11 +1,11 @@
 package rules
 
-import linter.LinterVersion
+import version.Version
 
 class RuleFactory {
     fun createRules(
         ruleNames: List<RuleName>,
-        version: LinterVersion,
+        version: Version,
     ): List<Rule> = ruleNames.map { createRule(it, version) }
 
     /**
@@ -16,7 +16,7 @@ class RuleFactory {
      */
     private fun createRule(
         ruleName: RuleName,
-        version: LinterVersion,
+        version: Version,
     ): Rule {
         require(version >= ruleName.since) { "Rule not available for this version" }
         return when (ruleName) {

@@ -28,7 +28,7 @@ class ProgramTest {
                     outputs.add(message)
                 }
             }
-        val tokenMapper = TokenMapper.forVersion(version)
+        val tokenMapper = TokenMapper(version)
         val lexer = Lexer(tokenMapper)
         val tokens = lexer.execute(input)
 

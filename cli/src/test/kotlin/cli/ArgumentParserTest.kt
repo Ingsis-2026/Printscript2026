@@ -4,6 +4,7 @@ import cli.arguments.ArgumentParser
 import cli.arguments.CliUsageException
 import cli.arguments.Operation
 import org.junit.jupiter.api.Test
+import version.Version
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -26,12 +27,12 @@ class ArgumentParserTest {
 
     @Test
     fun `la version es opcional y por defecto es 1 punto 0`() {
-        assertEquals("1.0", parser.parse(listOf("execution", source)).version)
+        assertEquals(Version.V1_0, parser.parse(listOf("execution", source)).version)
     }
 
     @Test
     fun `toma la version indicada`() {
-        assertEquals("1.1", parser.parse(listOf("execution", source, "--version", "1.1")).version)
+        assertEquals(Version.V1_1, parser.parse(listOf("execution", source, "--version", "1.1")).version)
     }
 
     @Test
@@ -48,7 +49,7 @@ class ArgumentParserTest {
 
         assertEquals(Operation.FORMATTING, arguments.operation)
         assertEquals(source, arguments.sourcePath)
-        assertEquals("1.1", arguments.version)
+        assertEquals(Version.V1_1, arguments.version)
     }
 
     @Test

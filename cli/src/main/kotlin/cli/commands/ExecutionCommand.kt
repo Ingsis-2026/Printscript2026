@@ -6,6 +6,7 @@ import cli.pipeline.ParsingPipeline
 import interpreter.Interpreter
 import interpreter.Printer
 import interpreter.Reader
+import version.Version
 
 /**
  * Ejecuta el programa.
@@ -16,7 +17,7 @@ import interpreter.Reader
 class ExecutionCommand(
     private val source: Source,
     private val pipeline: ParsingPipeline,
-    private val version: String,
+    private val version: Version,
     private val printer: Printer,
     private val reader: Reader,
     private val output: Output,

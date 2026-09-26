@@ -23,7 +23,7 @@ class SpecComplianceTest {
                     outputs.add(message)
                 }
             }
-        val tokens = Lexer(TokenMapper.forVersion("1.0")).execute(source)
+        val tokens = Lexer(TokenMapper("1.0")).execute(source)
         val astNodes = Parser.forVersion("1.0").execute(tokens)
         val interpreter = Interpreter.forVersion("1.0", printer, reader)
         astNodes.forEach { interpreter.execute(it) }

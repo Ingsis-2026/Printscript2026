@@ -3,12 +3,16 @@ package parser
 import ast.ASTNode
 import factories.ASTFactory
 import token.Token
+import version.Version
 
 class Parser(
-    private val factories: List<ASTFactory> = ParserFactory.defaultFactories(),
+    private val factories: List<ASTFactory> = ParserFactory.factoriesFor(Version.V1_1),
 ) {
     companion object {
-        fun forVersion(version: String): Parser = ParserFactory.forVersion(version)
+        fun forVersion(version: Version): Parser = Parser(ParserFactory.factoriesFor(version))
+
+        /** Para quien recibe la versión como texto, como el TCK. */
+        fun forVersion(version: String): Parser = forVersion(Version.parse(version))
     }
 
     /**

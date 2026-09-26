@@ -3,13 +3,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import rules.FormattingRules
+import version.Version
 
 /**
  * El formatter debe poder recorrer un fuente que no cabe en memoria, emitiendo cada línea
  * formateada a medida que la resuelve.
  */
 class FormatterStreamingTest {
-    private val formatter = FormatterBuilderPS().build(FormattingRules(singleSpaceSeparation = true), "1.0")
+    private val formatter = FormatterBuilderPS().build(FormattingRules(singleSpaceSeparation = true), Version.V1_0)
 
     private class CountingSource(
         private val lineCount: Int,
