@@ -7,6 +7,7 @@ import cli.commands.CommandStatus
 import cli.commands.ExecutionCommand
 import cli.commands.FormattingCommand
 import cli.commands.ValidationCommand
+import diagnostics.ConfigurationException
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -44,7 +45,7 @@ class CommandFactoryTest {
     @Test
     fun `rechaza una regla del linter que la version no soporta`() {
         val exception =
-            assertFailsWith<IllegalArgumentException> {
+            assertFailsWith<ConfigurationException> {
                 commandFor(listOf("analyzing", "$resources/example1.ps", "--config", "$resources/linterRules11.json"))
             }
 

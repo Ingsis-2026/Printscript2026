@@ -1,6 +1,8 @@
 package linter
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import diagnostics.ConfigurationException
 import rules.RuleName
 
 /**
@@ -12,7 +14,7 @@ import rules.RuleName
  */
 class RuleJsonReader {
     fun getRuleNamesFromJson(jsonContent: String): List<RuleName> {
-        val config = jacksonObjectMapper().readValue(jsonContent, LinterConfig::class.java)
+        val config = readConfig(jsonContent)
         val ruleNames = mutableListOf<RuleName>()
 
         when (config.identifierFormat?.replace(" ", "")?.lowercase()) {
@@ -25,4 +27,11 @@ class RuleJsonReader {
 
         return ruleNames
     }
+
+    private fun readConfig(jsonContent: String): LinterConfig =
+        try {
+            jacksonObjectMapper().readValue(jsonContent, LinterConfig::class.java)
+        } catch (exception: JsonProcessingException) {
+            throw ConfigurationException("el archivo de reglas del linter no es JSON válido: ${exception.originalMessage}", exception)
+        }
 }

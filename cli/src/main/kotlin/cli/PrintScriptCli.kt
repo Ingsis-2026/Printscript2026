@@ -6,6 +6,7 @@ import cli.commands.CommandFactory
 import cli.commands.CommandStatus
 import cli.io.Output
 import cli.progress.ConsoleProgressReporter
+import diagnostics.ConfigurationException
 import diagnostics.PrintScriptException
 import java.io.IOException
 
@@ -33,13 +34,7 @@ class PrintScriptCli(
         } catch (exception: CliUsageException) {
             reportUsage(exception.message)
             EXIT_USAGE
-        } catch (exception: IllegalArgumentException) {
-            // Configuración inválida para la versión elegida: el problema está en el archivo
-            // de reglas, no en cómo se invocó la CLI, así que no se muestra el uso.
-            output.error("Error de configuración: ${exception.message}")
-            EXIT_USAGE
-        } catch (exception: IllegalStateException) {
-            // Reglas mal formadas: RulesReader informa el problema con error().
+        } catch (exception: ConfigurationException) {
             output.error("Error de configuración: ${exception.message}")
             EXIT_USAGE
         } catch (exception: IOException) {
