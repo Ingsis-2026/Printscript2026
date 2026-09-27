@@ -14,5 +14,4 @@ enum class TokenType {
     DATA_TYPE,
     FUNCTION,
     CONDITIONAL,
-    UNKNOWN,
 }

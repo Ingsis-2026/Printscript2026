@@ -27,7 +27,6 @@ data class PrintNode(
 ) : ASTNode()
 
 data class DeclarationNode(
-    val declType: TokenType,
     val declValue: String,
     val id: String,
     val dataType: DataType,
@@ -38,7 +37,6 @@ data class DeclarationNode(
 data class AssignationNode(
     val id: String,
     val expression: ASTNode,
-    val valType: TokenType,
     override val position: TokenPosition,
 ) : ASTNode()
 
@@ -56,7 +54,6 @@ data class ConditionalNode(
 ) : ASTNode()
 
 data class FunctionNode(
-    val type: TokenType,
     val functionName: String,
     val expression: ASTNode,
     override val position: TokenPosition,

@@ -105,7 +105,6 @@ class ExternalInputTypingTest {
         val position = TokenPosition(0, 0)
         val call =
             FunctionNode(
-                TokenType.FUNCTION,
                 "readInput",
                 LiteralNode("v: ", TokenType.STRINGLITERAL, position),
                 position,

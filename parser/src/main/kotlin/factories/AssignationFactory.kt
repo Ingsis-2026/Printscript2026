@@ -20,7 +20,6 @@ class AssignationFactory : ASTFactory {
         return AssignationNode(
             id = targetOf(leftTokens, tokens),
             expression = if (rightTokens.isEmpty()) NilNode else ExpressionParser.parse(rightTokens),
-            valType = assignationToken.getType(),
             position = assignationToken.getPosition(),
         )
     }

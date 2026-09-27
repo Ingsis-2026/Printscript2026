@@ -53,8 +53,6 @@ class ParserTests {
         assertEquals(1, asts.size)
 
         val ast = asts[0] as DeclarationNode
-
-        assertEquals(TokenType.KEYWORD, ast.declType)
         assertEquals("x", ast.id)
         assertEquals(DataType.NUMBER, ast.dataType)
     }
@@ -107,14 +105,12 @@ class ParserTests {
 
         val firstTree = trees[0] as DeclarationNode
         assertEquals("x", firstTree.id)
-        assertEquals(TokenType.KEYWORD, firstTree.declType)
 
         val firstRightNode = firstTree.expr as LiteralNode
         assertEquals("42", firstRightNode.value)
 
         val secondTree = trees[1] as DeclarationNode
         assertEquals("y", secondTree.id)
-        assertEquals(TokenType.KEYWORD, secondTree.declType)
 
         val secondRightNode = secondTree.expr as LiteralNode
         assertEquals("10", secondRightNode.value)
