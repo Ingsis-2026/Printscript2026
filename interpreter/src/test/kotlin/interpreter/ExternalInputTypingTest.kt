@@ -1,5 +1,6 @@
 package interpreter
 
+import ast.DataType
 import ast.FunctionNode
 import ast.LiteralNode
 import ast.PrintNode
@@ -93,7 +94,7 @@ class ExternalInputTypingTest {
     fun `a variable declared without a value still remembers its type`() {
         val interpreter = run("let n: number;\nn = readInput(\"v: \");", "10")
 
-        assertEquals("number", interpreter.variables.declarationOf("n")?.declaredType)
+        assertEquals(DataType.NUMBER, interpreter.variables.declarationOf("n")?.declaredType)
         assertEquals(10, interpreter.variables.valueOf("n"))
     }
 

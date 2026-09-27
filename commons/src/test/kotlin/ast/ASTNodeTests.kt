@@ -2,6 +2,7 @@ import ast.AssignationNode
 import ast.BinaryNode
 import ast.BlockNode
 import ast.ConditionalNode
+import ast.DataType
 import ast.DeclarationNode
 import ast.FunctionNode
 import ast.LiteralNode
@@ -54,16 +55,14 @@ class ASTNodeTests {
                 TokenType.DECLARATOR,
                 "let",
                 "x",
-                TokenType.DATA_TYPE,
-                "number",
+                DataType.NUMBER,
                 expr,
                 TokenPosition(1, 1),
             )
 
         assertEquals("let", declNode.declValue)
         assertEquals("x", declNode.id)
-        assertEquals(TokenType.DATA_TYPE, declNode.dataType)
-        assertEquals("number", declNode.dataTypeValue)
+        assertEquals(DataType.NUMBER, declNode.dataType)
         assertEquals(expr, declNode.expr)
         assertEquals(TokenPosition(1, 1), declNode.position)
     }

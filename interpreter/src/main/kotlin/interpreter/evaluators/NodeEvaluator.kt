@@ -19,7 +19,10 @@ interface NodeEvaluator {
     /** Si este evaluador es el que sabe ejecutar [node]. */
     fun canEvaluate(node: ASTNode): Boolean
 
-    /** Ejecuta [node]. Sólo se llama cuando [canEvaluate] dijo que sí. */
+    /**
+     * Ejecuta [node] y devuelve el valor que produce, o `null` si no produce ninguno —como una
+     * sentencia—. Sólo se llama cuando [canEvaluate] dijo que sí.
+     */
     fun evaluate(
         node: ASTNode,
         interpreter: Interpreter,

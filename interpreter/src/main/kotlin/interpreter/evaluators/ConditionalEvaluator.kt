@@ -24,6 +24,6 @@ class ConditionalEvaluator : NodeEvaluator {
         } else {
             interpreter.execute(conditional.elseBlock)
         }
-        return Unit
+        return null
     }
 }

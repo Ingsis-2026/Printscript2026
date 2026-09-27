@@ -59,7 +59,7 @@ class AssignmentTypeTests {
             assertThrows<InterpreterException> {
                 interpreter.execute(assignation("flag", "texto", TokenType.STRINGLITERAL))
             }
-        assertEquals("Invalid expression for type booleanliteral", exception.message)
+        assertEquals("Invalid expression for type boolean", exception.message)
     }
 
     @Test

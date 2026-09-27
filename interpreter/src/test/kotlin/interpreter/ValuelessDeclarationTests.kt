@@ -1,6 +1,7 @@
 package interpreter
 
 import ast.AssignationNode
+import ast.DataType
 import ast.DeclarationNode
 import ast.LiteralNode
 import ast.NilNode
@@ -30,9 +31,9 @@ class ValuelessDeclarationTests {
 
     private fun valuelessDeclaration(
         name: String,
-        type: String,
+        type: DataType,
         keyword: String = "let",
-    ) = DeclarationNode(TokenType.KEYWORD, keyword, name, TokenType.DATA_TYPE, type, NilNode, position)
+    ) = DeclarationNode(TokenType.KEYWORD, keyword, name, type, NilNode, position)
 
     private fun assignment(
         name: String,
@@ -43,11 +44,11 @@ class ValuelessDeclarationTests {
     @Test
     fun `redeclaring a variable that was declared without a value fails`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.execute(valuelessDeclaration("x", "number"))
+        interpreter.execute(valuelessDeclaration("x", DataType.NUMBER))
 
         val exception =
             assertThrows<InterpreterException> {
-                interpreter.execute(valuelessDeclaration("x", "string"))
+                interpreter.execute(valuelessDeclaration("x", DataType.STRING))
             }
 
         assertEquals("La variable 'x' ya ha sido declarada", exception.message)
@@ -56,19 +57,19 @@ class ValuelessDeclarationTests {
     @Test
     fun `a rejected redeclaration leaves the original declared type untouched`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.execute(valuelessDeclaration("x", "number"))
+        interpreter.execute(valuelessDeclaration("x", DataType.NUMBER))
 
         assertThrows<InterpreterException> {
-            interpreter.execute(valuelessDeclaration("x", "string"))
+            interpreter.execute(valuelessDeclaration("x", DataType.STRING))
         }
 
-        assertEquals("number", interpreter.variables.declarationOf("x")?.declaredType)
+        assertEquals(DataType.NUMBER, interpreter.variables.declarationOf("x")?.declaredType)
     }
 
     @Test
     fun `assigning to a const declared without a value fails`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.execute(valuelessDeclaration("c", "number", keyword = "const"))
+        interpreter.execute(valuelessDeclaration("c", DataType.NUMBER, keyword = "const"))
 
         val exception =
             assertThrows<InterpreterException> {
@@ -81,7 +82,7 @@ class ValuelessDeclarationTests {
     @Test
     fun `a variable declared without a value can still receive its first value`() {
         val interpreter = Interpreter(printer, reader)
-        interpreter.execute(valuelessDeclaration("n", "number"))
+        interpreter.execute(valuelessDeclaration("n", DataType.NUMBER))
 
         interpreter.execute(assignment("n", "7", TokenType.NUMBERLITERAL))
 

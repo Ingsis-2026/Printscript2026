@@ -1,5 +1,7 @@
 package interpreter
 
+import ast.DataType
+
 /**
  * Cómo fue declarada una variable: con qué keyword y con qué tipo.
  *
@@ -10,7 +12,7 @@ package interpreter
  */
 class Declaration(
     val keyword: String,
-    val declaredType: String,
+    val declaredType: DataType,
 ) {
     /** Una constante no admite reasignación; quien lo verifica es el evaluador de asignaciones. */
     val isConstant: Boolean get() = keyword == "const"

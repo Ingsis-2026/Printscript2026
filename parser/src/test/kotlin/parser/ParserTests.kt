@@ -2,6 +2,7 @@ package parser
 
 import ast.AssignationNode
 import ast.BinaryNode
+import ast.DataType
 import ast.DeclarationNode
 import ast.LiteralNode
 import ast.PrintNode
@@ -55,8 +56,7 @@ class ParserTests {
 
         assertEquals(TokenType.KEYWORD, ast.declType)
         assertEquals("x", ast.id)
-        assertEquals(TokenType.DATA_TYPE, ast.dataType)
-        assertEquals("number", ast.dataTypeValue)
+        assertEquals(DataType.NUMBER, ast.dataType)
     }
 
     @Test
@@ -82,11 +82,9 @@ class ParserTests {
 
         val firstDeclaration = asts[0] as DeclarationNode
         assertEquals("x", firstDeclaration.id)
-        assertEquals(TokenType.DATA_TYPE, firstDeclaration.dataType)
 
         val secondDeclaration = asts[1] as DeclarationNode
         assertEquals("y", secondDeclaration.id)
-        assertEquals(TokenType.DATA_TYPE, secondDeclaration.dataType)
     }
 
     @Test
@@ -110,7 +108,6 @@ class ParserTests {
         val firstTree = trees[0] as DeclarationNode
         assertEquals("x", firstTree.id)
         assertEquals(TokenType.KEYWORD, firstTree.declType)
-        assertEquals(TokenType.DATA_TYPE, firstTree.dataType)
 
         val firstRightNode = firstTree.expr as LiteralNode
         assertEquals("42", firstRightNode.value)
@@ -118,7 +115,6 @@ class ParserTests {
         val secondTree = trees[1] as DeclarationNode
         assertEquals("y", secondTree.id)
         assertEquals(TokenType.KEYWORD, secondTree.declType)
-        assertEquals(TokenType.DATA_TYPE, secondTree.dataType)
 
         val secondRightNode = secondTree.expr as LiteralNode
         assertEquals("10", secondRightNode.value)

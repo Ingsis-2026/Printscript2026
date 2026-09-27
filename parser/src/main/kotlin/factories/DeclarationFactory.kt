@@ -1,6 +1,7 @@
 package factories
 
 import ast.ASTNode
+import ast.DataType
 import ast.DeclarationNode
 import ast.LiteralNode
 import ast.NilNode
@@ -19,23 +20,24 @@ class DeclarationFactory : ASTFactory {
         val dataTypeToken =
             tokens.find { it.getType() == TokenType.DATA_TYPE }
                 ?: throw error(tokens, "Expected a DATA_TYPE or DATA_TYPE token but found none.")
+        val dataType =
+            DataType.named(dataTypeToken.value)
+                ?: throw error(tokens, "Unknown data type ${dataTypeToken.value}")
 
         val initialPositionExpression = tokens.indexOfFirst { it.getType() == TokenType.ASSIGNATION } + 1
         val expressionTokens: List<Token>? = findExpressionTokens(initialPositionExpression, tokens)
 
         val expressionNode: ASTNode = if (expressionTokens == null) NilNode else findExpressionNode(expressionTokens)
-        val dataTypeValue = dataTypeToken.value
 
         if (expressionTokens != null && !isFunctionCall(expressionTokens)) {
-            checkConsistencyOfExpressionWithDataType(dataTypeValue, expressionTokens)
+            rejectLiteralsOfAnotherType(dataType, expressionTokens)
         }
 
         return DeclarationNode(
             declType = keywordToken.getType(),
             declValue = keywordToken.value,
             id = identifierToken.value,
-            dataType = dataTypeToken.getType(),
-            dataTypeValue = dataTypeValue,
+            dataType = dataType,
             expr = expressionNode,
             position = identifierToken.getPosition(),
         )
@@ -53,34 +55,26 @@ class DeclarationFactory : ASTFactory {
         tokens.lastOrNull()?.getFinalPosition(),
     )
 
-    private fun checkConsistencyOfExpressionWithDataType(
-        dataTypeValue: String,
+    /** Un string admite números y booleanos concatenados; los otros tipos, sólo literales propios. */
+    private fun rejectLiteralsOfAnotherType(
+        dataType: DataType,
         expressionTokens: List<Token>,
     ) {
-        val isInconsistent =
-            when (dataTypeValue) {
-                "number" ->
-                    expressionTokens.any {
-                        it.getType() == TokenType.BOOLEANLITERAL || it.getType() == TokenType.STRINGLITERAL
-                    }
-                "string" ->
-                    expressionTokens.none { it.getType() == TokenType.STRINGLITERAL } &&
-                        expressionTokens.any {
-                            it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.BOOLEANLITERAL
-                        }
-                "boolean" ->
-                    expressionTokens.any {
-                        it.getType() == TokenType.NUMBERLITERAL || it.getType() == TokenType.STRINGLITERAL
-                    }
-                else -> false
-            }
-        if (isInconsistent) {
-            throw error(
-                expressionTokens,
-                "declared data type $dataTypeValue is inconsistent with the expression",
-            )
+        val literalTypes = expressionTokens.mapNotNull { literalTypeOf(it) }.toSet()
+        val hasLiteralsOfAnotherType = (literalTypes - dataType).isNotEmpty()
+        val concatenatesIntoString = dataType == DataType.STRING && DataType.STRING in literalTypes
+        if (hasLiteralsOfAnotherType && !concatenatesIntoString) {
+            throw error(expressionTokens, "declared data type ${dataType.keyword} is inconsistent with the expression")
         }
     }
+
+    private fun literalTypeOf(token: Token): DataType? =
+        when (token.getType()) {
+            TokenType.NUMBERLITERAL -> DataType.NUMBER
+            TokenType.STRINGLITERAL -> DataType.STRING
+            TokenType.BOOLEANLITERAL -> DataType.BOOLEAN
+            else -> null
+        }
 
     private fun findExpressionTokens(
         initialPositionExpression: Int,
