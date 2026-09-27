@@ -164,7 +164,7 @@ h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40p
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ fe77af9 · study sheet 4 of 8</p>
+  <p class="eyebrow">Printscript2026 @ 2705c6d · study sheet 4 of 8</p>
   <h1><code>interpreter</code></h1>
   <p class="lede">Executes AST nodes one at a time against one small table of state. Output and input go through two one-method interfaces, so the same code runs in the CLI and inside the TCK.</p>
   <ul class="meta">
@@ -394,7 +394,7 @@ PrintEvaluator ← Print
   <div class="decision">
     <h4><code>Printer</code> and <code>Reader</code> are injected</h4>
     <p>Dependency inversion. The spec asks for "a mechanism to provide values" when the interpreter is used programmatically. The CLI plugs in stdout/stdin, the TCK plugs in its emitter and provider as method references, and tests capture output in a list.</p>
-    <p class="cost"><b>Cost</b><code>readEnv</code> still reads <code>System.getenv</code> directly (<span class="ref">FunctionEvaluator.kt:49</span>), so tests depend on the real environment. The TCK's <code>build.gradle</code> sets a variable for exactly that reason.</p>
+    <p class="cost"><b>Cost</b><code>readEnv</code> still reads <code>System.getenv</code> directly (<span class="ref">FunctionEvaluator.kt:46</span>), so tests depend on the real environment. The TCK's <code>build.gradle</code> sets a variable for exactly that reason.</p>
   </div>
 
   <div class="decision">
