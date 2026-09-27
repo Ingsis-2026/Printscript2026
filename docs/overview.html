@@ -128,13 +128,13 @@ td:first-child{white-space:nowrap}
   <ol>
     <li><a href="#overview"><span>Big picture</span><span></span></a></li>
     <li><a href="#trace"><span>Example 2, traced</span><span></span></a></li>
-    <li><a href="#commons"><span>commons</span><span>242</span></a></li>
-    <li><a href="#lexer"><span>lexer</span><span>242</span></a></li>
-    <li><a href="#parser"><span>parser</span><span>727</span></a></li>
-    <li><a href="#interpreter"><span>interpreter</span><span>734</span></a></li>
-    <li><a href="#formatter"><span>formatter</span><span>427</span></a></li>
-    <li><a href="#linter"><span>linter</span><span>395</span></a></li>
-    <li><a href="#cli"><span>cli</span><span>729</span></a></li>
+    <li><a href="#commons"><span>commons</span><span>197</span></a></li>
+    <li><a href="#lexer"><span>lexer</span><span>217</span></a></li>
+    <li><a href="#parser"><span>parser</span><span>601</span></a></li>
+    <li><a href="#interpreter"><span>interpreter</span><span>720</span></a></li>
+    <li><a href="#formatter"><span>formatter</span><span>431</span></a></li>
+    <li><a href="#linter"><span>linter</span><span>411</span></a></li>
+    <li><a href="#cli"><span>cli</span><span>718</span></a></li>
   </ol>
   <p class="grp">Across modules</p>
   <ol>
@@ -153,13 +153,13 @@ td:first-child{white-space:nowrap}
 <header class="top">
   <p class="eyebrow">Printscript2026 @ 0ac7191 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
-  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
+  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 0ac7191. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
-    <li><b>3,401</b>lines of main Kotlin</li>
-    <li><b>393</b>unit tests</li>
+    <li><b>3,295</b>lines of main Kotlin</li>
+    <li><b>395</b>unit tests</li>
     <li><b>59/59</b>TCK tests passing</li>
-    <li><b>87–93%</b>instruction coverage per module</li>
+    <li><b>91–97%</b>instruction coverage per module</li>
     <li><b>7 MB</b>TCK heap limit</li>
   </ul>
 </header>
@@ -402,7 +402,7 @@ println("Result: " + c);</pre></td>
     <div class="watch"><h4>Trade-offs to own</h4><ul>
       <li><strong>Why one exception type with nullable positions?</strong> Some errors have no token at hand, such as an empty program (<span class="ref">StatementSplitter.kt:90</span>). Nullable positions let those share the same hierarchy instead of needing a second error type.</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 20 in TokenTests, ASTNodeTests and PrintScriptExceptionTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 25 in ASTNodeTests, PrintScriptExceptionTest, ConfigurationExceptionTest and VersionTest.</p>
   </div>
 </section>
 
@@ -528,7 +528,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <div class="decision"><dt><code>Printer</code> / <code>Reader</code> interfaces<small>Printer.kt:3 · Reader.kt:3</small></dt><dd>Dependency inversion. The spec requires a programmatic way to provide input, which is the TCK's <code>InputProvider</code>. Being single-method interfaces, they take Java method references directly (<span class="ref">InterpreterAdapter.java:54</span>).</dd></div>
       <div class="decision"><dt>Executes node by node<small>Interpreter.kt:32</small></dt><dd>The interpreter never sees the whole program, and the caller decides how the stream is fed. That's what lets execution interleave with parsing.</dd></div>
     </dl>
-    <p class="tests" style="margin-top:18px">Tests: 126, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 127, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
   </div>
 </section>
 
@@ -629,7 +629,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <div class="decision"><dt>stdout is only the result<small>ConsoleOutput.kt:5–10</small></dt><dd><code>printscript formatting x.ps --config r.yaml &gt; out.ps</code> works because the progress bar and messages go to stderr.</dd></div>
       <div class="decision"><dt><code>Source</code> / <code>Output</code> abstractions<small>Source.kt:10 · Output.kt:9</small></dt><dd>Tests replace them with in-memory doubles (<code>TestDoubles.kt</code>). <code>Source.useLines</code> never exposes the whole file, so a command can't accidentally load it all.</dd></div>
     </dl>
-    <p class="tests" style="margin-top:18px">Tests: 68 in ArgumentParserTest, CommandFactoryTest, CommandTest, IoTest, PrintScriptCliTest and StreamingTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 69 in ArgumentParserTest, CommandFactoryTest, CommandTest, IoTest, OperationTest, PrintScriptCliTest and StreamingTest.</p>
   </div>
 </section>
 
@@ -675,13 +675,13 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <div class="tablewrap" style="margin-top:20px"><table>
       <thead><tr><th>Module</th><th class="num">Main LOC</th><th class="num">Tests</th><th class="num">Coverage</th></tr></thead>
       <tbody>
-        <tr><td>commons</td><td class="num">153</td><td class="num">20</td><td class="num">94.4%</td></tr>
-        <tr><td>lexer</td><td class="num">242</td><td class="num">21</td><td class="num">90.8%</td></tr>
-        <tr><td>parser</td><td class="num">727</td><td class="num">61</td><td class="num">91.7%</td></tr>
-        <tr><td>interpreter</td><td class="num">734</td><td class="num">127</td><td class="num">90.3%</td></tr>
-        <tr><td>formatter</td><td class="num">427</td><td class="num">33</td><td class="num">93.4%</td></tr>
-        <tr><td>linter</td><td class="num">395</td><td class="num">44</td><td class="num">99.3%</td></tr>
-        <tr><td>cli</td><td class="num">729</td><td class="num">68</td><td class="num">93.1%</td></tr>
+        <tr><td>commons</td><td class="num">197</td><td class="num">25</td><td class="num">93.0%</td></tr>
+        <tr><td>lexer</td><td class="num">217</td><td class="num">23</td><td class="num">97.4%</td></tr>
+        <tr><td>parser</td><td class="num">601</td><td class="num">73</td><td class="num">95.0%</td></tr>
+        <tr><td>interpreter</td><td class="num">720</td><td class="num">127</td><td class="num">90.8%</td></tr>
+        <tr><td>formatter</td><td class="num">431</td><td class="num">33</td><td class="num">94.0%</td></tr>
+        <tr><td>linter</td><td class="num">411</td><td class="num">45</td><td class="num">96.6%</td></tr>
+        <tr><td>cli</td><td class="num">718</td><td class="num">69</td><td class="num">94.1%</td></tr>
       </tbody>
     </table></div>
     <p class="tests">Coverage is instruction coverage from the latest local JaCoCo reports; re-run <code>./gradlew check</code> before quoting it.</p>
@@ -834,7 +834,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
-      <p>Three layers. First, 394 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+      <p>Three layers. First, 395 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
       <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>
