@@ -126,7 +126,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 2705c6d · study sheet 1 of 8</p>
+  <p class="eyebrow">Printscript2026 @ 0ac7191 · study sheet 1 of 8</p>
   <h1><code>commons</code></h1>
   <p class="lede">The contract between modules: what a token is, the nine kinds of AST node, and the one error type every stage throws. It has no dependencies and almost no behaviour, which is exactly why it's the right place to start.</p>
   <ul class="meta">
@@ -166,7 +166,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
       <tr><td class="t">PrintScriptException</td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role throws">throws</span></td><td><span class="role none">—</span></td><td><span class="role none">—</span></td><td><span class="role catches">catches</span></td></tr>
     </tbody>
   </table></div>
-  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">LineScanner.kt:84–89</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:29</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
+  <p>Read it as a pipeline. The lexer is the only module that <em>creates</em> tokens and positions (<span class="ref">LineScanner.kt:84–89</span>), and the parser is the only one that <em>creates</em> AST nodes. Everything downstream only reads them. The interpreter "reads" <code>Token</code> through <code>BinaryNode.operator</code>. Errors run the other way: three modules throw them, and the CLI catches them in one place (<span class="ref">PrintScriptCli.kt:30</span>). The TCK adapter catches them the same way (<span class="ref">Pipeline.java:42</span>).</p>
 </section>
 
 <section id="code">
@@ -222,6 +222,12 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
     <li><strong>Position as data, not text</strong> (:16–17). <code>message</code> stays clean for tests, and each front end decides how to show the location.</li>
     <li><strong><code>describe()</code></strong> (:20) is the single place that converts to 1-based coordinates. It prints one point when start equals end (:29) and a <em>"desde … hasta …"</em> range otherwise (:30–31). A missing end falls back to the start (:28), and no position at all returns just the message (:22).</li>
     <li>What the user sees: <code>Error: Const declarations are not allowed in version 1.0 (desde línea 1, columna 1 hasta línea 1, columna 6)</code>.</li>
+  </ul>
+  <h3>ConfigurationException.kt <span class="path">diagnostics/ConfigurationException.kt</span></h3>
+  <div class="code"><pre><span class="l"><i>3</i><span class="cm">/**</span></span><span class="l"><i>4</i><span class="cm"> * El archivo de configuración de una herramienta no se puede usar: está mal formado, o pide algo</span></span><span class="l"><i>5</i><span class="cm"> * que la versión elegida no tiene.</span></span><span class="l"><i>6</i><span class="cm"> *</span></span><span class="l"><i>7</i><span class="cm"> * Se distingue de [PrintScriptException] porque el problema no está en el programa del usuario</span></span><span class="l"><i>8</i><span class="cm"> * sino en cómo se configuró la herramienta, y por eso no lleva una ubicación en el fuente.</span></span><span class="l"><i>9</i><span class="cm"> */</span></span><span class="l hl"><i>10</i><span class="kw">class</span> ConfigurationException(</span><span class="l hl"><i>11</i>    message: String,</span><span class="l hl"><i>12</i>    cause: Throwable? = <span class="kw">null</span>,</span><span class="l hl"><i>13</i>) : RuntimeException(message, cause)</span></pre></div>
+  <ul class="points">
+    <li><strong>Not a <code>PrintScriptException</code></strong>: the problem is in how a tool was configured, not in the user's program, so there's no position in the source to give.</li>
+    <li><strong>Thrown only by the config readers</strong>: <code>RulesReader</code> (formatter), <code>RuleJsonReader</code> and <code>RuleFactory</code> (linter). The CLI catches exactly this type and reports <em>"Error de configuración: …"</em> with exit code 2 (<span class="ref">PrintScriptCli.kt:37–39</span>).</li>
   </ul>
 </section>
 

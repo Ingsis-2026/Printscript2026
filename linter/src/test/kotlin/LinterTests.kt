@@ -1,4 +1,5 @@
 import ast.ASTNode
+import diagnostics.ConfigurationException
 import linter.BrokenRule
 import linter.Linter
 import linter.LinterOutput
@@ -52,9 +53,19 @@ class LinterTests {
         val linter = Linter(LinterVersion.VERSION_1_0)
         val filePath = "src/test/resources/linter_rules.json"
 
-        assertThrows<IllegalArgumentException> {
+        assertThrows<ConfigurationException> {
             linter.readJson(File(filePath).readText())
         }
+    }
+
+    @Test
+    fun `a malformed config is a configuration error`() {
+        val exception =
+            assertThrows<ConfigurationException> {
+                Linter(LinterVersion.VERSION_1_1).readJson("{ not json")
+            }
+
+        assertTrue(exception.message!!.startsWith("el archivo de reglas del linter no es JSON válido"), exception.message)
     }
 
     @Test

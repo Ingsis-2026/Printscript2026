@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 2705c6d · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 0ac7191 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -394,7 +394,7 @@ println("Result: " + c);</pre></td>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>Position travels as data, not inside the message<small>PrintScriptException.kt:8–11</small></dt><dd>Tests can compare clean messages, and each front end formats the location its own way: the CLI in Spanish, the TCK adapter as-is. The CLI catches a single exception type and never needs to know which stage failed (<span class="ref">PrintScriptCli.kt:29</span>).</dd></div>
+      <div class="decision"><dt>Position travels as data, not inside the message<small>PrintScriptException.kt:8–11</small></dt><dd>Tests can compare clean messages, and each front end formats the location its own way: the CLI in Spanish, the TCK adapter as-is. The CLI catches a single exception type and never needs to know which stage failed (<span class="ref">PrintScriptCli.kt:30</span>).</dd></div>
       <div class="decision"><dt>Sealed AST<small>ASTNode.kt:7</small></dt><dd>The compiler checks every exhaustive <code>when</code>, so a new language construct can't be silently ignored by a consumer. This matters because the assignment says the language will grow.</dd></div>
       <div class="decision"><dt>A shared module instead of duplicating types<small>*/build.gradle.kts</small></dt><dd>This gives low coupling: tools depend on a small, stable contract rather than on each other. Parser and interpreter need nothing else (Figure 2).</dd></div>
     </dl>
@@ -543,7 +543,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Read the rules.</strong> <span class="ref">RulesReader.kt:16–31</span> parses YAML <em>and</em> JSON with SnakeYAML, since JSON is a subset of YAML. Anything that isn't a key/value map is rejected (:26–28).</div></li>
+      <li><div><strong>Read the rules.</strong> <span class="ref">RulesReader.kt:17–32</span> parses YAML <em>and</em> JSON with SnakeYAML, since JSON is a subset of YAML. Anything that isn't a key/value map is rejected (:27–29).</div></li>
       <li><div><strong>Map config names to settings.</strong> <span class="ref">FormattingRules.kt:24–34</span> holds the TCK's rule names, and <code>from</code> (:36–47) builds the settings. A missing key means "don't touch" (:3–9). The two <code>=</code> rules collapse into a three-state <code>Boolean?</code> (:57–62), as do the two brace rules (:64–69).</div></li>
       <li><div><strong>Build.</strong> <span class="ref">FormatterBuilderPS.kt:22–25</span> creates <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code>. Overloads accept a path (:11) or an <code>InputStream</code> (:17).</div></li>
       <li><div><strong>Recover the original text.</strong> <span class="ref">SourceToken.kt:40–53</span> pairs each token with its exact source slice. It remembers only the line currently being lexed (:45–46), which works because the lexer emits all of a line's tokens before reading the next line.</div></li>
@@ -578,8 +578,8 @@ fun asType(dataType: DataType): Any = when (dataType) {
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:23–26</span> passes the config to <span class="ref">RuleJsonReader.kt:29–42</span>, which uses Jackson and ignores unknown keys (:8). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (:33) and returns rule <em>names</em>, not rule objects.</div></li>
-      <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:6–21</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:19, :23–31), and asking for it under 1.0 is a configuration error.</div></li>
+      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:23–26</span> passes the config to <span class="ref">RuleJsonReader.kt:16–29</span>, which reads it with Jackson (:31–36) and ignores unknown keys (<span class="ref">LinterConfig.kt:13</span>). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (<span class="ref">RuleJsonReader.kt:20</span>) and returns rule <em>names</em>, not rule objects.</div></li>
+      <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:7–10</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:22, :23–28), and asking for it under 1.0 is a <code>ConfigurationException</code>.</div></li>
       <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:42–52</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
       <li><div><strong>The rules.</strong>
         <ul class="plain" style="margin-top:6px">
@@ -600,7 +600,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
       <li><strong>Flattened tokens lose structure.</strong> Rules see <code>IDENTIFIER:c IDENTIFIER:a OPERATOR:/ …</code>, not a tree. For the three rules in the spec that's enough, and each rule is about ten lines. A rule that needs nesting (say, "no <code>println</code> deeper than two blocks") would be the moment to add a tree-based rule interface next to this one.</li>
-      <li><strong>The config reader returns names, not rules.</strong> That looks like an extra step, but it keeps Jackson out of the rule classes and puts the version check in one place (<span class="ref">RuleFactory.kt:23</span>).</li>
+      <li><strong>The config reader returns names, not rules.</strong> That looks like an extra step, but it keeps Jackson out of the rule classes and puts the version check in one place (<span class="ref">RuleFactory.kt:24</span>).</li>
     </ul></div>
     <p class="tests" style="margin-top:18px">Tests: 58 in LinterTests, RulesTests, LinterEndToEndTests, LinterStreamingTest and OutputFileManagerTest.</p>
   </div>
@@ -617,8 +617,8 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <li><div><strong>Entry point.</strong> <span class="ref">Main.kt:6–8</span>: <code>exitProcess(PrintScriptCli(ConsoleOutput()).run(args))</code>.</div></li>
       <li><div><strong>Parse arguments.</strong> <span class="ref">ArgumentParser.kt:14–28</span> separates positional arguments from flags in a single pass (:37–53), then reads the operation (:68–74). It checks that the source file exists (:76–84) and turns the version into a <code>Version</code>, defaulting to <code>1.0</code> (:99–103). Config is required for formatting and analyzing (:86–97) via <code>Operation.requiresConfig</code> (<span class="ref">Operation.kt:14–17</span>).</div></li>
       <li><div><strong>Build a command.</strong> <span class="ref">CommandFactory.kt:35–45</span> constructs one of four <code>Command</code>s and all of its collaborators: the pipeline, a formatter from <code>FormatterBuilder</code> (:67), a linter with its version (:77).</div></li>
-      <li><div><strong>Run it.</strong> <span class="ref">CliInvoker.kt:7</span> runs the command, and <span class="ref">PrintScriptCli.kt:50–56</span> maps SUCCESS/FAILURE to exit codes.</div></li>
-      <li><div><strong>Handle errors once.</strong> <span class="ref">PrintScriptCli.kt:26–48</span> is the only place that catches. <code>PrintScriptException</code> prints <code>Error: describe()</code> and exits 1. Usage errors print the usage line and exit 2. Invalid configuration exits 2, and I/O errors exit 1.</div></li>
+      <li><div><strong>Run it.</strong> <span class="ref">CliInvoker.kt:7</span> runs the command, and <span class="ref">PrintScriptCli.kt:45–51</span> maps SUCCESS/FAILURE to exit codes.</div></li>
+      <li><div><strong>Handle errors once.</strong> <span class="ref">PrintScriptCli.kt:27–43</span> is the only place that catches. <code>PrintScriptException</code> prints <code>Error: describe()</code> and exits 1. Usage errors print the usage line and exit 2. A <code>ConfigurationException</code>, which only the formatter and linter throw when their rules can't be used, exits 2, and I/O errors exit 1.</div></li>
       <li><div><strong>Show progress while parsing.</strong> The assignment asks for this. <span class="ref">ParsingPipeline.kt:31–47</span> wraps the node stream in <code>onEach</code> and reports each statement as it's parsed (:39–42). <span class="ref">ConsoleProgressReporter.kt:14–22</span> rewrites a single stderr line using <code>\r</code>.</div></li>
       <li><div><strong>The four operations.</strong> Validation consumes and counts nodes (<span class="ref">ValidationCommand.kt:18–23</span>). Execution runs the interpreter <em>inside</em> the stream (<span class="ref">ExecutionCommand.kt:25–30</span>). Formatting sends lines to a sink (<span class="ref">FormattingCommand.kt:20–24</span>). Analyzing returns FAILURE when there are violations (<span class="ref">AnalyzingCommand.kt:21–33</span>).</div></li>
       <li><div><strong>I/O boundaries.</strong> <code>Output</code> has three channels: result goes to stdout, while info and error go to stderr (<span class="ref">ConsoleOutput.kt:15–19</span>). <span class="ref">OutputPrinter.kt:14</span> adapts <code>Printer</code> to the result channel. <span class="ref">ConsoleReader.kt:12–16</span> keeps one <code>BufferedReader</code> on stdin so no lines are lost between reads. <span class="ref">FileSource.kt:17</span> closes the file after the block, and <code>FileSink</code>/<code>OutputSink</code> write formatted lines.</div></li>
@@ -651,7 +651,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
         <tr><td>lexer</td><td>Token vocabulary: which words and symbols the version has</td><td><span class="ref">TokenMapper.kt:34–38</span></td></tr>
         <tr><td>parser</td><td><code>ConditionalFactory</code> in the list or not</td><td><span class="ref">ParserFactory.kt:13–17</span></td></tr>
         <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:20–33</span></td></tr>
-        <tr><td>linter</td><td><code>inputonly</code> rule allowed or not</td><td><span class="ref">RuleFactory.kt:23–31</span></td></tr>
+        <tr><td>linter</td><td><code>inputonly</code> rule allowed or not</td><td><span class="ref">RuleFactory.kt:24–32</span></td></tr>
         <tr><td>formatter</td><td>Only via its lexer, which must accept braces</td><td><span class="ref">FormatterBuilderPS.kt:25</span></td></tr>
         <tr><td>cli</td><td><code>--version</code>, default 1.0, turned into a <code>Version</code> once</td><td><span class="ref">ArgumentParser.kt:99–103</span></td></tr>
       </tbody>
@@ -770,7 +770,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <h4>Errors: exceptions that carry their position, caught at one boundary</h4>
       <p class="over">instead of collecting a list of errors, or returning result types from every stage</p>
       <div class="cols">
-        <div><h5>Why</h5><p>The spec and the TCK both report an error and stop. Stages stay free of error-passing code, the position travels with the exception, and each front end catches once: <span class="ref">PrintScriptCli.kt:29</span> for the CLI and <span class="ref">InterpreterAdapter.java:60</span> for the TCK.</p></div>
+        <div><h5>Why</h5><p>The spec and the TCK both report an error and stop. Stages stay free of error-passing code, the position travels with the exception, and each front end catches once: <span class="ref">PrintScriptCli.kt:30</span> for the CLI and <span class="ref">InterpreterAdapter.java:60</span> for the TCK.</p></div>
         <div><h5 class="cost">Cost we accept</h5><p>Only the first error is reported; a file with three syntax errors needs three runs. An IDE-style tool that lists every problem would need the parser to recover and collect errors.</p></div>
       </div>
     </div>
@@ -822,7 +822,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why doesn't the parser depend on the lexer?</summary>
       <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:49–52</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
     <details><summary>Where are the SOLID principles?</summary>
-      <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the vocabulary maps and the factory, evaluator and rule lists, where a version is just data. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:29</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
+      <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the vocabulary maps and the factory, evaluator and rule lists, where a version is just data. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:30</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
     <details><summary>Which design patterns did you use?</summary>
       <p>Strategy (evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:49</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
     <details><summary>How do you know it doesn't load the whole file?</summary>

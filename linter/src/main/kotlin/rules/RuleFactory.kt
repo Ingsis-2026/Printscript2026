@@ -1,5 +1,6 @@
 package rules
 
+import diagnostics.ConfigurationException
 import version.Version
 
 class RuleFactory {
@@ -18,7 +19,7 @@ class RuleFactory {
         ruleName: RuleName,
         version: Version,
     ): Rule {
-        require(version >= ruleName.since) { "Rule not available for this version" }
+        if (version < ruleName.since) throw ConfigurationException("Rule not available for this version")
         return when (ruleName) {
             RuleName.CAMEL_CASE -> IdentifierFormatRule(IdentifierFormat.CAMEL_CASE)
             RuleName.SNAKE_CASE -> IdentifierFormatRule(IdentifierFormat.SNAKE_CASE)

@@ -150,6 +150,14 @@ class PrintScriptCliTest {
     }
 
     @Test
+    fun `informa un archivo de reglas del linter mal formado como error de configuracion`() {
+        val exitCode = cli().run(listOf("analyzing", "$resources/example1.ps", "--config", "$resources/badLinterRules.json"))
+
+        assertEquals(PrintScriptCli.EXIT_USAGE, exitCode)
+        assertTrue(output.errorText().contains("Error de configuración: el archivo de reglas del linter no es JSON válido"))
+    }
+
+    @Test
     fun `informa un destino de salida inaccesible`() {
         val exitCode =
             cli().run(

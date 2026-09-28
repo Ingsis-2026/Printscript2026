@@ -1,5 +1,6 @@
 package rules
 
+import diagnostics.ConfigurationException
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.YAMLException
 import java.io.File
@@ -20,12 +21,12 @@ class RulesReader {
             try {
                 Yaml().load<Any?>(content)
             } catch (exception: YAMLException) {
-                throw IllegalArgumentException("el archivo de reglas no es YAML ni JSON válido: ${exception.message}")
+                throw ConfigurationException("el archivo de reglas no es YAML ni JSON válido: ${exception.message}", exception)
             } ?: return FormattingRules()
 
         val values =
             parsed as? Map<*, *>
-                ?: throw IllegalArgumentException("el archivo de reglas debe ser un objeto con una regla por clave")
+                ?: throw ConfigurationException("el archivo de reglas debe ser un objeto con una regla por clave")
 
         return FormattingRules.from(values.entries.associate { (key, value) -> key.toString() to value })
     }
