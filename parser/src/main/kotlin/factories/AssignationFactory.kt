@@ -2,7 +2,6 @@ package factories
 
 import ast.ASTNode
 import ast.AssignationNode
-import ast.NilNode
 import parser.ExpressionParser
 import parser.ParserException
 import token.Token
@@ -14,12 +13,15 @@ class AssignationFactory : ASTFactory {
         if (assignationIndex < 0) throw ParserException("Assignation token not found", tokens)
         val assignationToken = tokens[assignationIndex]
 
-        val leftTokens = tokens.subList(0, assignationIndex)
-        val rightTokens = tokens.subList(assignationIndex + 1, tokens.size)
+        val target = targetOf(tokens.subList(0, assignationIndex), tokens)
+        val expressionTokens =
+            tokens.subList(assignationIndex + 1, tokens.size).ifEmpty {
+                throw ParserException("Expected an expression after =", tokens)
+            }
 
         return AssignationNode(
-            id = targetOf(leftTokens, tokens),
-            expression = if (rightTokens.isEmpty()) NilNode else ExpressionParser.parse(rightTokens),
+            id = target,
+            expression = ExpressionParser.parse(expressionTokens),
             position = assignationToken.getPosition(),
         )
     }
