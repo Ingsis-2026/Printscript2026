@@ -128,13 +128,13 @@ td:first-child{white-space:nowrap}
   <ol>
     <li><a href="#overview"><span>Big picture</span><span></span></a></li>
     <li><a href="#trace"><span>Example 2, traced</span><span></span></a></li>
-    <li><a href="#commons"><span>commons</span><span>242</span></a></li>
-    <li><a href="#lexer"><span>lexer</span><span>242</span></a></li>
-    <li><a href="#parser"><span>parser</span><span>727</span></a></li>
-    <li><a href="#interpreter"><span>interpreter</span><span>734</span></a></li>
-    <li><a href="#formatter"><span>formatter</span><span>427</span></a></li>
-    <li><a href="#linter"><span>linter</span><span>395</span></a></li>
-    <li><a href="#cli"><span>cli</span><span>729</span></a></li>
+    <li><a href="#commons"><span>commons</span><span>197</span></a></li>
+    <li><a href="#lexer"><span>lexer</span><span>217</span></a></li>
+    <li><a href="#parser"><span>parser</span><span>601</span></a></li>
+    <li><a href="#interpreter"><span>interpreter</span><span>720</span></a></li>
+    <li><a href="#formatter"><span>formatter</span><span>431</span></a></li>
+    <li><a href="#linter"><span>linter</span><span>411</span></a></li>
+    <li><a href="#cli"><span>cli</span><span>718</span></a></li>
   </ol>
   <p class="grp">Across modules</p>
   <ol>
@@ -153,13 +153,13 @@ td:first-child{white-space:nowrap}
 <header class="top">
   <p class="eyebrow">Printscript2026 @ 0ac7191 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
-  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
+  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 0ac7191. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
-    <li><b>3,401</b>lines of main Kotlin</li>
-    <li><b>393</b>unit tests</li>
+    <li><b>3,295</b>lines of main Kotlin</li>
+    <li><b>395</b>unit tests</li>
     <li><b>59/59</b>TCK tests passing</li>
-    <li><b>87–93%</b>instruction coverage per module</li>
+    <li><b>91–97%</b>instruction coverage per module</li>
     <li><b>7 MB</b>TCK heap limit</li>
   </ul>
 </header>
@@ -402,7 +402,7 @@ println("Result: " + c);</pre></td>
     <div class="watch"><h4>Trade-offs to own</h4><ul>
       <li><strong>Why one exception type with nullable positions?</strong> Some errors have no token at hand, such as an empty program (<span class="ref">StatementSplitter.kt:90</span>). Nullable positions let those share the same hierarchy instead of needing a second error type.</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 20 in TokenTests, ASTNodeTests and PrintScriptExceptionTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 25 in ASTNodeTests, PrintScriptExceptionTest, ConfigurationExceptionTest and VersionTest.</p>
   </div>
 </section>
 
@@ -528,7 +528,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <div class="decision"><dt><code>Printer</code> / <code>Reader</code> interfaces<small>Printer.kt:3 · Reader.kt:3</small></dt><dd>Dependency inversion. The spec requires a programmatic way to provide input, which is the TCK's <code>InputProvider</code>. Being single-method interfaces, they take Java method references directly (<span class="ref">InterpreterAdapter.java:54</span>).</dd></div>
       <div class="decision"><dt>Executes node by node<small>Interpreter.kt:32</small></dt><dd>The interpreter never sees the whole program, and the caller decides how the stream is fed. That's what lets execution interleave with parsing.</dd></div>
     </dl>
-    <p class="tests" style="margin-top:18px">Tests: 126, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 127, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
   </div>
 </section>
 
@@ -574,35 +574,33 @@ fun asType(dataType: DataType): Any = when (dataType) {
 <section class="mod" id="linter">
   <div class="modhead"><h2><code>linter</code></h2><span class="meta">depends on commons · jackson-module-kotlin 2.15</span></div>
   <div class="prose">
-    <p>The linter is the static code analyzer. It reads a JSON config, builds the enabled rules for the version, and checks each statement as it streams by. Every violation is reported with its position.</p>
+    <p>The linter is the static code analyzer. It reads a JSON config, builds the enabled rules for the version, and checks each statement of the AST as it streams by. Every violation is reported with its position.</p>
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:23–26</span> passes the config to <span class="ref">RuleJsonReader.kt:16–29</span>, which reads it with Jackson (:31–36) and ignores unknown keys (<span class="ref">LinterConfig.kt:13</span>). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (<span class="ref">RuleJsonReader.kt:20</span>) and returns rule <em>names</em>, not rule objects.</div></li>
+      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:27–30</span> passes the config to <span class="ref">RuleJsonReader.kt:16–29</span>, which reads it with Jackson (:31–36) and ignores unknown keys (<span class="ref">LinterConfig.kt:13</span>). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (<span class="ref">RuleJsonReader.kt:20</span>) and returns rule <em>names</em>, not rule objects.</div></li>
       <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:7–10</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:22, :23–28), and asking for it under 1.0 is a <code>ConfigurationException</code>.</div></li>
-      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:42–52</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
-      <li><div><strong>The rules.</strong>
+      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:42–52</span> runs every rule on one statement at a time. <span class="ref">Statements.kt:23</span> turns each top-level node into the statements it contains, so a <code>println</code> inside an <code>if</code> is a statement of its own and is reported at its own position. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
+      <li><div><strong>The rules.</strong> Two classes, each a function from a statement to the violations in it (<span class="ref">Rule.kt:13–15</span>). Both look only at the statement's own nodes (<span class="ref">Statements.kt:31</span>), which stops at blocks so nothing is reported twice.
         <ul class="plain" style="margin-top:6px">
-          <li><span class="ref">CamelCaseRule.kt:10–22</span>: an identifier must start lowercase and contain no <code>_</code>.</li>
-          <li><span class="ref">SnakeCaseRule.kt:10–21</span>: only lowercase letters and <code>_</code>, with no <code>__</code>.</li>
-          <li><span class="ref">PrintOnlyRule.kt:9–18</span>: a statement that starts with <code>println</code> must not contain an operator or a nested call. The predicates are in <span class="ref">TokenPredicates.kt:9, 18</span>.</li>
-          <li>The same class configured for <code>readInput</code>. The name is matched case-insensitively against the spelling the source used — nothing lowercases it first.</li>
+          <li><span class="ref">IdentifierFormatRule.kt:12–22</span>: every name the statement declares, assigns or reads (<span class="ref">Statements.kt:43</span>) must match the format. The format is an enum (<span class="ref">IdentifierFormat.kt:8–19</span>): camel case starts lowercase and has no <code>_</code>; snake case is only lowercase letters and underscores, never two underscores in a row.</li>
+          <li><span class="ref">CallArgumentRule.kt:15–30</span>: a call's argument must be a variable or a literal. A <code>BinaryNode</code> or another call is an expression (:29). One class serves <code>println</code> and <code>readInput</code>; the factory supplies the name and the message (<span class="ref">RuleFactory.kt:26–27</span>).</li>
         </ul></div></li>
-      <li><div><strong>Collect.</strong> <span class="ref">LinterOutput.kt:13–24</span> stores typed <code>BrokenRule(description, position)</code> values. <code>OutputFileManager</code> can write .txt or .html reports, but neither the CLI nor the TCK uses it.</div></li>
+      <li><div><strong>Collect.</strong> <span class="ref">LinterOutput.kt:3–16</span> stores typed <code>BrokenRule(description, position)</code> values and hands out a copy (:15), so whoever gets the report can't change it.</div></li>
     </ol>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>Rule interface + factory<small>Rule.kt:6 · RuleFactory.kt:5</small></dt><dd>A new check is a new class plus one line in the factory. The config reader doesn't know rule classes exist, so a change in config format doesn't touch the rules.</dd></div>
-      <div class="decision"><dt>Version gating in one place<small>RuleFactory.kt:23</small></dt><dd><code>readInput</code> doesn't exist in 1.0, so its rule can't be enabled there, and the CLI reports that as a configuration error (exit code 2).</dd></div>
-      <div class="decision"><dt>Rules over tokens, not over AST nodes<small>Linter.kt:33</small></dt><dd>This keeps rules simple and uniform: identifier rules just filter IDENTIFIER tokens. The trade-off is that flattening loses block structure (see below).</dd></div>
+      <div class="decision"><dt>Rules read the tree, one statement at a time<small>Linter.kt:44 · Statements.kt:23</small></dt><dd>The parser already worked out the structure, so a rule asks the tree directly: "is this call's argument an expression?" is one type test on one node. Checking statement by statement keeps the linter streaming.</dd></div>
+      <div class="decision"><dt>Rule interface + factory<small>Rule.kt:13 · RuleFactory.kt:6</small></dt><dd>A new check is a new class, a constant in <code>RuleName</code> and a branch in the factory's exhaustive <code>when</code>. The config reader doesn't know rule classes exist, so a change in config format doesn't touch the rules.</dd></div>
+      <div class="decision"><dt>Version gating in one place<small>RuleFactory.kt:22 · RuleName.kt:12–18</small></dt><dd>Each rule names the version it appeared in. <code>readInput</code> doesn't exist in 1.0, so its rule can't be enabled there, and the CLI reports that as a configuration error (exit code 2).</dd></div>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
-      <li><strong>Flattened tokens lose structure.</strong> Rules see <code>IDENTIFIER:c IDENTIFIER:a OPERATOR:/ …</code>, not a tree. For the three rules in the spec that's enough, and each rule is about ten lines. A rule that needs nesting (say, "no <code>println</code> deeper than two blocks") would be the moment to add a tree-based rule interface next to this one.</li>
-      <li><strong>The config reader returns names, not rules.</strong> That looks like an extra step, but it keeps Jackson out of the rule classes and puts the version check in one place (<span class="ref">RuleFactory.kt:24</span>).</li>
+      <li><strong>Two walks have to keep up with the AST.</strong> One finds the statements inside blocks (<span class="ref">Statements.kt:74</span>), the other the nodes inside a statement (<span class="ref">Statements.kt:85</span>). Both are exhaustive <code>when</code>s over the sealed class, so a new node type stops compiling until it's handled, but they are two places rather than one.</li>
+      <li><strong>The config reader returns names, not rules.</strong> That looks like an extra step, but it keeps Jackson out of the rule classes and puts the version check in one place (<span class="ref">RuleFactory.kt:22</span>).</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 58 in LinterTests, RulesTests, LinterEndToEndTests, LinterStreamingTest and OutputFileManagerTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 45 in LinterTests, LinterEndToEndTests, LinterPositionTests, NestedStatementTests and LinterStreamingTest.</p>
   </div>
 </section>
 
@@ -631,7 +629,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <div class="decision"><dt>stdout is only the result<small>ConsoleOutput.kt:5–10</small></dt><dd><code>printscript formatting x.ps --config r.yaml &gt; out.ps</code> works because the progress bar and messages go to stderr.</dd></div>
       <div class="decision"><dt><code>Source</code> / <code>Output</code> abstractions<small>Source.kt:10 · Output.kt:9</small></dt><dd>Tests replace them with in-memory doubles (<code>TestDoubles.kt</code>). <code>Source.useLines</code> never exposes the whole file, so a command can't accidentally load it all.</dd></div>
     </dl>
-    <p class="tests" style="margin-top:18px">Tests: 68 in ArgumentParserTest, CommandFactoryTest, CommandTest, IoTest, PrintScriptCliTest and StreamingTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 69 in ArgumentParserTest, CommandFactoryTest, CommandTest, IoTest, OperationTest, PrintScriptCliTest and StreamingTest.</p>
   </div>
 </section>
 
@@ -677,13 +675,13 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <div class="tablewrap" style="margin-top:20px"><table>
       <thead><tr><th>Module</th><th class="num">Main LOC</th><th class="num">Tests</th><th class="num">Coverage</th></tr></thead>
       <tbody>
-        <tr><td>commons</td><td class="num">153</td><td class="num">20</td><td class="num">94.4%</td></tr>
-        <tr><td>lexer</td><td class="num">242</td><td class="num">21</td><td class="num">90.8%</td></tr>
-        <tr><td>parser</td><td class="num">727</td><td class="num">61</td><td class="num">91.7%</td></tr>
-        <tr><td>interpreter</td><td class="num">734</td><td class="num">127</td><td class="num">90.3%</td></tr>
-        <tr><td>formatter</td><td class="num">427</td><td class="num">33</td><td class="num">93.4%</td></tr>
-        <tr><td>linter</td><td class="num">395</td><td class="num">44</td><td class="num">99.3%</td></tr>
-        <tr><td>cli</td><td class="num">729</td><td class="num">68</td><td class="num">93.1%</td></tr>
+        <tr><td>commons</td><td class="num">197</td><td class="num">25</td><td class="num">93.0%</td></tr>
+        <tr><td>lexer</td><td class="num">217</td><td class="num">23</td><td class="num">97.4%</td></tr>
+        <tr><td>parser</td><td class="num">601</td><td class="num">73</td><td class="num">95.0%</td></tr>
+        <tr><td>interpreter</td><td class="num">720</td><td class="num">127</td><td class="num">90.8%</td></tr>
+        <tr><td>formatter</td><td class="num">431</td><td class="num">33</td><td class="num">94.0%</td></tr>
+        <tr><td>linter</td><td class="num">411</td><td class="num">45</td><td class="num">96.6%</td></tr>
+        <tr><td>cli</td><td class="num">718</td><td class="num">69</td><td class="num">94.1%</td></tr>
       </tbody>
     </table></div>
     <p class="tests">Coverage is instruction coverage from the latest local JaCoCo reports; re-run <code>./gradlew check</code> before quoting it.</p>
@@ -794,11 +792,11 @@ fun asType(dataType: DataType): Any = when (dataType) {
     </div>
 
     <div class="challenge">
-      <h4>Linter: rules over each statement's flattened tokens</h4>
-      <p class="over">instead of visitors that walk the tree</p>
+      <h4>Linter: rules that read each statement's tree</h4>
+      <p class="over">instead of rules over a flattened list of the statement's tokens</p>
       <div class="cols">
-        <div><h5>Why</h5><p>Every rule gets the same simple input, and each fits in about ten lines (<span class="ref">CamelCaseRule.kt:10–14</span>). Checking statement by statement keeps the linter streaming. Rules are built from config names by one factory, which also gates them by version.</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>Block structure is flattened, so a future rule about nesting would need a tree-based rule interface next to this one.</p></div>
+        <div><h5>Why</h5><p>The parser already built the structure, so a rule asks it directly: an argument is an expression when it's a <code>BinaryNode</code> or a call (<span class="ref">CallArgumentRule.kt:29</span>). Checking statement by statement keeps the linter streaming, and a statement inside a block is checked like any other (<span class="ref">Statements.kt:23</span>). Rules are built from config names by one factory, which also gates them by version.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Two walks over the AST have to be kept in step with it (<span class="ref">Statements.kt:74, 85</span>). The compiler flags both when a node type is added, but they are still two places to update.</p></div>
       </div>
     </div>
 
@@ -836,7 +834,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
-      <p>Three layers. First, 394 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+      <p>Three layers. First, 395 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
       <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>
