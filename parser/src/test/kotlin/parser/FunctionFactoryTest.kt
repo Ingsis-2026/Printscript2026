@@ -43,10 +43,10 @@ class FunctionFactoryTest {
             )
 
         val exception =
-            assertThrows<NoSuchElementException> {
+            assertThrows<ParserException> {
                 functionFactory.createAST(tokens)
             }
-        assertEquals("List is empty.", exception.message)
+        assertEquals("print needs an argument", exception.message)
     }
 
     @Test

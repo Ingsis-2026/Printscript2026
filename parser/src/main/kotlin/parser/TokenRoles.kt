@@ -23,6 +23,8 @@ internal val Token.startsConditional: Boolean get() = isConditional("if")
 
 internal val Token.continuesConditional: Boolean get() = isConditional("else")
 
+internal val Token.namesFunction: Boolean get() = getType() == TokenType.FUNCTION
+
 internal fun Token.isOperator(symbol: String): Boolean = getType() == TokenType.OPERATOR && value == symbol
 
 private fun Token.isPunctuator(symbol: String): Boolean = getType() == TokenType.PUNCTUATOR && value == symbol

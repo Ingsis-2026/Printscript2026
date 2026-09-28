@@ -38,11 +38,7 @@ class Parser(
     private fun createNode(statement: List<Token>): ASTNode {
         val astFactory =
             determineFactory(statement)
-                ?: throw ParserException(
-                    "Can't handle this sentence",
-                    statement.firstOrNull()?.getPosition(),
-                    statement.lastOrNull()?.getFinalPosition(),
-                )
+                ?: throw ParserException("Can't handle this sentence", statement)
         return astFactory.createAST(statement)
     }
 

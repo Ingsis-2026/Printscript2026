@@ -1,26 +1,27 @@
 package parser
 
 import ast.BinaryNode
+import ast.FunctionNode
 import ast.LiteralNode
-import factories.OperationFactory
 import lexer.Lexer
 import lexer.TokenMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import token.Token
 import token.TokenPosition
 import token.TokenType
 
-class OperationFactoryTest {
+class ExpressionParserTest {
     private val startPos = TokenPosition(0, 0)
     private val endPos = TokenPosition(0, 1)
-    private val factory = OperationFactory()
+    private val parser = ExpressionParser
 
     @Test
     fun `test single literal`() {
         val tokens = listOf(Token(TokenType.NUMBERLITERAL, "5", startPos, endPos))
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
         assertTrue(result is LiteralNode)
         assertEquals("5", (result as LiteralNode).value)
     }
@@ -33,7 +34,7 @@ class OperationFactoryTest {
                 Token(TokenType.OPERATOR, "+", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
             )
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
         assertTrue(result is BinaryNode)
         assertEquals("+", (result as BinaryNode).operator.value)
         assertEquals("3", (result.left as LiteralNode).value)
@@ -50,7 +51,7 @@ class OperationFactoryTest {
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
                 Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
         assertTrue(result is BinaryNode)
         assertEquals("+", (result as BinaryNode).operator.value)
         assertEquals("3", (result.left as LiteralNode).value)
@@ -67,7 +68,7 @@ class OperationFactoryTest {
                 Token(TokenType.OPERATOR, "*", startPos, endPos),
                 Token(TokenType.NUMBERLITERAL, "4", startPos, endPos),
             )
-        val result = factory.createAST(tokens)
+        val result = parser.parse(tokens)
 
         assertTrue(result is BinaryNode)
         assertEquals("+", (result as BinaryNode).operator.value)
@@ -81,7 +82,7 @@ class OperationFactoryTest {
         assertEquals("4", (rightNode.right as LiteralNode).value)
     }
 
-    private fun parseExpression(source: String) = factory.createAST(Lexer(TokenMapper("1.0")).execute(source))
+    private fun parseExpression(source: String) = parser.parse(Lexer(TokenMapper("1.0")).execute(source))
 
     @Test
     fun `a string that reads like a parenthesis is an operand`() {
@@ -107,5 +108,42 @@ class OperationFactoryTest {
 
         assertEquals("*", result.operator.value)
         assertEquals("+", (result.left as BinaryNode).operator.value)
+    }
+
+    private fun parseExpression11(source: String) = parser.parse(Lexer(TokenMapper("1.1")).execute(source))
+
+    @Test
+    fun `any number of enclosing parentheses is the expression inside`() {
+        val result = parseExpression("((5))") as LiteralNode
+
+        assertEquals("5", result.value)
+    }
+
+    @Test
+    fun `parentheses that close before the end do not enclose the expression`() {
+        val result = parseExpression("(1) + (2)") as BinaryNode
+
+        assertEquals("+", result.operator.value)
+    }
+
+    @Test
+    fun `a call's argument is itself an expression`() {
+        val result = parseExpression11("readInput(\"a\" + \"b\")") as FunctionNode
+
+        assertEquals("readInput", result.functionName)
+        assertEquals("+", (result.expression as BinaryNode).operator.value)
+    }
+
+    @Test
+    fun `a call without an argument is rejected where it is written`() {
+        val exception = assertThrows<ParserException> { parseExpression11("readInput()") }
+
+        assertEquals("readInput needs an argument", exception.message)
+        assertEquals(TokenPosition(0, 0), exception.startPosition)
+    }
+
+    @Test
+    fun `an operator without a right operand is a parser error, not a crash`() {
+        assertThrows<ParserException> { parseExpression("1 +") }
     }
 }

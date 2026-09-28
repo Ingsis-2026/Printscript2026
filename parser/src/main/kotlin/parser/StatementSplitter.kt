@@ -91,16 +91,8 @@ internal class StatementSplitter(
         }
 
     private fun unterminatedStatement(statement: List<Token>): ParserException =
-        ParserException(
-            "las sentencias deben finalizar con \";\", \"}\" o \"{\"",
-            statement.first().getPosition(),
-            statement.last().getFinalPosition(),
-        )
+        ParserException("las sentencias deben finalizar con \";\", \"}\" o \"{\"", statement)
 
     private fun unmatchedBrace(token: Token): ParserException =
-        ParserException(
-            "se encontró un \"}\" que no cierra ningún bloque",
-            token.getPosition(),
-            token.getFinalPosition(),
-        )
+        ParserException("se encontró un \"}\" que no cierra ningún bloque", listOf(token))
 }

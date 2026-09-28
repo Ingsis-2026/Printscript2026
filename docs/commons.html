@@ -126,7 +126,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 067ab04 · study sheet 1 of 8</p>
+  <p class="eyebrow">Printscript2026 @ 47e0757 · study sheet 1 of 8</p>
   <h1><code>commons</code></h1>
   <p class="lede">The contract between modules: what a token is, the nine kinds of AST node, and the one error type every stage throws. It has no dependencies and almost no behaviour, which is exactly why it's the right place to start.</p>
   <ul class="meta">
@@ -223,18 +223,18 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
   <div class="tablewrap"><table>
     <thead><tr><th>Node</th><th>Source example</th><th>Built by</th><th>Position stored</th><th>Run by</th></tr></thead>
     <tbody>
-      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">OperationFactory.kt:70</span> and others</td><td>the token</td><td>LiteralEvaluator</td></tr>
-      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">OperationFactory.kt:48</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
-      <tr><td class="t">PrintNode</td><td><code>println(x)</code></td><td><span class="ref">PrintlnFactory.kt:29</span></td><td><code>println</code></td><td>PrintEvaluator</td></tr>
-      <tr><td class="t">DeclarationNode</td><td><code>let c: number = a / b</code></td><td><span class="ref">DeclarationFactory.kt:36</span></td><td>the identifier</td><td>DeclarationEvaluator</td></tr>
-      <tr><td class="t">AssignationNode</td><td><code>a = a / b</code></td><td><span class="ref">AssignationFactory.kt:41</span></td><td>the <code>=</code></td><td>AssignmentEvaluator</td></tr>
-      <tr><td class="t">BlockNode</td><td><code>{ println(x); }</code></td><td><span class="ref">ConditionalFactory.kt:77</span></td><td>first token inside</td><td>BlockEvaluator</td></tr>
-      <tr><td class="t">ConditionalNode</td><td><code>if (b) { … } else { … }</code></td><td><span class="ref">ConditionalFactory.kt:32</span></td><td>the condition</td><td>ConditionalEvaluator</td></tr>
-      <tr><td class="t">FunctionNode</td><td><code>readInput("n?")</code></td><td><span class="ref">FunctionFactory.kt:18</span></td><td>the function name</td><td>FunctionEvaluator</td></tr>
-      <tr><td class="t">NilNode</td><td><code>let x: number;</code> · no <code>else</code></td><td><span class="ref">DeclarationFactory.kt:30</span> <span class="ref">ConditionalFactory.kt:91–92</span></td><td>fixed (0, 0)</td><td>NilEvaluator → <code>null</code></td></tr>
+      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">ExpressionParser.kt:78</span></td><td>the token</td><td>LiteralEvaluator</td></tr>
+      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">ExpressionParser.kt:54</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
+      <tr><td class="t">PrintNode</td><td><code>println(x)</code></td><td><span class="ref">PrintlnFactory.kt:31</span></td><td><code>println</code></td><td>PrintEvaluator</td></tr>
+      <tr><td class="t">DeclarationNode</td><td><code>let c: number = a / b</code></td><td><span class="ref">DeclarationFactory.kt:35</span></td><td>the identifier</td><td>DeclarationEvaluator</td></tr>
+      <tr><td class="t">AssignationNode</td><td><code>a = a / b</code></td><td><span class="ref">AssignationFactory.kt:20</span></td><td>the <code>=</code></td><td>AssignmentEvaluator</td></tr>
+      <tr><td class="t">BlockNode</td><td><code>{ println(x); }</code></td><td><span class="ref">ConditionalFactory.kt:69</span></td><td>first token inside</td><td>BlockEvaluator</td></tr>
+      <tr><td class="t">ConditionalNode</td><td><code>if (b) { … } else { … }</code></td><td><span class="ref">ConditionalFactory.kt:29</span></td><td>the condition</td><td>ConditionalEvaluator</td></tr>
+      <tr><td class="t">FunctionNode</td><td><code>readInput("n?")</code></td><td><span class="ref">ExpressionParser.kt:32</span></td><td>the function name</td><td>FunctionEvaluator</td></tr>
+      <tr><td class="t">NilNode</td><td><code>let x: number;</code> · no <code>else</code></td><td><span class="ref">DeclarationFactory.kt:29</span> <span class="ref">ConditionalFactory.kt:85–86</span></td><td>fixed (0, 0)</td><td>NilEvaluator → <code>null</code></td></tr>
     </tbody>
   </table></div>
-  <p>The position each node stores is a choice about <em>where errors point</em>. A declaration points at its name (<span class="ref">DeclarationFactory.kt:42</span>), so <em>"La variable 'x' ya ha sido declarada"</em> underlines <code>x</code> rather than <code>let</code>. A binary node points at its operator, so <em>"Division by zero"</em> lands on the <code>/</code>.</p>
+  <p>The position each node stores is a choice about <em>where errors point</em>. A declaration points at its name (<span class="ref">DeclarationFactory.kt:41</span>), so <em>"La variable 'x' ya ha sido declarada"</em> underlines <code>x</code> rather than <code>let</code>. A binary node points at its operator, so <em>"Division by zero"</em> lands on the <code>/</code>.</p>
 </section>
 
 <section id="decisions">

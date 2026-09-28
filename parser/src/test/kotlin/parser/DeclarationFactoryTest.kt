@@ -138,7 +138,7 @@ class DeclarationFactoryTest {
             assertThrows<ParserException> {
                 declarationFactory.createAST(tokens)
             }
-        assertEquals("Expected a DATA_TYPE or DATA_TYPE token but found none.", exception.message)
+        assertEquals("Expected a DATA_TYPE token but found none.", exception.message)
     }
 
     @Test

@@ -3,9 +3,10 @@ package factories
 import ast.ASTNode
 import ast.DataType
 import ast.DeclarationNode
-import ast.LiteralNode
 import ast.NilNode
+import parser.ExpressionParser
 import parser.ParserException
+import parser.namesFunction
 import token.Token
 import token.TokenType
 
@@ -13,23 +14,21 @@ class DeclarationFactory : ASTFactory {
     override fun createAST(tokens: List<Token>): ASTNode {
         val keywordToken =
             tokens.find { it.getType() == TokenType.KEYWORD }
-                ?: throw error(tokens, "Expected a KEYWORD token but found none.")
+                ?: throw ParserException("Expected a KEYWORD token but found none.", tokens)
         val identifierToken =
             tokens.find { it.getType() == TokenType.IDENTIFIER }
-                ?: throw error(tokens, "Expected an IDENTIFIER token but found none.")
+                ?: throw ParserException("Expected an IDENTIFIER token but found none.", tokens)
         val dataTypeToken =
             tokens.find { it.getType() == TokenType.DATA_TYPE }
-                ?: throw error(tokens, "Expected a DATA_TYPE or DATA_TYPE token but found none.")
+                ?: throw ParserException("Expected a DATA_TYPE token but found none.", tokens)
         val dataType =
             DataType.named(dataTypeToken.value)
-                ?: throw error(tokens, "Unknown data type ${dataTypeToken.value}")
+                ?: throw ParserException("Unknown data type ${dataTypeToken.value}", tokens)
 
-        val initialPositionExpression = tokens.indexOfFirst { it.getType() == TokenType.ASSIGNATION } + 1
-        val expressionTokens: List<Token>? = findExpressionTokens(initialPositionExpression, tokens)
+        val expressionTokens = expressionTokensOf(tokens)
+        val expression = expressionTokens?.let { ExpressionParser.parse(it) } ?: NilNode
 
-        val expressionNode: ASTNode = if (expressionTokens == null) NilNode else findExpressionNode(expressionTokens)
-
-        if (expressionTokens != null && !isFunctionCall(expressionTokens)) {
+        if (expressionTokens != null && expressionTokens.none { it.namesFunction }) {
             rejectLiteralsOfAnotherType(dataType, expressionTokens)
         }
 
@@ -38,22 +37,21 @@ class DeclarationFactory : ASTFactory {
             declValue = keywordToken.value,
             id = identifierToken.value,
             dataType = dataType,
-            expr = expressionNode,
+            expr = expression,
             position = identifierToken.getPosition(),
         )
     }
 
     override fun canHandle(tokens: List<Token>): Boolean = tokens.any { it.getType() == TokenType.KEYWORD }
 
-    /** Error de parseo ubicado en el tramo de tokens que lo provocó. */
-    private fun error(
-        tokens: List<Token>,
-        message: String,
-    ) = ParserException(
-        message,
-        tokens.firstOrNull()?.getPosition(),
-        tokens.lastOrNull()?.getFinalPosition(),
-    )
+    /** Lo que sigue al `=`, o `null` si la declaración no trae valor: `let x: number;`. */
+    private fun expressionTokensOf(tokens: List<Token>): List<Token>? {
+        val assignationIndex = tokens.indexOfFirst { it.getType() == TokenType.ASSIGNATION }
+        if (assignationIndex < 0) return null
+        return tokens.subList(assignationIndex + 1, tokens.size).ifEmpty {
+            throw ParserException("Expected an expression after =", tokens)
+        }
+    }
 
     /** Un string admite números y booleanos concatenados; los otros tipos, sólo literales propios. */
     private fun rejectLiteralsOfAnotherType(
@@ -64,7 +62,7 @@ class DeclarationFactory : ASTFactory {
         val hasLiteralsOfAnotherType = (literalTypes - dataType).isNotEmpty()
         val concatenatesIntoString = dataType == DataType.STRING && DataType.STRING in literalTypes
         if (hasLiteralsOfAnotherType && !concatenatesIntoString) {
-            throw error(expressionTokens, "declared data type ${dataType.keyword} is inconsistent with the expression")
+            throw ParserException("declared data type ${dataType.keyword} is inconsistent with the expression", expressionTokens)
         }
     }
 
@@ -75,41 +73,4 @@ class DeclarationFactory : ASTFactory {
             TokenType.BOOLEANLITERAL -> DataType.BOOLEAN
             else -> null
         }
-
-    private fun findExpressionTokens(
-        initialPositionExpression: Int,
-        tokens: List<Token>,
-    ): List<Token>? {
-        if (initialPositionExpression <= 0) return null
-        return if (initialPositionExpression != tokens.size) {
-            tokens.subList(
-                initialPositionExpression,
-                tokens.size,
-            )
-        } else {
-            listOf(tokens.last())
-        }
-    }
-
-    private fun isFunctionCall(expressionTokens: List<Token>): Boolean = FunctionFactory().canHandle(expressionTokens)
-
-    private fun findExpressionNode(expressionTokens: List<Token>): ASTNode =
-        if (expressionTokens.size == 1) {
-            createLiteralNode(
-                expressionTokens[0],
-            )
-        } else {
-            if (isFunctionCall(expressionTokens)) {
-                FunctionFactory().createAST(expressionTokens)
-            } else {
-                OperationFactory().createAST(expressionTokens)
-            }
-        }
-
-    private fun createLiteralNode(token: Token): ASTNode =
-        LiteralNode(
-            value = token.value,
-            type = token.getType(),
-            position = token.getPosition(),
-        )
 }

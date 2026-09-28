@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 067ab04 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 47e0757 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -330,9 +330,9 @@ td:first-child{white-space:nowrap}
     <p>Two things to point out. Row 3 is empty, so it produces no tokens and the parser never sees it. And the string's value is 8 characters long while its columns span 10, because the quotes are stripped from the value but the positions still cover them. That difference is why the formatter keeps each token's original text.</p>
 
     <h3>Parser: four statements, four nodes</h3>
-    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:72–77</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:49</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:66–69</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
+    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:72–77</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:45</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:61–66</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
 <pre>DeclarationNode  id=c  let : number        <span class="c">@2:4   position = the identifier</span>
-└─ BinaryNode "/"                          <span class="c">@2:18  OperationFactory split at "/"</span>
+└─ BinaryNode "/"                          <span class="c">@2:18  ExpressionParser split at "/"</span>
    ├─ LiteralNode IDENTIFIER a             <span class="c">@2:16</span>
    └─ LiteralNode IDENTIFIER b             <span class="c">@2:20</span>
 
@@ -453,42 +453,44 @@ println("Result: " + c);</pre></td>
       <li><div><strong>Choose factories for the version.</strong> <span class="ref">ParserFactory.kt:20–42</span>: the 1.0 list is Println, Declaration, Assignation and Function, and 1.1 puts <code>ConditionalFactory</code> first. The language version comes down to which factories are in the list.</div></li>
       <li><div><strong>Stay lazy.</strong> <span class="ref">Parser.kt:21</span> calls <code>StatementSplitter().split(tokens)</code> and then <code>.map { createNode(it) }</code>, so a statement is only parsed when someone asks for the next node.</div></li>
       <li><div><strong>Cut statements (the state machine).</strong> In <span class="ref">StatementSplitter.kt:16–91</span>, <code>;</code> ends a statement (:72–77), but only outside braces: <code>openBraces</code> is counted at :38–47 so the <code>;</code>s inside a block stay together. When a block closes, the statement is held back one token in case an <code>else</code> follows (:26–35). An <code>if</code> must start a fresh statement (:66–70), a stray <code>}</code> is an error (:59), and the stream can't end mid-statement (:83–88). An empty program is rejected (:90). Every one of these checks asks for the token's type, not just its text (<span class="ref">TokenRoles.kt:12–24</span>): a string literal <code>"}"</code> arrives without its quotes and would otherwise look like a brace.</div></li>
-      <li><div><strong>Pick a factory (chain of responsibility).</strong> <span class="ref">Parser.kt:49</span> takes the first factory whose <code>canHandle</code> returns true. If none does, it throws "Can't handle this sentence" with the statement's range (:39–45).</div></li>
+      <li><div><strong>Pick a factory (chain of responsibility).</strong> <span class="ref">Parser.kt:45</span> takes the first factory whose <code>canHandle</code> returns true. If none does, it throws "Can't handle this sentence" with the statement's range (:39–45).</div></li>
       <li><div><strong>Build the node.</strong> Each factory is described below.</div></li>
     </ol>
 
     <div class="tablewrap"><table>
       <thead><tr><th>Factory</th><th>How it builds</th></tr></thead>
       <tbody>
-        <tr><td><span class="ref">DeclarationFactory.kt:13</span></td><td>Finds the keyword, identifier and type (:14–22), and turns the type's text into a <code>DataType</code> (:23–25). The expression is everything after <code>=</code> (:27–30). It does a static literal-vs-type check (:58–77), skipped when the value is a <code>readInput</code>/<code>readEnv</code> call because the type isn't known until run time (:32–34). The node's position is the identifier (:42).</td></tr>
-        <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>The left side is the tokens before <code>=</code> (:61), the right side the tokens after (:59). The right side goes to FunctionFactory or OperationFactory (:63–68).</td></tr>
-        <tr><td><span class="ref">PrintlnFactory.kt:10</span></td><td>Needs at least 4 tokens (:45–46). Takes what's between the first <code>(</code> and the last <code>)</code> (:15–22) and passes it to OperationFactory (:28).</td></tr>
-        <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td><code>readInput</code>/<code>readEnv</code>: the argument is the tokens between the parentheses (:12), parsed as an expression (:16).</td></tr>
-        <tr><td><span class="ref">OperationFactory.kt:12</span></td><td>Handles precedence by splitting the expression. It tries <code>+ -</code> first (:25), then <code>* /</code> (:26), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:39–57), and fully wrapping parentheses are removed (:59–68). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–26</span>).</td></tr>
-        <tr><td><span class="ref">ConditionalFactory.kt:18</span></td><td>Reads the condition token after <code>(</code> (:38–45), then finds the matching <code>}</code> by counting depth (:116–130). The block body goes to a <em>sub-parser</em> (:69–79), which is how nested <code>if</code>s work. The <code>else</code> must immediately follow the then-block (:87–99), and <code>else if</code> is rejected (:95–97).</td></tr>
+        <tr><td><span class="ref">DeclarationFactory.kt:14</span></td><td>Finds the keyword, identifier and type (:15–23), and turns the type's text into a <code>DataType</code> (:24–26). The expression is everything after <code>=</code> (:48–53), parsed by <code>ExpressionParser</code> (:29). It does a static literal-vs-type check (:56–75), skipped when the value is a <code>readInput</code>/<code>readEnv</code> call because the type isn't known until run time (:31–33). The node's position is the identifier (:41).</td></tr>
+        <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>Splits at the <code>=</code> (:13–18). The left side must be a single name; several tokens there are a declaration without a keyword, which is how 1.0 rejects <code>const</code> (:36–40). The right side goes to <code>ExpressionParser</code> (:22).</td></tr>
+        <tr><td><span class="ref">PrintlnFactory.kt:13</span></td><td>Needs at least 4 tokens (:14–16). Takes what's between the first <code>(</code> and the last <code>)</code> (:18–25) and passes it to <code>ExpressionParser</code> (:31).</td></tr>
+        <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td>A statement that is only a call, like <code>readInput("n?");</code>. It hands the whole statement to <code>ExpressionParser</code>, which builds calls wherever they appear.</td></tr>
+        <tr><td><span class="ref">ExpressionParser.kt:17</span></td><td>The one place expressions are parsed. An expression is another one in parentheses, a single token, a call, or an operation (:17–23). An operation splits at <code>+ -</code> first, then <code>* /</code> (:15, :40–42), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:49–53), and fully wrapping parentheses are removed (:19, :66–75). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–28</span>).</td></tr>
+        <tr><td><span class="ref">ConditionalFactory.kt:19</span></td><td>Reads the condition token after <code>(</code> (:39), then finds the matching <code>}</code> by counting depth (:110–124). The block body goes to a <em>sub-parser</em> (:63–73), which is how nested <code>if</code>s work. The <code>else</code> must immediately follow the then-block (:81–93), and <code>else if</code> is rejected (:89–91).</td></tr>
       </tbody>
     </table></div>
 
     <h3>How precedence falls out of splitting</h3>
-<pre><span class="c">// OperationFactory.kt:25–26: the lowest precedence becomes the root</span>
-return splitOnOperator(tokens, ::isAdditionOrSubtraction)
-    ?: splitOnOperator(tokens, ::isMultiplicationOrDivision)
-    ?: throw ParserException("Error in operation", …)</pre>
-    <p><code>2 + 3 * 4</code> splits at <code>+</code>, so the tree is <code>2 + (3 * 4)</code> and the result is 14. Parentheses work the same way: the operators inside them are skipped at this level, then the outer pair is removed and the inner expression is split again.</p>
+<pre><span class="c">// ExpressionParser.kt:15, :40–42: the lowest precedence becomes the root</span>
+private val PRECEDENCE_LEVELS = listOf(setOf("+", "-"), setOf("*", "/"))
+
+private fun operation(tokens: List&lt;Token&gt;): ASTNode =
+    PRECEDENCE_LEVELS.firstNotNullOfOrNull { operators -&gt; splitAtFirst(tokens, operators) }
+        ?: throw ParserException("Error in operation", tokens)</pre>
+    <p><code>2 + 3 * 4</code> splits at <code>+</code>, so the tree is <code>2 + (3 * 4)</code> and the result is 14. Parentheses work the same way: the operators inside them are skipped at this level, then the outer pair is removed (<span class="ref">ExpressionParser.kt:19</span>) and the inner expression is split again.</p>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>Factories + chain of responsibility<small>ASTFactory.kt:6 · Parser.kt:49</small></dt><dd>Adding a construct means adding a factory and listing it for its version, with no edits to <code>Parser</code>. Each factory has one job (SRP).</dd></div>
+      <div class="decision"><dt>Factories + chain of responsibility<small>ASTFactory.kt:6 · Parser.kt:45</small></dt><dd>Adding a construct means adding a factory and listing it for its version, with no edits to <code>Parser</code>. Each factory has one job (SRP).</dd></div>
       <div class="decision"><dt>Splitting separated from building<small>StatementSplitter.kt:13</small></dt><dd>The splitter only answers "where does this statement end?", and factories only see complete statements. It's also the only place memory has to be reasoned about: the current statement is all that's held (:8–11).</dd></div>
-      <div class="decision"><dt>Sub-parser injected as a provider<small>ConditionalFactory.kt:19 · ParserFactory.kt:34</small></dt><dd>A block body is parsed by a fresh parser for the same version, which gives recursion for nested blocks. Tests can inject a fake parser.</dd></div>
+      <div class="decision"><dt>Sub-parser injected as a provider<small>ConditionalFactory.kt:20 · ParserFactory.kt:34</small></dt><dd>A block body is parsed by a fresh parser for the same version, which gives recursion for nested blocks. Tests can inject a fake parser.</dd></div>
       <div class="decision"><dt><code>insideBlock</code> mode<small>Parser.kt:33 · StatementSplitter.kt:49–57</small></dt><dd>In a block body, the closing <code>}</code> terminates the last statement. At top level, the same <code>}</code> is an error.</dd></div>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
       <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:34–38</span>).</li>
-      <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more <code>splitOnOperator</code> call in the chain.</li>
+      <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more set in <code>PRECEDENCE_LEVELS</code> (<span class="ref">ExpressionParser.kt:15</span>).</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 61, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest and one test class per factory.</p>
+    <p class="tests" style="margin-top:18px">Tests: 73, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
   </div>
 </section>
 
@@ -821,7 +823,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Where are the SOLID principles?</summary>
       <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the vocabulary maps and the factory, evaluator and rule lists, where a version is just data. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:29</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
     <details><summary>Which design patterns did you use?</summary>
-      <p>Strategy (evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:49</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
+      <p>Strategy (evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:45</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
     <details><summary>How do you know it doesn't load the whole file?</summary>
       <p>The TCK runs 131,072 statements in a 7 MB heap (<span class="ref">InterpreterLargeFileTest.java:22</span>), and there are dedicated unit tests in each module: StreamingPipelineTest, FormatterStreamingTest, LinterStreamingTest and the CLI's StreamingTest. In the code, every stage signature takes and returns a <code>Sequence</code>.</p></details>
     <details><summary>How does <code>readInput</code> know what type to return?</summary>
@@ -829,7 +831,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why is the formatter not built on the AST?</summary>
       <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
-      <p>By splitting at the lowest-precedence operator first (<span class="ref">OperationFactory.kt:25–26</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">OperationFactory.kt:59–68</span>).</p></details>
+      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:40–42</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
