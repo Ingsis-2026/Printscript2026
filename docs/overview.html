@@ -151,9 +151,9 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 0ac7191 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 5161601 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
-  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 0ac7191. Numbers in the index are lines of main-source Kotlin per module.</p>
+  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 5161601. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
     <li><b>3,295</b>lines of main Kotlin</li>
@@ -348,7 +348,7 @@ PrintNode                                  <span class="c">@4:0</span>
         <tr><td>let a</td><td>Declaration → Literal <code>"12"</code> → <code>Int 12</code></td><td><code>{a=12}</code></td></tr>
         <tr><td>let b</td><td>Declaration → Literal → <code>Int 4</code></td><td><code>{a=12, b=4}</code></td></tr>
         <tr><td>let c</td><td>Declaration → Binary <code>/</code> → Literal <code>a</code> (lookup 12), Literal <code>b</code> (lookup 4) → <code>ArithmeticOperations</code> Int/Int → <code>3</code></td><td><code>{a=12, b=4, c=3}</code></td></tr>
-        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:104</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
+        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:102</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
       </tbody>
     </table></div>
     <p>The printer receives <code>Result: 3</code>, which is exactly the output the PDF expects. In the CLI the printer is <code>OutputPrinter</code> writing to stdout; in the TCK it's the test's <code>PrintEmitter</code>. The interpreter code is identical in both.</p>
@@ -503,14 +503,14 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
     <h3>Step by step</h3>
     <ol class="steps">
       <li><div><strong>Choose evaluators for the version.</strong> <span class="ref">InterpreterFactory.kt:20–33</span>: <code>evaluatorsFor</code> has one branch per version. 1.0 is a list, and 1.1 is written as that list plus what it adds — <code>ConditionalEvaluator</code> and <code>FunctionEvaluator</code> (:32).</div></li>
-      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:12–16</span> keeps one <code>VariableTable</code>, which stores each variable's <code>Declaration</code> (the keyword, to reject reassigning a <code>const</code>, and the declared type, to type a later <code>readInput</code>) separately from its value — because a variable can be declared without a value, and can get a value without being declared.</div></li>
-      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:26–36</span> finds the evaluator that <code>canEvaluate</code> the node and runs it. Evaluators throw errors without positions; the catch at :39–48 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
-      <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:17–34</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:19). An identifier is looked up and throws "Undefined variable" if missing (:30–32).</div></li>
-      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:19–27</span> dispatches on the operator, one named operation per branch. <code>+</code> tries string concatenation first (:30–36), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :115–117, and multiplying or dividing a string is rejected at :47–49 and :57–59.</div></li>
-      <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:18–44</span> rejects a name that is already taken (:19–21) and records the <code>Declaration</code> even when there's no value (:32–35). It types an <code>ExternalInput</code> using the declared type (:38).</div></li>
-      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:17–27</span> refuses to reassign a <code>const</code> (:48–51) and refuses a value of a different PrintScript type (:53–56). Int and Double both count as <code>number</code>.</div></li>
-      <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:17–24</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:15–27</span> requires a <code>Boolean</code> (:18–20). <span class="ref">BlockEvaluator.kt:16–18</span> runs children in order. <code>NilEvaluator</code> returns <code>null</code>, like every node that produces no value (<span class="ref">NodeEvaluator.kt:22–25</span>).</div></li>
-      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:30–39</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:41–48). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
+      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:12</span> keeps one <code>VariableTable</code>, which stores each variable's <code>Declaration</code> (the keyword, to reject reassigning a <code>const</code>, and the declared type, to type a later <code>readInput</code>) separately from its value — because a variable can be declared without a value, and can get a value without being declared.</div></li>
+      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:24–34</span> looks up the evaluator for the node's type (:26) and runs it, handing it the node already typed. Evaluators throw errors without positions; the catch at :30–33 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
+      <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:11–32</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:17). An identifier is looked up and throws "Undefined variable" if missing (:28–30).</div></li>
+      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:17–25</span> dispatches on the operator, one named operation per branch. <code>+</code> tries string concatenation first (:28–34), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :113–115, and multiplying or dividing a string is rejected at :45–47 and :55–57.</div></li>
+      <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:13–43</span> rejects a name that is already taken (:17–19) and records the <code>Declaration</code> even when there's no value (:30–33). It types an <code>ExternalInput</code> using the declared type (:36).</div></li>
+      <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:12–26</span> refuses to reassign a <code>const</code> (:46–49) and refuses a value of a different PrintScript type (:51–54). Int and Double both count as <code>number</code>.</div></li>
+      <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:12–23</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:10–26</span> requires a <code>Boolean</code> (:16–18). <span class="ref">BlockEvaluator.kt:14–16</span> runs children in order. <code>NilEvaluator</code> returns <code>null</code>, like every node that produces no value (<span class="ref">NodeEvaluator.kt:18–22</span>).</div></li>
+      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:27–36</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:38–45). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
     </ol>
 
     <h3>The typed-input trick</h3>
@@ -520,7 +520,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     DataType.NUMBER  -&gt; text.toIntOrNull() ?: text.toDoubleOrNull() ?: throw cannotInterpretAs(dataType)
     DataType.BOOLEAN -&gt; when (text) { "true" -&gt; true; "false" -&gt; false; else -&gt; throw cannotInterpretAs(dataType) }
 }</pre>
-    <p>The 1.1 spec says <code>readInput</code> returns a type compatible with the variable it's assigned to, or <code>string</code> inside <code>println</code>, and that execution fails if, say, <code>"Hola"</code> arrives for a <code>boolean</code>. So the raw text travels until someone who knows the target type converts it: the declaration (<span class="ref">DeclarationEvaluator.kt:38</span>), the assignment (<span class="ref">AssignmentEvaluator.kt:31–41</span>) or <code>println</code> (<span class="ref">PrintEvaluator.kt:21</span>). The type arrives as a <code>DataType</code>, so the <code>when</code> has one branch per PrintScript type and no fallback for a type that doesn't exist.</p>
+    <p>The 1.1 spec says <code>readInput</code> returns a type compatible with the variable it's assigned to, or <code>string</code> inside <code>println</code>, and that execution fails if, say, <code>"Hola"</code> arrives for a <code>boolean</code>. So the raw text travels until someone who knows the target type converts it: the declaration (<span class="ref">DeclarationEvaluator.kt:36</span>), the assignment (<span class="ref">AssignmentEvaluator.kt:29–39</span>) or <code>println</code> (<span class="ref">PrintEvaluator.kt:19</span>). The type arrives as a <code>DataType</code>, so the <code>when</code> has one branch per PrintScript type and no fallback for a type that doesn't exist.</p>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
@@ -750,8 +750,8 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <h4>Interpreter: a registry of evaluators, one per node type</h4>
       <p class="over">instead of a Visitor, or one large <code>when</code> over the sealed class</p>
       <div class="cols">
-        <div><h5>Why</h5><p>A new node type is a new class plus a registration, and <code>Interpreter</code> never changes. Which constructs a version supports is visible in one list (<span class="ref">InterpreterFactory.kt:14–47</span>). A Visitor would force every visitor to change with each new node.</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>Dispatch happens at run time, and each evaluator casts its node (<span class="ref">BinaryEvaluator.kt:15</span>), so a missing evaluator is a run-time error instead of a compile error. The linter's walks over the AST, where exhaustiveness matters more, use a <code>when</code> instead.</p></div>
+        <div><h5>Why</h5><p>A new node type is a new class plus a registration, and <code>Interpreter</code> never changes. Which constructs a version supports is visible in one list (<span class="ref">InterpreterFactory.kt:20–33</span>). A Visitor would force every visitor to change with each new node.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Nothing checks at compile time that every node type has an evaluator, so a missing one is a run-time error instead of a compile error. What the types do guarantee is that each evaluator receives only its own kind of node (<span class="ref">NodeEvaluator.kt:15–29</span>), with no cast in any of them. The linter's walks over the AST, where exhaustiveness matters more, use a <code>when</code> instead.</p></div>
       </div>
     </div>
 
@@ -759,7 +759,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <h4>Runtime values are plain Kotlin <code>Int</code>, <code>Double</code>, <code>String</code>, <code>Boolean</code></h4>
       <p class="over">instead of a PrintScript value hierarchy (<code>NumberValue</code>, <code>StringValue</code>…)</p>
       <div class="cols">
-        <div><h5>Why</h5><p>There are fewer classes, arithmetic and concatenation use Kotlin's own operators, and printing is <code>toString()</code>. The mapping back to a PrintScript <code>DataType</code> is one small function (<span class="ref">AssignmentEvaluator.kt:60–66</span>).</p></div>
+        <div><h5>Why</h5><p>There are fewer classes, arithmetic and concatenation use Kotlin's own operators, and printing is <code>toString()</code>. The mapping back to a PrintScript <code>DataType</code> is one small function (<span class="ref">AssignmentEvaluator.kt:58–64</span>).</p></div>
         <div><h5 class="cost">Cost we accept</h5><p>Evaluators use <code>is</code> checks, and Int/Double promotion needs explicit handling (<span class="ref">ArithmeticOperations.kt:24–36</span>). <code>readInput</code>'s untyped text needed its own wrapper, <code>ExternalInput</code>.</p></div>
       </div>
     </div>

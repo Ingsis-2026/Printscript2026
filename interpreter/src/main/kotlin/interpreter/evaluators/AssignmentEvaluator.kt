@@ -1,29 +1,27 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.AssignationNode
 import ast.DataType
 import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
-class AssignmentEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is AssignationNode
+class AssignmentEvaluator : NodeEvaluator<AssignationNode> {
+    override val nodeType = AssignationNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: AssignationNode,
         interpreter: Interpreter,
     ): Any? {
-        val assignation = node as AssignationNode
         val value =
-            interpreter.execute(assignation.expression)
+            interpreter.execute(node.expression)
                 ?: throw InterpreterException("Invalid assignment in Assignment")
 
-        val resolved = resolveExternalInput(value, assignation.id, interpreter)
+        val resolved = resolveExternalInput(value, node.id, interpreter)
 
-        rejectInvalidReassignment(assignation.id, resolved, interpreter)
+        rejectInvalidReassignment(node.id, resolved, interpreter)
 
-        interpreter.variables.assign(assignation.id, resolved)
+        interpreter.variables.assign(node.id, resolved)
         return resolved
     }
 

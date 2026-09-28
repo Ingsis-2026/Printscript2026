@@ -17,7 +17,7 @@ object InterpreterFactory {
      * Los nodos que la versión sabe ejecutar. 1.1 es 1.0 más lo que la versión agrega al
      * lenguaje: `if`/`else` y las funciones `readInput` y `readEnv`.
      */
-    fun evaluatorsFor(version: Version): List<NodeEvaluator> =
+    fun evaluatorsFor(version: Version): List<NodeEvaluator<*>> =
         when (version) {
             Version.V1_0 ->
                 listOf(

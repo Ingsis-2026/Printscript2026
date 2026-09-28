@@ -1,22 +1,20 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.BinaryNode
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
-class BinaryEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is BinaryNode
+class BinaryEvaluator : NodeEvaluator<BinaryNode> {
+    override val nodeType = BinaryNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: BinaryNode,
         interpreter: Interpreter,
     ): Any? {
-        val binary = node as BinaryNode
-        val leftValue = interpreter.execute(binary.left) ?: throw InterpreterException("Invalid left operand")
-        val rightValue = interpreter.execute(binary.right) ?: throw InterpreterException("Invalid right operand")
+        val leftValue = interpreter.execute(node.left) ?: throw InterpreterException("Invalid left operand")
+        val rightValue = interpreter.execute(node.right) ?: throw InterpreterException("Invalid right operand")
 
-        return when (val operator = binary.operator.value) {
+        return when (val operator = node.operator.value) {
             "+" -> add(leftValue, rightValue)
             "-" -> subtract(leftValue, rightValue)
             "*" -> multiply(leftValue, rightValue)

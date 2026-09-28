@@ -5,15 +5,13 @@ import interpreter.evaluators.NodeEvaluator
 import version.Version
 
 class Interpreter(
-    val printer: Printer,
-    val reader: Reader,
-    private val evaluators: List<NodeEvaluator> = InterpreterFactory.evaluatorsFor(Version.V1_1),
+    internal val printer: Printer,
+    internal val reader: Reader,
+    evaluators: List<NodeEvaluator<*>> = InterpreterFactory.evaluatorsFor(Version.V1_1),
 ) {
-    /**
-     * Las variables del programa. Es pública porque un [NodeEvaluator] de terceros recibe el
-     * intérprete entero y necesita poder leerlas y escribirlas.
-     */
-    val variables: VariableTable = VariableTable()
+    internal val variables: VariableTable = VariableTable()
+
+    private val evaluatorsByNodeType = evaluators.associateBy { it.nodeType }
 
     /**
      * Evalúa un nodo y garantiza que todo error salga con su ubicación.
@@ -25,10 +23,10 @@ class Interpreter(
      */
     fun execute(node: ASTNode): Any? {
         val evaluator =
-            evaluators.find { it.canEvaluate(node) }
+            evaluatorsByNodeType[node::class]
                 ?: throw InterpreterException("Unsupported node type: ${node::class.simpleName}", node.position)
         return try {
-            evaluator.evaluate(node, this)
+            evaluator.evaluateAny(node, this)
         } catch (exception: InterpreterException) {
             if (exception.startPosition != null) throw exception
             throw InterpreterException(exception.message ?: "", node.position)

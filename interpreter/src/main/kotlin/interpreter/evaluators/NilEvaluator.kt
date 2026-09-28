@@ -1,14 +1,13 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.NilNode
 import interpreter.Interpreter
 
-class NilEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is NilNode
+class NilEvaluator : NodeEvaluator<NilNode> {
+    override val nodeType = NilNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: NilNode,
         interpreter: Interpreter,
     ): Any? = null
 }

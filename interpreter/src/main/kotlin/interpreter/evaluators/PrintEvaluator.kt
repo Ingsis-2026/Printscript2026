@@ -1,21 +1,19 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.DataType
 import ast.PrintNode
 import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
-class PrintEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is PrintNode
+class PrintEvaluator : NodeEvaluator<PrintNode> {
+    override val nodeType = PrintNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: PrintNode,
         interpreter: Interpreter,
     ): Any? {
-        val printNode = node as PrintNode
-        val value = interpreter.execute(printNode.expression) ?: throw InterpreterException("Invalid expression in PrintNode")
+        val value = interpreter.execute(node.expression) ?: throw InterpreterException("Invalid expression in PrintNode")
 
         // Un valor leído de afuera dentro de un println es un string, según la consigna.
         val resolved = if (value is ExternalInput) value.asType(DataType.STRING) else value

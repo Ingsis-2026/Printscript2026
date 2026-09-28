@@ -1,27 +1,24 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.DataType
 import ast.FunctionNode
 import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
-class FunctionEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is FunctionNode
+class FunctionEvaluator : NodeEvaluator<FunctionNode> {
+    override val nodeType = FunctionNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: FunctionNode,
         interpreter: Interpreter,
-    ): Any? {
-        val call = node as FunctionNode
-        return when (call.functionName) {
-            "readInput" -> readInput(call, interpreter)
-            "readEnv" -> readEnv(call, interpreter)
-            "println" -> printValue(call, interpreter)
-            else -> throw InterpreterException("Unsupported function: ${call.functionName}")
+    ): Any? =
+        when (node.functionName) {
+            "readInput" -> readInput(node, interpreter)
+            "readEnv" -> readEnv(node, interpreter)
+            "println" -> printValue(node, interpreter)
+            else -> throw InterpreterException("Unsupported function: ${node.functionName}")
         }
-    }
 
     /**
      * Devuelve el texto leído sin interpretar: el tipo lo fija el destino de la llamada.
