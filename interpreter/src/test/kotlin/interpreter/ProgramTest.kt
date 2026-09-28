@@ -127,6 +127,16 @@ class ProgramTest {
     }
 
     @Test
+    fun `the name of a data type is not a value`() {
+        val exception =
+            assertThrows<InterpreterException> {
+                runProgram("let x: string = number;\nprintln(x);", "1.0")
+            }
+
+        assertEquals("Unsupported literal type: DATA_TYPE", exception.message)
+    }
+
+    @Test
     fun `test const reassignation throws exception in version 1_1`() {
         val input =
             """
