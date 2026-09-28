@@ -151,9 +151,9 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 5161601 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ e9b829a · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
-  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 5161601. Numbers in the index are lines of main-source Kotlin per module.</p>
+  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit e9b829a. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
     <li><b>3,295</b>lines of main Kotlin</li>
@@ -464,7 +464,7 @@ println("Result: " + c);</pre></td>
         <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>Splits at the <code>=</code> (:13–18). The left side must be a single name; several tokens there are a declaration without a keyword, which is how 1.0 rejects <code>const</code> (:35–39). The right side goes to <code>ExpressionParser</code> (:22).</td></tr>
         <tr><td><span class="ref">PrintlnFactory.kt:13</span></td><td>Needs at least 4 tokens (:14–16). Takes what's between the first <code>(</code> and the last <code>)</code> (:18–25) and passes it to <code>ExpressionParser</code> (:31).</td></tr>
         <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td>A statement that is only a call, like <code>readInput("n?");</code>. It hands the whole statement to <code>ExpressionParser</code>, which builds calls wherever they appear.</td></tr>
-        <tr><td><span class="ref">ExpressionParser.kt:17</span></td><td>The one place expressions are parsed. An expression is another one in parentheses, a single token, a call, or an operation (:17–23). An operation splits at <code>+ -</code> first, then <code>* /</code> (:15, :39–41), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:48–52), and fully wrapping parentheses are removed (:19, :65–74). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–28</span>).</td></tr>
+        <tr><td><span class="ref">ExpressionParser.kt:17</span></td><td>The one place expressions are parsed. An expression is another one in parentheses, a single token, a call, or an operation (:17–23). An operation splits at <code>+ -</code> first, then <code>* /</code> (:15, :40–42), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:49–53), and fully wrapping parentheses are removed (:19, :66–75). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–30</span>).</td></tr>
         <tr><td><span class="ref">ConditionalFactory.kt:19</span></td><td>Reads the condition token after <code>(</code> (:39), then finds the matching <code>}</code> by counting depth (:110–124). The block body goes to a <em>sub-parser</em> (:63–73), which is how nested <code>if</code>s work. The <code>else</code> must immediately follow the then-block (:81–93), and <code>else if</code> is rejected (:89–91).</td></tr>
       </tbody>
     </table></div>
@@ -510,7 +510,7 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
       <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:13–43</span> rejects a name that is already taken (:17–19) and records the <code>Declaration</code> even when there's no value (:30–33). It types an <code>ExternalInput</code> using the declared type (:36).</div></li>
       <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:12–26</span> refuses to reassign a <code>const</code> (:46–49) and refuses a value of a different PrintScript type (:51–54). Int and Double both count as <code>number</code>.</div></li>
       <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:12–23</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:10–26</span> requires a <code>Boolean</code> (:16–18). <span class="ref">BlockEvaluator.kt:14–16</span> runs children in order. <code>NilEvaluator</code> returns <code>null</code>, like every node that produces no value (<span class="ref">NodeEvaluator.kt:18–22</span>).</div></li>
-      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:27–36</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:38–45). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
+      <li><div><strong>readInput / readEnv.</strong> <span class="ref">FunctionEvaluator.kt:26–35</span> prints the prompt, then asks the <code>Reader</code>. <code>readEnv</code> reads <code>System.getenv</code> (:37–44). Both return an <code>ExternalInput</code>, not a typed value.</div></li>
     </ol>
 
     <h3>The typed-input trick</h3>
@@ -830,7 +830,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why is the formatter not built on the AST?</summary>
       <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
-      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:39–41</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
+      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:40–42</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>

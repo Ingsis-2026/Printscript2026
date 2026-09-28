@@ -164,7 +164,7 @@ h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40p
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 5161601 · study sheet 4 of 8</p>
+  <p class="eyebrow">Printscript2026 @ e9b829a · study sheet 4 of 8</p>
   <h1><code>interpreter</code></h1>
   <p class="lede">Executes AST nodes one at a time against one small table of state. Output and input go through two one-method interfaces, so the same code runs in the CLI and inside the TCK.</p>
   <ul class="meta">
@@ -394,7 +394,7 @@ PrintEvaluator ← Print
   <div class="decision">
     <h4><code>Printer</code> and <code>Reader</code> are injected</h4>
     <p>Dependency inversion. The spec asks for "a mechanism to provide values" when the interpreter is used programmatically. The CLI plugs in stdout/stdin, the TCK plugs in its emitter and provider as method references, and tests capture output in a list.</p>
-    <p class="cost"><b>Cost</b><code>readEnv</code> still reads <code>System.getenv</code> directly (<span class="ref">FunctionEvaluator.kt:43</span>), so tests depend on the real environment. The TCK's <code>build.gradle</code> sets a variable for exactly that reason.</p>
+    <p class="cost"><b>Cost</b><code>readEnv</code> still reads <code>System.getenv</code> directly (<span class="ref">FunctionEvaluator.kt:42</span>), so tests depend on the real environment. The TCK's <code>build.gradle</code> sets a variable for exactly that reason.</p>
   </div>
 
   <div class="decision">
@@ -430,7 +430,9 @@ PrintEvaluator ← Print
     <details><summary>How does <code>readInput</code> know its type?</summary>
       <p>It doesn't. It returns <code>ExternalInput</code>, and the declaration, assignment or <code>println</code> that receives it converts it with <code>asType</code>. A value that can't be converted fails there, like <code>"41"</code> for a boolean.</p></details>
     <details><summary>Can the argument of <code>readInput</code> be an expression?</summary>
-      <p>Yes. The argument is evaluated like any expression and only has to give a text (<span class="ref">FunctionEvaluator.kt:63–76</span>), so <code>readInput("Your " + "name?")</code> prompts with <code>Your name?</code>. The TCK has exactly that program. Forbidding it is the job of the linter's optional <code>mandatory-variable-or-literal-in-readInput</code> rule, not of the language.</p></details>
+      <p>Yes. The argument is evaluated like any expression and only has to give a text (<span class="ref">FunctionEvaluator.kt:46–59</span>), so <code>readInput("Your " + "name?")</code> prompts with <code>Your name?</code>. The TCK has exactly that program. Forbidding it is the job of the linter's optional <code>mandatory-variable-or-literal-in-readInput</code> rule, not of the language.</p></details>
+    <details><summary>Why isn't <code>println</code> a <code>FunctionNode</code> like <code>readInput</code>?</summary>
+      <p>Because it produces no value. <code>println</code> is a statement, with its own <code>PrintNode</code> run by <code>PrintEvaluator</code>, and the parser rejects it where a value is expected: <code>let a: number = println(5);</code> fails with <em>"println is a statement, not a value"</em> (<span class="ref">ExpressionParser.kt:28</span>). A <code>FunctionNode</code> is only a call that produces a value, <code>readInput</code> or <code>readEnv</code>.</p></details>
     <details><summary>How is <code>const</code> enforced?</summary>
       <p>The declaration records the keyword (<span class="ref">DeclarationEvaluator.kt:30–33</span>), and any later assignment to that name checks it and throws (<span class="ref">AssignmentEvaluator.kt:46–49</span>).</p></details>
     <details><summary>What happens if the program fails halfway?</summary>
