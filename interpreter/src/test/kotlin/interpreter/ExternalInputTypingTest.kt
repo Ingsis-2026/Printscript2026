@@ -107,6 +107,20 @@ class ExternalInputTypingTest {
     }
 
     @Test
+    fun `a value read from outside that takes part in an operation is a string`() {
+        val interpreter = run("let greeting: string = \"Hola, \" + readInput(\"?\") + \"!\";", "Ada")
+
+        assertEquals("Hola, Ada!", interpreter.variables.valueOf("greeting"))
+    }
+
+    @Test
+    fun `a number read from outside is concatenated, not added, inside an operation`() {
+        val interpreter = run("let s: string = readInput(\"?\") + 1;", "5")
+
+        assertEquals("51", interpreter.variables.valueOf("s"))
+    }
+
+    @Test
     fun `readInput inside println is a string`() {
         // La consigna pide que sea string; el parser todavía no arma esta llamada, así que
         // el nodo se construye a mano.

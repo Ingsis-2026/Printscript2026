@@ -135,6 +135,24 @@ class ExpressionParserTest {
     }
 
     @Test
+    fun `a call can be the left operand of an operation`() {
+        val result = parseExpression11("readInput(\"a\") + \"b\"") as BinaryNode
+
+        assertEquals("+", result.operator.value)
+        assertEquals("readInput", (result.left as FunctionNode).functionName)
+        assertEquals("b", (result.right as LiteralNode).value)
+    }
+
+    @Test
+    fun `a call can be the right operand of an operation`() {
+        val result = parseExpression11("\"a\" + readInput(\"b\")") as BinaryNode
+
+        assertEquals("+", result.operator.value)
+        assertEquals("a", (result.left as LiteralNode).value)
+        assertEquals("readInput", (result.right as FunctionNode).functionName)
+    }
+
+    @Test
     fun `a call without an argument is rejected where it is written`() {
         val exception = assertThrows<ParserException> { parseExpression11("readInput()") }
 
