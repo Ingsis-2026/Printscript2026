@@ -151,13 +151,13 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ eac3573 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 4b02d34 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit eac3573. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
     <li><b>3,295</b>lines of main Kotlin</li>
-    <li><b>395</b>unit tests</li>
+    <li><b>401</b>unit tests</li>
     <li><b>59/59</b>TCK tests passing</li>
     <li><b>91–97%</b>instruction coverage per module</li>
     <li><b>7 MB</b>TCK heap limit</li>
@@ -348,7 +348,7 @@ PrintNode                                  <span class="c">@4:0</span>
         <tr><td>let a</td><td>Declaration → Literal <code>"12"</code> → <code>Int 12</code></td><td><code>{a=12}</code></td></tr>
         <tr><td>let b</td><td>Declaration → Literal → <code>Int 4</code></td><td><code>{a=12, b=4}</code></td></tr>
         <tr><td>let c</td><td>Declaration → Binary <code>/</code> → Literal <code>a</code> (lookup 12), Literal <code>b</code> (lookup 4) → <code>ArithmeticOperations</code> Int/Int → <code>3</code></td><td><code>{a=12, b=4, c=3}</code></td></tr>
-        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:102</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
+        <tr><td>println</td><td>Print → Binary <code>+</code> → <code>concatenate("Result: ", 3)</code> (<span class="ref">BinaryEvaluator.kt:114</span>) → <code>Printer.print</code></td><td>unchanged</td></tr>
       </tbody>
     </table></div>
     <p>The printer receives <code>Result: 3</code>, which is exactly the output the PDF expects. In the CLI the printer is <code>OutputPrinter</code> writing to stdout; in the TCK it's the test's <code>PrintEmitter</code>. The interpreter code is identical in both.</p>
@@ -464,13 +464,13 @@ println("Result: " + c);</pre></td>
         <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>Splits at the <code>=</code> (:13–18). The left side must be a single name; several tokens there are a declaration without a keyword, which is how 1.0 rejects <code>const</code> (:35–39). The right side goes to <code>ExpressionParser</code> (:22).</td></tr>
         <tr><td><span class="ref">PrintlnFactory.kt:13</span></td><td>Needs at least 4 tokens (:14–16). Takes what's between the first <code>(</code> and the last <code>)</code> (:18–25) and passes it to <code>ExpressionParser</code> (:31).</td></tr>
         <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td>A statement that is only a call, like <code>readInput("n?");</code>. It hands the whole statement to <code>ExpressionParser</code>, which builds calls wherever they appear.</td></tr>
-        <tr><td><span class="ref">ExpressionParser.kt:17</span></td><td>The one place expressions are parsed. An expression is another one in parentheses, a single token, a call, or an operation (:17–23). An operation splits at <code>+ -</code> first, then <code>* /</code> (:15, :40–42), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:49–53), and fully wrapping parentheses are removed (:19, :66–75). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–30</span>).</td></tr>
+        <tr><td><span class="ref">ExpressionParser.kt:17</span></td><td>The one place expressions are parsed. An expression is another one in parentheses, a single token, a call, or an operation (:17–23). A call is a function name followed by its argument in parentheses (:25–27), so in <code>"a" + readInput("b")</code> it is just an operand. An operation splits at <code>+ -</code> first, then <code>* /</code> (:15, :41–43), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:50–54), and fully wrapping parentheses are removed (:19, :67–76). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–30</span>).</td></tr>
         <tr><td><span class="ref">ConditionalFactory.kt:19</span></td><td>Reads the condition token after <code>(</code> (:39), then finds the matching <code>}</code> by counting depth (:110–124). The block body goes to a <em>sub-parser</em> (:63–73), which is how nested <code>if</code>s work. The <code>else</code> must immediately follow the then-block (:81–93), and <code>else if</code> is rejected (:89–91).</td></tr>
       </tbody>
     </table></div>
 
     <h3>How precedence falls out of splitting</h3>
-<pre><span class="c">// ExpressionParser.kt:15, :40–42: the lowest precedence becomes the root</span>
+<pre><span class="c">// ExpressionParser.kt:15, :41–43: the lowest precedence becomes the root</span>
 private val PRECEDENCE_LEVELS = listOf(setOf("+", "-"), setOf("*", "/"))
 
 private fun operation(tokens: List&lt;Token&gt;): ASTNode =
@@ -490,7 +490,7 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
       <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:34–38</span>).</li>
       <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more set in <code>PRECEDENCE_LEVELS</code> (<span class="ref">ExpressionParser.kt:15</span>).</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 73, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
+    <p class="tests" style="margin-top:18px">Tests: 76, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
   </div>
 </section>
 
@@ -506,7 +506,7 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
       <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:12</span> keeps one <code>VariableTable</code>, which stores each variable's <code>Declaration</code> (the keyword, to reject reassigning a <code>const</code>, and the declared type, to type a later <code>readInput</code>) separately from its value — because a variable can be declared without a value, and can get a value without being declared.</div></li>
       <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:24–34</span> looks up the evaluator for the node's type (:26) and runs it, handing it the node already typed. Evaluators throw errors without positions; the catch at :30–33 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
       <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:11–32</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:17). An identifier is looked up and throws "Undefined variable" if missing (:28–30).</div></li>
-      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:17–25</span> dispatches on the operator, one named operation per branch. <code>+</code> tries string concatenation first (:28–34), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :113–115, and multiplying or dividing a string is rejected at :45–47 and :55–57.</div></li>
+      <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:20–28</span> dispatches on the operator, one named operation per branch. A value read from outside is a string as an operand (:31–38). <code>+</code> tries string concatenation first (:40–46), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :125–127, and multiplying or dividing a string is rejected at :57–59 and :67–69.</div></li>
       <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:13–43</span> rejects a name that is already taken (:17–19) and records the <code>Declaration</code> even when there's no value (:30–33). It types an <code>ExternalInput</code> using the declared type (:36).</div></li>
       <li><div><strong>Assignments.</strong> <span class="ref">AssignmentEvaluator.kt:12–26</span> refuses to reassign a <code>const</code> (:46–49) and refuses a value of a different PrintScript type (:51–54). Int and Double both count as <code>number</code>.</div></li>
       <li><div><strong>println, if, blocks.</strong> <span class="ref">PrintEvaluator.kt:12–23</span> prints through the injected <code>Printer</code>. <span class="ref">ConditionalEvaluator.kt:10–26</span> requires a <code>Boolean</code> (:16–18). <span class="ref">BlockEvaluator.kt:14–16</span> runs children in order. <code>NilEvaluator</code> returns <code>null</code>, like every node that produces no value (<span class="ref">NodeEvaluator.kt:18–22</span>).</div></li>
@@ -528,7 +528,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <div class="decision"><dt><code>Printer</code> / <code>Reader</code> interfaces<small>Printer.kt:3 · Reader.kt:3</small></dt><dd>Dependency inversion. The spec requires a programmatic way to provide input, which is the TCK's <code>InputProvider</code>. Being single-method interfaces, they take Java method references directly (<span class="ref">InterpreterAdapter.java:54</span>).</dd></div>
       <div class="decision"><dt>Executes node by node<small>Interpreter.kt:32</small></dt><dd>The interpreter never sees the whole program, and the caller decides how the stream is fed. That's what lets execution interleave with parsing.</dd></div>
     </dl>
-    <p class="tests" style="margin-top:18px">Tests: 127, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 130, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
   </div>
 </section>
 
@@ -826,15 +826,15 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>How do you know it doesn't load the whole file?</summary>
       <p>The TCK runs 131,072 statements in a 7 MB heap (<span class="ref">InterpreterLargeFileTest.java:22</span>), and there are dedicated unit tests in each module: StreamingPipelineTest, FormatterStreamingTest, LinterStreamingTest and the CLI's StreamingTest. In the code, every stage signature takes and returns a <code>Sequence</code>.</p></details>
     <details><summary>How does <code>readInput</code> know what type to return?</summary>
-      <p>It doesn't. It returns raw text wrapped in <code>ExternalInput</code>, and the destination converts it: the declaration, the assignment, or <code>println</code> as a string (<span class="ref">ExternalInput.kt:12–22</span>). An unparseable value fails there, positioned at the node.</p></details>
+      <p>It doesn't. It returns raw text wrapped in <code>ExternalInput</code>, and the destination converts it: the declaration, the assignment, or, as a string, <code>println</code>, a call's argument and an operation (<span class="ref">ExternalInput.kt:12–22</span>). An unparseable value fails there, positioned at the node.</p></details>
     <details><summary>Why is the formatter not built on the AST?</summary>
       <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
-      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:40–42</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
+      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:41–43</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
-      <p>Three layers. First, 395 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+      <p>Three layers. First, 401 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
       <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>

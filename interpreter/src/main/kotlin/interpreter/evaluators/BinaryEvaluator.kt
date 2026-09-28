@@ -1,6 +1,9 @@
 package interpreter.evaluators
 
+import ast.ASTNode
 import ast.BinaryNode
+import ast.DataType
+import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
@@ -11,8 +14,8 @@ class BinaryEvaluator : NodeEvaluator<BinaryNode> {
         node: BinaryNode,
         interpreter: Interpreter,
     ): Any? {
-        val leftValue = interpreter.execute(node.left) ?: throw InterpreterException("Invalid left operand")
-        val rightValue = interpreter.execute(node.right) ?: throw InterpreterException("Invalid right operand")
+        val leftValue = operandValue(node.left, interpreter) ?: throw InterpreterException("Invalid left operand")
+        val rightValue = operandValue(node.right, interpreter) ?: throw InterpreterException("Invalid right operand")
 
         return when (val operator = node.operator.value) {
             "+" -> add(leftValue, rightValue)
@@ -23,6 +26,15 @@ class BinaryEvaluator : NodeEvaluator<BinaryNode> {
             "<" -> isLessThan(leftValue, rightValue)
             else -> throw InterpreterException("Unsupported operator: $operator")
         }
+    }
+
+    /** Un valor leído de afuera que entra en una operación es un texto, igual que dentro de un println. */
+    private fun operandValue(
+        operand: ASTNode,
+        interpreter: Interpreter,
+    ): Any? {
+        val value = interpreter.execute(operand)
+        return if (value is ExternalInput) value.asType(DataType.STRING) else value
     }
 
     /** Con un string de por medio `+` concatena; si no, suma. */

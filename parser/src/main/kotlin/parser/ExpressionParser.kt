@@ -18,17 +18,18 @@ internal object ExpressionParser {
         when {
             isEnclosedInParentheses(tokens) -> parse(tokens.subList(1, tokens.lastIndex))
             tokens.size == 1 -> tokens.single().toLiteral()
-            tokens.any { it.namesFunction } -> call(tokens)
+            isCall(tokens) -> call(tokens)
             else -> operation(tokens)
         }
 
+    /** Un nombre de función seguido de su argumento entre paréntesis: en `readInput("a") + "b"` la llamada es sólo un operando. */
+    private fun isCall(tokens: List<Token>): Boolean =
+        tokens.firstOrNull()?.namesFunction == true && isEnclosedInParentheses(tokens.drop(1))
+
     private fun call(tokens: List<Token>): FunctionNode {
-        val nameIndex = tokens.indexOfFirst { it.namesFunction }
-        val name = tokens[nameIndex]
+        val name = tokens.first()
         if (name.callsPrintln) throw ParserException("println is a statement, not a value", tokens)
-        val openingParenthesis = nameIndex + 1
-        val closingParenthesis = tokens.lastIndex
-        val argument = tokens.subList(openingParenthesis + 1, closingParenthesis)
+        val argument = tokens.subList(2, tokens.lastIndex)
         if (argument.isEmpty()) throw ParserException("${name.value} needs an argument", tokens)
         return FunctionNode(
             functionName = name.value,

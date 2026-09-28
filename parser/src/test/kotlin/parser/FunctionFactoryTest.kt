@@ -20,9 +20,9 @@ class FunctionFactoryTest {
         val tokens =
             listOf(
                 Token(TokenType.FUNCTION, "print", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"Hello, World!\"", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
 
         val result = functionFactory.createAST(tokens)
@@ -38,8 +38,8 @@ class FunctionFactoryTest {
         val tokens =
             listOf(
                 Token(TokenType.FUNCTION, "print", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
 
         val exception =
@@ -54,9 +54,9 @@ class FunctionFactoryTest {
         val tokens =
             listOf(
                 Token(TokenType.FUNCTION, "print", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"Hello, World!\"", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
 
         assert(functionFactory.canHandle(tokens))
@@ -66,9 +66,9 @@ class FunctionFactoryTest {
     fun `test canHandle without function token`() {
         val tokens =
             listOf(
-                Token(TokenType.PUNCTUATOR, "(", startPos, endPos),
+                Token(TokenType.PARENTHESIS, "(", startPos, endPos),
                 Token(TokenType.STRINGLITERAL, "\"Hello, World!\"", startPos, endPos),
-                Token(TokenType.PUNCTUATOR, ")", startPos, endPos),
+                Token(TokenType.PARENTHESIS, ")", startPos, endPos),
             )
 
         assert(!functionFactory.canHandle(tokens))
