@@ -126,7 +126,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ e9b829a · study sheet 1 of 8</p>
+  <p class="eyebrow">Printscript2026 @ eac3573 · study sheet 1 of 8</p>
   <h1><code>commons</code></h1>
   <p class="lede">The contract between modules: what a token is, the nine kinds of AST node, and the one error type every stage throws. It has no dependencies and almost no behaviour, which is exactly why it's the right place to start.</p>
   <ul class="meta">
@@ -296,7 +296,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
     <details><summary>Why don't the nodes store their token's type?</summary>
       <p>Because it would always be the same value: each factory finds its token <em>by</em> that type. <code>DeclarationNode</code> used to carry <code>declType</code> (always KEYWORD), <code>AssignationNode</code> <code>valType</code> (always ASSIGNATION) and <code>FunctionNode</code> <code>type</code> (always FUNCTION). Nobody read them, so they're gone. A node keeps only what varies: <code>declValue</code> is <code>"let"</code> or <code>"const"</code>, which the interpreter reads to block reassigning a <code>const</code> (<span class="ref">DeclarationEvaluator.kt:32</span>), and <code>dataType</code> is a <code>DataType</code>. <code>LiteralNode.type</code> stays because it does vary: it says whether the literal is a number, a string, a boolean or a variable name.</p></details>
     <details><summary>Why are positions nullable in the exception?</summary>
-      <p>Some errors have no token at hand. An empty file fails with "No valid code" (<span class="ref">StatementSplitter.kt:90</span>), and there's no position to give. <code>describe()</code> handles that case (:22).</p></details>
+      <p>Some errors have no token at hand. An empty file fails with "No valid code" (<span class="ref">StatementSplitter.kt:24</span>), and there's no position to give. <code>describe()</code> handles that case (:22).</p></details>
     <details><summary>Why doesn't <code>commons</code> contain the lexer's token rules?</summary>
       <p>What a token <em>is</em> is shared; how to <em>recognise</em> one is lexer behaviour and changes per version (<span class="ref">TokenMapper.kt:34–38</span>). Keeping behaviour out is what lets the parser depend on <code>commons</code> without depending on the lexer.</p></details>
   </div>
