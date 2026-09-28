@@ -151,13 +151,13 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 020ce43 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ 5adf300 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit eac3573. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
     <li><b>3,295</b>lines of main Kotlin</li>
-    <li><b>402</b>unit tests</li>
+    <li><b>403</b>unit tests</li>
     <li><b>59/59</b>TCK tests passing</li>
     <li><b>91–97%</b>instruction coverage per module</li>
     <li><b>7 MB</b>TCK heap limit</li>
@@ -461,7 +461,7 @@ println("Result: " + c);</pre></td>
       <thead><tr><th>Factory</th><th>How it builds</th></tr></thead>
       <tbody>
         <tr><td><span class="ref">DeclarationFactory.kt:14</span></td><td>Finds the keyword, identifier and type (:15–23), and turns the type's text into a <code>DataType</code> (:24–26). The expression is everything after <code>=</code> (:47–52), parsed by <code>ExpressionParser</code> (:29). It does a static literal-vs-type check (:55–74), skipped when the value is a <code>readInput</code>/<code>readEnv</code> call because the type isn't known until run time (:31–33). The node's position is the identifier (:40).</td></tr>
-        <tr><td><span class="ref">AssignationFactory.kt:12</span></td><td>Splits at the <code>=</code> (:13–18). The left side must be a single name; several tokens there are a declaration without a keyword, which is how 1.0 rejects <code>const</code> (:35–39). The right side goes to <code>ExpressionParser</code> (:22).</td></tr>
+        <tr><td><span class="ref">AssignationFactory.kt:11</span></td><td>Splits at the <code>=</code> (:12–18). The left side must be a single name; several tokens there are a declaration without a keyword, which is how 1.0 rejects <code>const</code> (:37–41). The right side goes to <code>ExpressionParser</code> (:24), and an empty one is an error, as in a declaration (:17–20).</td></tr>
         <tr><td><span class="ref">PrintlnFactory.kt:13</span></td><td>Needs at least 4 tokens (:14–16). Takes what's between the first <code>(</code> and the last <code>)</code> (:18–25) and passes it to <code>ExpressionParser</code> (:31).</td></tr>
         <tr><td><span class="ref">FunctionFactory.kt:9</span></td><td>A statement that is only a call, like <code>readInput("n?");</code>. It hands the whole statement to <code>ExpressionParser</code>, which builds calls wherever they appear.</td></tr>
         <tr><td><span class="ref">ExpressionParser.kt:17</span></td><td>The one place expressions are parsed. An expression is another one in parentheses, a single token, a call, or an operation (:17–23). A call is a function name followed by its argument in parentheses (:25–27), so in <code>"a" + readInput("b")</code> it is just an operand. An operation splits at <code>+ -</code> first, then <code>* /</code> (:15, :41–43), which puts the lower-precedence operator at the root of the tree. Operators inside parentheses are skipped (:50–54), and fully wrapping parentheses are removed (:19, :67–76). Parentheses and operators are recognised by type, so a string <code>"("</code> or <code>"+"</code> is just an operand (<span class="ref">TokenRoles.kt:18–30</span>).</td></tr>
@@ -490,7 +490,7 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
       <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:34–38</span>).</li>
       <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more set in <code>PRECEDENCE_LEVELS</code> (<span class="ref">ExpressionParser.kt:15</span>).</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 76, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
+    <p class="tests" style="margin-top:18px">Tests: 77, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
   </div>
 </section>
 
@@ -834,7 +834,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
-      <p>Three layers. First, 402 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+      <p>Three layers. First, 403 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
       <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>
