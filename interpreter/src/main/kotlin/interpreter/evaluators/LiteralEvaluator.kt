@@ -24,7 +24,6 @@ class LiteralEvaluator : NodeEvaluator<LiteralNode> {
                     "false" -> false
                     else -> throw InterpreterException("Invalid boolean value: ${node.value}")
                 }
-            TokenType.DATA_TYPE -> node.value
             TokenType.IDENTIFIER ->
                 interpreter.variables.valueOf(node.value)
                     ?: throw InterpreterException("Undefined variable: ${node.value}")
