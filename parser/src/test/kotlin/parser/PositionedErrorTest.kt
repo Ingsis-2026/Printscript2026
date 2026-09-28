@@ -170,4 +170,14 @@ class PositionedErrorTest {
 
         assertThrows<Exception> { AssignationFactory().createAST(tokens) }
     }
+
+    @Test
+    fun `an assignation without an expression is rejected like a declaration without one`() {
+        val assignation = assertThrows<ParserException> { parser11.execute(lexer11.execute("x = ;")).toList() }
+        val declaration = assertThrows<ParserException> { parser11.execute(lexer11.execute("let x: number = ;")).toList() }
+
+        assertEquals("Expected an expression after =", assignation.message)
+        assertEquals(declaration.message, assignation.message)
+        assertEquals(TokenPosition(0, 0), assignation.startPosition)
+    }
 }
