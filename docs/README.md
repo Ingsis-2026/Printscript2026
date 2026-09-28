@@ -9,8 +9,8 @@ Empezar por [`index.html`](index.html), que enlaza al resto.
 | --- | --- |
 | `index.html` | Índice de toda la documentación. |
 | `overview.html` | Diagrama de componentes, flujo de datos, el Ejemplo 2 recorrido de punta a punta y las decisiones de diseño con su costo. |
-| `commons.html` | `Token`, el AST y `PrintScriptException`. |
-| `lexer.html` | Del texto a los tokens: la expresión regular combinada, 1.0 vs 1.1 y la pereza medida. |
+| `commons.html` | `Token`, el AST, `Version`, `DataType`, `PrintScriptException` y `ConfigurationException`. |
+| `lexer.html` | Del texto a los tokens: un scanner sobre el vocabulario de la versión, 1.0 vs 1.1 y la pereza medida. |
 | `parser.html` | `StatementSplitter` y la cadena de factories, con los árboles que producen. |
 | `interpreter.html` | El ciclo de evaluadores, la traza del Ejemplo 2 y el tipado de `readInput`. |
 | `formatter.html` | El formateo por huecos entre tokens, con un antes y después por regla. |
@@ -27,9 +27,9 @@ open docs/index.html
 ## Notas
 
 - El texto de las fichas está en inglés; este índice y este README, en español.
-- Las salidas, trazas y mediciones que aparecen se obtuvieron ejecutando el código de la
-  versión **1.0.0**, y las referencias `Archivo.kt:línea` corresponden a esa versión. Si el código
-  cambia, los fragmentos citados pueden quedar corridos unas líneas.
+- Cada ficha dice arriba qué commit describe (`Printscript2026 @ …`), y las salidas, trazas y
+  referencias `Archivo.kt:línea` corresponden a ese commit. Si el código cambia, hay que volver a
+  citar las líneas que se corrieron y actualizar ese sello.
 - Las fichas cargan tipografías desde Google Fonts. Sin conexión se ven igual, con las
   tipografías del sistema.
 - Cada ficha tiene un autotest cuyas marcas se guardan sólo en el navegador que las abre.
