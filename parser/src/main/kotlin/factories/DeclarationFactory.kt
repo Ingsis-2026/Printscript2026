@@ -33,7 +33,6 @@ class DeclarationFactory : ASTFactory {
         }
 
         return DeclarationNode(
-            declType = keywordToken.getType(),
             declValue = keywordToken.value,
             id = identifierToken.value,
             dataType = dataType,

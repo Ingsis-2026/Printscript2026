@@ -60,7 +60,7 @@ class InterpreterTests {
     @Test
     fun testAssignment() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = AssignationNode("x", expression, TokenType.ASSIGNATION, position)
+        val node = AssignationNode("x", expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
         assertEquals(42, interpreter.variables.valueOf("x"))
@@ -69,7 +69,7 @@ class InterpreterTests {
     @Test
     fun testDeclaration() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = DeclarationNode(TokenType.KEYWORD, "let", "x", DataType.NUMBER, expression, position)
+        val node = DeclarationNode("let", "x", DataType.NUMBER, expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
         assertEquals(42, interpreter.variables.valueOf("x"))
@@ -195,7 +195,7 @@ class InterpreterTests {
     @Test
     fun `test variable assignment`() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = AssignationNode("x", expression, TokenType.ASSIGNATION, position)
+        val node = AssignationNode("x", expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
         assertEquals(42, interpreter.variables.valueOf("x"))
@@ -359,7 +359,7 @@ class InterpreterTests {
     @Test
     fun `test function node`() {
         val expression = LiteralNode("Hello, world!", TokenType.STRINGLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "println", expression, position)
+        val node = FunctionNode("println", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         // Redirect output stream to capture print statements
@@ -373,7 +373,7 @@ class InterpreterTests {
     @Test
     fun `test declaration node`() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = DeclarationNode(TokenType.KEYWORD, "let", "x", DataType.NUMBER, expression, position)
+        val node = DeclarationNode("let", "x", DataType.NUMBER, expression, position)
         val interpreter = Interpreter(printer, reader)
         interpreter.execute(node)
         assertEquals(42, interpreter.variables.valueOf("x"))
@@ -385,7 +385,7 @@ class InterpreterTests {
 
         // Asignación
         val assignNode =
-            AssignationNode("x", LiteralNode("10", TokenType.NUMBERLITERAL, position), TokenType.ASSIGNATION, position)
+            AssignationNode("x", LiteralNode("10", TokenType.NUMBERLITERAL, position), position)
         interpreter.execute(assignNode)
 
         // Suma
@@ -408,9 +408,9 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader)
 
         val expr1 =
-            AssignationNode("a", LiteralNode("5", TokenType.NUMBERLITERAL, position), TokenType.ASSIGNATION, position)
+            AssignationNode("a", LiteralNode("5", TokenType.NUMBERLITERAL, position), position)
         val expr2 =
-            AssignationNode("b", LiteralNode("10", TokenType.NUMBERLITERAL, position), TokenType.ASSIGNATION, position)
+            AssignationNode("b", LiteralNode("10", TokenType.NUMBERLITERAL, position), position)
         val sumNode =
             BinaryNode(
                 LiteralNode("a", TokenType.IDENTIFIER, position),
@@ -437,7 +437,7 @@ class InterpreterTests {
                 Token(TokenType.OPERATOR, "+", position, position),
                 position,
             )
-        val functionNode = FunctionNode(TokenType.FUNCTION, "println", functionBody, position)
+        val functionNode = FunctionNode("println", functionBody, position)
 
         // Asignar un valor a x
         interpreter.variables.assign("x", 10)
@@ -458,7 +458,6 @@ class InterpreterTests {
             AssignationNode(
                 "x",
                 LiteralNode("10", TokenType.NUMBERLITERAL, position),
-                TokenType.ASSIGNATION,
                 position,
             ),
         )
@@ -466,7 +465,6 @@ class InterpreterTests {
             AssignationNode(
                 "y",
                 LiteralNode("20", TokenType.NUMBERLITERAL, position),
-                TokenType.ASSIGNATION,
                 position,
             ),
         )
@@ -479,7 +477,7 @@ class InterpreterTests {
                 Token(TokenType.OPERATOR, "+", position, position),
                 position,
             )
-        interpreter.execute(AssignationNode("z", sumNode, TokenType.ASSIGNATION, position))
+        interpreter.execute(AssignationNode("z", sumNode, position))
 
         // Verificar que las variables están correctamente asignadas
         assertEquals(10, interpreter.variables.valueOf("x"))
@@ -501,7 +499,7 @@ class InterpreterTests {
     fun `test readEnv with undefined environment variable`() {
         val interpreter = Interpreter(printer, reader)
         val envVariable = "BEST_FOOTBALL_CLUB"
-        val node = FunctionNode(TokenType.FUNCTION, "readEnv", LiteralNode(envVariable, TokenType.STRINGLITERAL, position), position)
+        val node = FunctionNode("readEnv", LiteralNode(envVariable, TokenType.STRINGLITERAL, position), position)
         assertThrows(RuntimeException::class.java) {
             interpreter.execute(node)
         }
@@ -886,7 +884,7 @@ class InterpreterTests {
     @Test
     fun `test assignment of integer variable`() {
         val expression = LiteralNode("10", TokenType.NUMBERLITERAL, position)
-        val node = AssignationNode("x", expression, TokenType.NUMBERLITERAL, position) // Ahora incluye valType
+        val node = AssignationNode("x", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         val result = interpreter.execute(node)
@@ -898,7 +896,7 @@ class InterpreterTests {
     @Test
     fun `test assignment of string variable`() {
         val expression = LiteralNode("Hello", TokenType.STRINGLITERAL, position)
-        val node = AssignationNode("greeting", expression, TokenType.STRINGLITERAL, position) // Ahora incluye valType
+        val node = AssignationNode("greeting", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         val result = interpreter.execute(node)
@@ -913,12 +911,12 @@ class InterpreterTests {
 
         // Primera asignación
         val initialExpression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val initialNode = AssignationNode("numberVar", initialExpression, TokenType.NUMBERLITERAL, position)
+        val initialNode = AssignationNode("numberVar", initialExpression, position)
         interpreter.execute(initialNode)
 
         // Reasignación con el mismo tipo
         val newExpression = LiteralNode("100", TokenType.NUMBERLITERAL, position)
-        val newNode = AssignationNode("numberVar", newExpression, TokenType.NUMBERLITERAL, position)
+        val newNode = AssignationNode("numberVar", newExpression, position)
         val result = interpreter.execute(newNode)
 
         assertEquals(100, interpreter.variables.valueOf("numberVar"))
@@ -931,12 +929,12 @@ class InterpreterTests {
 
         // Asignación inicial de entero
         val initialExpression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val initialNode = AssignationNode("varTest", initialExpression, TokenType.NUMBERLITERAL, position)
+        val initialNode = AssignationNode("varTest", initialExpression, position)
         interpreter.execute(initialNode)
 
         // Intento de reasignar con un string
         val newExpression = LiteralNode("New Value", TokenType.STRINGLITERAL, position)
-        val newNode = AssignationNode("varTest", newExpression, TokenType.STRINGLITERAL, position)
+        val newNode = AssignationNode("varTest", newExpression, position)
 
         val exception =
             assertThrows(RuntimeException::class.java) {
@@ -955,7 +953,7 @@ class InterpreterTests {
 
         // Intento de reasignar una constante
         val newExpression = LiteralNode("New Value", TokenType.STRINGLITERAL, position)
-        val newNode = AssignationNode("constVar", newExpression, TokenType.STRINGLITERAL, position)
+        val newNode = AssignationNode("constVar", newExpression, position)
 
         val exception =
             assertThrows(RuntimeException::class.java) {
@@ -967,7 +965,7 @@ class InterpreterTests {
     @Test
     fun `test valid readInput with string argument`() {
         val expression = LiteralNode("Enter your name: ", TokenType.STRINGLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
+        val node = FunctionNode("readInput", expression, position)
 
         // Simulamos la interacción con el reader
         val interpreter =
@@ -987,7 +985,7 @@ class InterpreterTests {
     @Test
     fun `test readInput throws exception for non-string argument`() {
         val expression = LiteralNode("42", TokenType.NUMBERLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
+        val node = FunctionNode("readInput", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         val exception =
@@ -1007,7 +1005,7 @@ class InterpreterTests {
                 Token(TokenType.OPERATOR, "+", position, position),
                 position,
             )
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
+        val node = FunctionNode("readInput", expression, position)
         val interpreter = Interpreter(printer, reader)
 
         val exception =
@@ -1021,7 +1019,7 @@ class InterpreterTests {
     @Test
     fun `test readInput prints the argument message`() {
         val expression = LiteralNode("Enter a value: ", TokenType.STRINGLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", expression, position)
+        val node = FunctionNode("readInput", expression, position)
 
         val outputStream = ByteArrayOutputStream()
         System.setOut(PrintStream(outputStream))
@@ -1100,7 +1098,6 @@ class InterpreterTests {
         val interpreter = Interpreter(printer, reader)
         val node =
             DeclarationNode(
-                TokenType.KEYWORD,
                 "let",
                 "uninit",
                 DataType.NUMBER,
@@ -1120,7 +1117,7 @@ class InterpreterTests {
             }
         val interpreter = Interpreter(printer, testReader)
         val arg = LiteralNode("Enter number: ", TokenType.STRINGLITERAL, position)
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", arg, position)
+        val node = FunctionNode("readInput", arg, position)
         val result = interpreter.execute(node) as ExternalInput
 
         // Un "100" tipeado no es un número por sí solo: lo es si su destino lo declara así.
@@ -1132,7 +1129,7 @@ class InterpreterTests {
     fun `test readInput with invalid argument throws`() {
         val interpreter = Interpreter(printer, reader)
         val arg = NilNode
-        val node = FunctionNode(TokenType.FUNCTION, "readInput", arg, position)
+        val node = FunctionNode("readInput", arg, position)
         assertThrows(RuntimeException::class.java) {
             interpreter.execute(node)
         }
@@ -1142,7 +1139,7 @@ class InterpreterTests {
     fun `test readEnv with invalid argument throws`() {
         val interpreter = Interpreter(printer, reader)
         val arg = NilNode
-        val node = FunctionNode(TokenType.FUNCTION, "readEnv", arg, position)
+        val node = FunctionNode("readEnv", arg, position)
         assertThrows(RuntimeException::class.java) {
             interpreter.execute(node)
         }
@@ -1171,8 +1168,8 @@ class InterpreterTests {
     fun `test already declared variable throws`() {
         val interpreter = Interpreter(printer, reader)
         val expr = LiteralNode("1", TokenType.NUMBERLITERAL, position)
-        val node1 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", DataType.NUMBER, expr, position)
-        val node2 = DeclarationNode(TokenType.KEYWORD, "let", "dupVar", DataType.NUMBER, expr, position)
+        val node1 = DeclarationNode("let", "dupVar", DataType.NUMBER, expr, position)
+        val node2 = DeclarationNode("let", "dupVar", DataType.NUMBER, expr, position)
         interpreter.execute(node1)
         assertThrows(RuntimeException::class.java) {
             interpreter.execute(node2)
@@ -1188,7 +1185,6 @@ class InterpreterTests {
             AssignationNode(
                 "c",
                 LiteralNode("20", TokenType.NUMBERLITERAL, position),
-                TokenType.ASSIGNATION,
                 position,
             )
         assertThrows(RuntimeException::class.java) {
@@ -1204,7 +1200,6 @@ class InterpreterTests {
             AssignationNode(
                 "x",
                 LiteralNode("hello", TokenType.STRINGLITERAL, position),
-                TokenType.ASSIGNATION,
                 position,
             )
         assertThrows(RuntimeException::class.java) {
@@ -1220,7 +1215,6 @@ class InterpreterTests {
             AssignationNode(
                 "str",
                 LiteralNode("42", TokenType.NUMBERLITERAL, position),
-                TokenType.ASSIGNATION,
                 position,
             )
         assertThrows(RuntimeException::class.java) {
@@ -1243,7 +1237,7 @@ class InterpreterTests {
     fun `test unknown function name is rejected`() {
         val interpreter = Interpreter(printer, reader)
         val expr = LiteralNode("hello", TokenType.STRINGLITERAL, position)
-        val funcNode = FunctionNode(TokenType.FUNCTION, "myCustomFunction", expr, position)
+        val funcNode = FunctionNode("myCustomFunction", expr, position)
 
         val exception =
             assertThrows(RuntimeException::class.java) {

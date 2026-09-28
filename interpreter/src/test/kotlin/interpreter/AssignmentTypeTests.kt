@@ -27,7 +27,7 @@ class AssignmentTypeTests {
         id: String,
         value: String,
         type: TokenType,
-    ) = AssignationNode(id, LiteralNode(value, type, position), type, position)
+    ) = AssignationNode(id, LiteralNode(value, type, position), position)
 
     @Test
     fun `a boolean variable can be reassigned to another boolean`() {

@@ -6,7 +6,6 @@ import ast.LiteralNode
 import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
-import token.TokenType
 
 class FunctionEvaluator : NodeEvaluator {
     override fun canEvaluate(node: ASTNode): Boolean = node is FunctionNode
@@ -16,8 +15,6 @@ class FunctionEvaluator : NodeEvaluator {
         interpreter: Interpreter,
     ): Any? {
         val call = node as FunctionNode
-        if (call.type != TokenType.FUNCTION) throw InterpreterException("Unsupported function: ${call.type}")
-
         return when (call.functionName) {
             "readInput" -> readInput(call, interpreter)
             "readEnv" -> readEnv(call, interpreter)

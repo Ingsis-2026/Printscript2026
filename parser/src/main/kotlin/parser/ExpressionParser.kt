@@ -30,7 +30,6 @@ internal object ExpressionParser {
         val argument = tokens.subList(openingParenthesis + 1, closingParenthesis)
         if (argument.isEmpty()) throw ParserException("${name.value} needs an argument", tokens)
         return FunctionNode(
-            type = name.getType(),
             functionName = name.value,
             expression = parse(argument),
             position = name.getPosition(),

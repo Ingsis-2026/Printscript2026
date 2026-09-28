@@ -52,7 +52,6 @@ class ASTNodeTests {
         val expr = LiteralNode("10", TokenType.NUMBERLITERAL, TokenPosition(1, 5))
         val declNode =
             DeclarationNode(
-                TokenType.DECLARATOR,
                 "let",
                 "x",
                 DataType.NUMBER,
@@ -74,13 +73,11 @@ class ASTNodeTests {
             AssignationNode(
                 "y",
                 expr,
-                TokenType.ASSIGNATION,
                 TokenPosition(1, 2),
             )
 
         assertEquals("y", assignNode.id)
         assertEquals(expr, assignNode.expression)
-        assertEquals(TokenType.ASSIGNATION, assignNode.valType)
         assertEquals(TokenPosition(1, 2), assignNode.position)
     }
 
@@ -126,13 +123,11 @@ class ASTNodeTests {
         val expr = LiteralNode("5", TokenType.NUMBERLITERAL, TokenPosition(1, 5))
         val functionNode =
             FunctionNode(
-                TokenType.FUNCTION,
                 "myFunction",
                 expr,
                 TokenPosition(1, 1),
             )
 
-        assertEquals(TokenType.FUNCTION, functionNode.type)
         assertEquals("myFunction", functionNode.functionName)
         assertEquals(expr, functionNode.expression)
         assertEquals(TokenPosition(1, 1), functionNode.position)

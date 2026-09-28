@@ -33,13 +33,13 @@ class ValuelessDeclarationTests {
         name: String,
         type: DataType,
         keyword: String = "let",
-    ) = DeclarationNode(TokenType.KEYWORD, keyword, name, type, NilNode, position)
+    ) = DeclarationNode(keyword, name, type, NilNode, position)
 
     private fun assignment(
         name: String,
         value: String,
         type: TokenType,
-    ) = AssignationNode(name, LiteralNode(value, type, position), TokenType.ASSIGNATION, position)
+    ) = AssignationNode(name, LiteralNode(value, type, position), position)
 
     @Test
     fun `redeclaring a variable that was declared without a value fails`() {
