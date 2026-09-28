@@ -356,17 +356,14 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test function node`() {
+    fun `println is a statement, not a function the interpreter calls`() {
         val expression = LiteralNode("Hello, world!", TokenType.STRINGLITERAL, position)
         val node = FunctionNode("println", expression, position)
         val interpreter = Interpreter(printer, reader)
 
-        // Redirect output stream to capture print statements
-        val outputStream = ByteArrayOutputStream()
-        System.setOut(PrintStream(outputStream))
+        val exception = assertThrows(InterpreterException::class.java) { interpreter.execute(node) }
 
-        interpreter.execute(node)
-        assertEquals("Hello, world!", outputStream.toString().trim())
+        assertEquals("Unsupported function: println", exception.message)
     }
 
     @Test
@@ -425,27 +422,28 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test programmatic function execution`() {
-        val interpreter = Interpreter(printer, reader)
-
-        // Definir una función ficticia
-        val functionBody =
+    fun `println prints its expression and produces no value`() {
+        val printed = mutableListOf<String>()
+        val recordingPrinter =
+            object : Printer {
+                override fun print(message: String) {
+                    printed.add(message)
+                }
+            }
+        val interpreter = Interpreter(recordingPrinter, reader)
+        val sum =
             BinaryNode(
                 LiteralNode("x", TokenType.IDENTIFIER, position),
                 LiteralNode("5", TokenType.NUMBERLITERAL, position),
                 Token(TokenType.OPERATOR, "+", position, position),
                 position,
             )
-        val functionNode = FunctionNode("println", functionBody, position)
-
-        // Asignar un valor a x
         interpreter.variables.assign("x", 10)
 
-        // Ejecutar la función
-        val result = interpreter.execute(functionNode)
+        val result = interpreter.execute(PrintNode(sum, position))
 
-        // Verificar
-        assertEquals(15, result) // 10 + 5
+        assertEquals(listOf("15"), printed)
+        assertNull(result)
     }
 
     @Test

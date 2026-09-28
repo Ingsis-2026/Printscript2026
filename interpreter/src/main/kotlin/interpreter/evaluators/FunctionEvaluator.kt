@@ -16,7 +16,6 @@ class FunctionEvaluator : NodeEvaluator<FunctionNode> {
         when (node.functionName) {
             "readInput" -> readInput(node, interpreter)
             "readEnv" -> readEnv(node, interpreter)
-            "println" -> printValue(node, interpreter)
             else -> throw InterpreterException("Unsupported function: ${node.functionName}")
         }
 
@@ -42,22 +41,6 @@ class FunctionEvaluator : NodeEvaluator<FunctionNode> {
         val varName = stringArgumentOf(node, interpreter, functionName = "readEnv")
         val value = System.getenv(varName) ?: undefinedEnvironmentVariable(varName)
         return ExternalInput(value, "readEnv")
-    }
-
-    /**
-     * Imprime la expresión por el Printer inyectado, no por stdout.
-     *
-     * Un `println` escrito en el fuente no llega acá: `PrintlnFactory` se adelanta a
-     * `FunctionFactory` en la cadena del parser y lo convierte en un `PrintNode`, que atiende
-     * [PrintEvaluator]. Esta rama cubre un `FunctionNode` construido directamente.
-     */
-    private fun printValue(
-        node: FunctionNode,
-        interpreter: Interpreter,
-    ): Any? {
-        val value = interpreter.execute(node.expression)
-        interpreter.printer.print(value.toString())
-        return value
     }
 
     /**

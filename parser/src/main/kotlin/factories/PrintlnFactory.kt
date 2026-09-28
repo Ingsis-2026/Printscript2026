@@ -4,8 +4,8 @@ import ast.ASTNode
 import ast.PrintNode
 import parser.ExpressionParser
 import parser.ParserException
+import parser.callsPrintln
 import parser.closesParenthesis
-import parser.namesFunction
 import parser.opensParenthesis
 import token.Token
 
@@ -31,7 +31,7 @@ class PrintlnFactory : ASTFactory {
         return PrintNode(ExpressionParser.parse(expressionTokens), tokens[0].getPosition())
     }
 
-    override fun canHandle(tokens: List<Token>): Boolean = tokens.firstOrNull()?.let { it.namesFunction && it.value == "println" } == true
+    override fun canHandle(tokens: List<Token>): Boolean = tokens.firstOrNull()?.callsPrintln == true
 
     private companion object {
         /** `println` + `(` + expresión + `)` es la estructura mínima válida. */

@@ -25,6 +25,7 @@ internal object ExpressionParser {
     private fun call(tokens: List<Token>): FunctionNode {
         val nameIndex = tokens.indexOfFirst { it.namesFunction }
         val name = tokens[nameIndex]
+        if (name.callsPrintln) throw ParserException("println is a statement, not a value", tokens)
         val openingParenthesis = nameIndex + 1
         val closingParenthesis = tokens.lastIndex
         val argument = tokens.subList(openingParenthesis + 1, closingParenthesis)

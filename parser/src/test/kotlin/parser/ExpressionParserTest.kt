@@ -146,4 +146,11 @@ class ExpressionParserTest {
     fun `an operator without a right operand is a parser error, not a crash`() {
         assertThrows<ParserException> { parseExpression("1 +") }
     }
+
+    @Test
+    fun `println is a statement, so it cannot be used as a value`() {
+        val exception = assertThrows<ParserException> { parseExpression("println(5)") }
+
+        assertEquals("println is a statement, not a value", exception.message)
+    }
 }
