@@ -86,7 +86,7 @@ private fun childrenOf(node: ASTNode): Sequence<ASTNode> =
     when (node) {
         is BinaryNode -> sequenceOf(node.left, node.right)
         is PrintNode -> sequenceOf(node.expression)
-        is DeclarationNode -> sequenceOf(node.expr)
+        is DeclarationNode -> sequenceOf(node.expression)
         is AssignationNode -> sequenceOf(node.expression)
         is FunctionNode -> sequenceOf(node.expression)
         is ConditionalNode -> sequenceOf(node.condition)

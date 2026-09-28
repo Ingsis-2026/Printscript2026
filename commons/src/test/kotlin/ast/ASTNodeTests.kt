@@ -59,10 +59,10 @@ class ASTNodeTests {
                 TokenPosition(1, 1),
             )
 
-        assertEquals("let", declNode.declValue)
+        assertEquals("let", declNode.keyword)
         assertEquals("x", declNode.id)
         assertEquals(DataType.NUMBER, declNode.dataType)
-        assertEquals(expr, declNode.expr)
+        assertEquals(expr, declNode.expression)
         assertEquals(TokenPosition(1, 1), declNode.position)
     }
 

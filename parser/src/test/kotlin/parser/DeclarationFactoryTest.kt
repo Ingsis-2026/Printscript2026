@@ -34,7 +34,7 @@ class DeclarationFactoryTest {
         val result = declarationFactory.createAST(tokens)
         assert(result is DeclarationNode)
         assertEquals("x", (result as DeclarationNode).id)
-        assertEquals("42", (result.expr as LiteralNode).value)
+        assertEquals("42", (result.expression as LiteralNode).value)
     }
 
     @Test
@@ -51,7 +51,7 @@ class DeclarationFactoryTest {
         val result = declarationFactory.createAST(tokens)
         assert(result is DeclarationNode)
         assertEquals("text", (result as DeclarationNode).id)
-        assertEquals("\"Hello\"", (result.expr as LiteralNode).value)
+        assertEquals("\"Hello\"", (result.expression as LiteralNode).value)
     }
 
     @Test
@@ -68,7 +68,7 @@ class DeclarationFactoryTest {
         val result = declarationFactory.createAST(tokens)
         assert(result is DeclarationNode)
         assertEquals("flag", (result as DeclarationNode).id)
-        assertEquals("true", (result.expr as LiteralNode).value)
+        assertEquals("true", (result.expression as LiteralNode).value)
     }
 
     @Test
@@ -153,7 +153,7 @@ class DeclarationFactoryTest {
         val result = declarationFactory.createAST(tokens)
         assert(result is DeclarationNode)
         assertEquals("y", (result as DeclarationNode).id)
-        assert(result.expr is NilNode)
+        assert(result.expression is NilNode)
     }
 
     // El argumento de readInput/readEnv es un string y no dice nada del tipo que la llamada
@@ -176,7 +176,7 @@ class DeclarationFactoryTest {
         val result = declarationFactory.createAST(tokens) as DeclarationNode
 
         assertEquals(DataType.BOOLEAN, result.dataType)
-        assertEquals("readInput", (result.expr as FunctionNode).functionName)
+        assertEquals("readInput", (result.expression as FunctionNode).functionName)
     }
 
     @Test
@@ -196,14 +196,14 @@ class DeclarationFactoryTest {
         val result = declarationFactory.createAST(tokens) as DeclarationNode
 
         assertEquals(DataType.NUMBER, result.dataType)
-        assertEquals("readEnv", (result.expr as FunctionNode).functionName)
+        assertEquals("readEnv", (result.expression as FunctionNode).functionName)
     }
 
     @Test
     fun `a string that reads like an equals sign is the declared value`() {
         val tokens = Lexer(TokenMapper("1.0")).execute("let s: string = \"=\";").dropLast(1)
 
-        val value = (declarationFactory.createAST(tokens) as DeclarationNode).expr as LiteralNode
+        val value = (declarationFactory.createAST(tokens) as DeclarationNode).expression as LiteralNode
         assertEquals(TokenType.STRINGLITERAL, value.type)
         assertEquals("=", value.value)
     }

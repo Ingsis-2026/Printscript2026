@@ -106,13 +106,13 @@ class ParserTests {
         val firstTree = trees[0] as DeclarationNode
         assertEquals("x", firstTree.id)
 
-        val firstRightNode = firstTree.expr as LiteralNode
+        val firstRightNode = firstTree.expression as LiteralNode
         assertEquals("42", firstRightNode.value)
 
         val secondTree = trees[1] as DeclarationNode
         assertEquals("y", secondTree.id)
 
-        val secondRightNode = secondTree.expr as LiteralNode
+        val secondRightNode = secondTree.expression as LiteralNode
         assertEquals("10", secondRightNode.value)
 
         val thirdTree = trees[2] as PrintNode

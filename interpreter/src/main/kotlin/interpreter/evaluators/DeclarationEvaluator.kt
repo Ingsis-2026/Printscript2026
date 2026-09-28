@@ -19,17 +19,17 @@ class DeclarationEvaluator : NodeEvaluator<DeclarationNode> {
         }
 
         val value =
-            if (node.expr is NilNode) {
+            if (node.expression is NilNode) {
                 null
             } else {
-                interpreter.execute(node.expr) ?: throw InterpreterException("Expresión inválida en la declaración")
+                interpreter.execute(node.expression) ?: throw InterpreterException("Expresión inválida en la declaración")
             }
 
         // La declaración se registra aunque no traiga valor: una asignación posterior la necesita
         // para resolver un readInput y para rechazar la reasignación de un const.
         interpreter.variables.declare(
             node.id,
-            Declaration(node.declValue, node.dataType),
+            Declaration(node.keyword, node.dataType),
         )
 
         // El tipo de un valor leído de afuera lo fija la variable que lo recibe.
