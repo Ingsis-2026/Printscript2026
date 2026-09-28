@@ -67,6 +67,14 @@ class ExternalInputTypingTest {
     }
 
     @Test
+    fun `the prompt can be any expression that gives a text, as in the TCK`() {
+        val interpreter = run("let name: string = readInput(\"Your \" + \"name?\");", "Ada")
+
+        assertEquals(listOf("Your name?"), outputs)
+        assertEquals("Ada", interpreter.variables.valueOf("name"))
+    }
+
+    @Test
     fun `a value that cannot be read as the declared type fails`() {
         val exception =
             assertThrows<InterpreterException> {
