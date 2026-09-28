@@ -428,7 +428,7 @@ println("Result: " + c);</pre></td>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>A hand-written scanner over the version's vocabulary, not regex<small>LineScanner.kt:33–41 · TokenMapper.kt:41–85</small></dt><dd>Adding a word or a symbol is one map entry, with no regex to write and no order to respect. The version supplies the tables, so the scanner has no version checks in its loop.</dd></div>
+      <div class="decision"><dt>A hand-written scanner over the version's vocabulary, not regex<small>LineScanner.kt:33–41 · TokenMapper.kt:40–84</small></dt><dd>Adding a word or a symbol is one map entry, with no regex to write and no order to respect. The version supplies the tables, so the scanner has no version checks in its loop.</dd></div>
       <div class="decision"><dt>Lazy, line-granular lexing<small>Lexer.kt:17–18</small></dt><dd>Memory is bounded by the longest line, not by the file. This is what lets the TCK's 131,072-line test run in a 7 MB heap.</dd></div>
       <div class="decision"><dt>The version decides the vocabulary; the lexer makes no rulings<small>TokenMapper.kt:34–39</small></dt><dd>There's no list of words "not allowed in this version". The <code>words</code> map isn't a reserved-word table overriding the version: it <em>is</em> the version.</dd></div>
     </dl>
@@ -482,12 +482,12 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
     <dl class="decisions">
       <div class="decision"><dt>Factories + chain of responsibility<small>ASTFactory.kt:6 · Parser.kt:45</small></dt><dd>Adding a construct means adding a factory and listing it for its version, with no edits to <code>Parser</code>. Each factory has one job (SRP).</dd></div>
       <div class="decision"><dt>Splitting separated from building<small>StatementSplitter.kt:13</small></dt><dd>The splitter only answers "where does this statement end?", and factories only see complete statements. It's also the only place memory has to be reasoned about: the current statement is all that's held (:8–11).</dd></div>
-      <div class="decision"><dt>Sub-parser injected as a provider<small>ConditionalFactory.kt:20 · ParserFactory.kt:34</small></dt><dd>A block body is parsed by a fresh parser for the same version, which gives recursion for nested blocks. Tests can inject a fake parser.</dd></div>
+      <div class="decision"><dt>Sub-parser injected as a provider<small>ConditionalFactory.kt:20 · ParserFactory.kt:16</small></dt><dd>A block body is parsed by a fresh parser for the same version, which gives recursion for nested blocks. Tests can inject a fake parser.</dd></div>
       <div class="decision"><dt><code>insideBlock</code> mode<small>Parser.kt:37 · StatementSplitter.kt:83–86</small></dt><dd>In a block body, the closing <code>}</code> terminates the last statement. At top level, the same <code>}</code> is an error.</dd></div>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
-      <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:34–38</span>).</li>
+      <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:15–16</span>).</li>
       <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more set in <code>PRECEDENCE_LEVELS</code> (<span class="ref">ExpressionParser.kt:15</span>).</li>
     </ul></div>
     <p class="tests" style="margin-top:18px">Tests: 77, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
