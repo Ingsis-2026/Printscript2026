@@ -1,6 +1,5 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.DeclarationNode
 import ast.NilNode
 import interpreter.Declaration
@@ -8,37 +7,36 @@ import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
 
-class DeclarationEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is DeclarationNode
+class DeclarationEvaluator : NodeEvaluator<DeclarationNode> {
+    override val nodeType = DeclarationNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: DeclarationNode,
         interpreter: Interpreter,
     ): Any? {
-        val declarationNode = node as DeclarationNode
-        if (interpreter.variables.isTaken(declarationNode.id)) {
-            throw InterpreterException("La variable '${declarationNode.id}' ya ha sido declarada")
+        if (interpreter.variables.isTaken(node.id)) {
+            throw InterpreterException("La variable '${node.id}' ya ha sido declarada")
         }
 
         val value =
-            if (declarationNode.expr is NilNode) {
+            if (node.expr is NilNode) {
                 null
             } else {
-                interpreter.execute(declarationNode.expr) ?: throw InterpreterException("Expresión inválida en la declaración")
+                interpreter.execute(node.expr) ?: throw InterpreterException("Expresión inválida en la declaración")
             }
 
         // La declaración se registra aunque no traiga valor: una asignación posterior la necesita
         // para resolver un readInput y para rechazar la reasignación de un const.
         interpreter.variables.declare(
-            declarationNode.id,
-            Declaration(declarationNode.declValue, declarationNode.dataType),
+            node.id,
+            Declaration(node.declValue, node.dataType),
         )
 
         // El tipo de un valor leído de afuera lo fija la variable que lo recibe.
-        val resolved = if (value is ExternalInput) value.asType(declarationNode.dataType) else value
+        val resolved = if (value is ExternalInput) value.asType(node.dataType) else value
 
         if (resolved != null) {
-            interpreter.variables.assign(declarationNode.id, resolved)
+            interpreter.variables.assign(node.id, resolved)
         }
 
         return resolved

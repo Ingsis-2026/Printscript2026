@@ -1,6 +1,5 @@
 package interpreter
 
-import ast.ASTNode
 import ast.AssignationNode
 import ast.BinaryNode
 import ast.BlockNode
@@ -1076,11 +1075,11 @@ class InterpreterTests {
     @Test
     fun `test custom node evaluator plugin`() {
         val customEvaluator =
-            object : NodeEvaluator {
-                override fun canEvaluate(node: ASTNode): Boolean = node is NilNode
+            object : NodeEvaluator<NilNode> {
+                override val nodeType = NilNode::class
 
                 override fun evaluate(
-                    node: ASTNode,
+                    node: NilNode,
                     interpreter: Interpreter,
                 ): Any = "Custom Nil Evaluated!"
             }

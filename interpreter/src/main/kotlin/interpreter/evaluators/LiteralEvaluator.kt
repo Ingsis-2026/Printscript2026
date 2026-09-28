@@ -1,36 +1,33 @@
 package interpreter.evaluators
 
-import ast.ASTNode
 import ast.LiteralNode
 import interpreter.Interpreter
 import interpreter.InterpreterException
 import token.TokenType
 
-class LiteralEvaluator : NodeEvaluator {
-    override fun canEvaluate(node: ASTNode): Boolean = node is LiteralNode
+class LiteralEvaluator : NodeEvaluator<LiteralNode> {
+    override val nodeType = LiteralNode::class
 
     override fun evaluate(
-        node: ASTNode,
+        node: LiteralNode,
         interpreter: Interpreter,
-    ): Any? {
-        val literal = node as LiteralNode
-        return when (literal.type) {
+    ): Any? =
+        when (node.type) {
             TokenType.NUMBERLITERAL -> {
-                literal.value.toIntOrNull() ?: literal.value.toDoubleOrNull()
-                    ?: throw InterpreterException("Invalid number literal: ${literal.value}")
+                node.value.toIntOrNull() ?: node.value.toDoubleOrNull()
+                    ?: throw InterpreterException("Invalid number literal: ${node.value}")
             }
-            TokenType.STRINGLITERAL -> literal.value
+            TokenType.STRINGLITERAL -> node.value
             TokenType.BOOLEANLITERAL ->
-                when (literal.value) {
+                when (node.value) {
                     "true" -> true
                     "false" -> false
-                    else -> throw InterpreterException("Invalid boolean value: ${literal.value}")
+                    else -> throw InterpreterException("Invalid boolean value: ${node.value}")
                 }
-            TokenType.DATA_TYPE -> literal.value
+            TokenType.DATA_TYPE -> node.value
             TokenType.IDENTIFIER ->
-                interpreter.variables.valueOf(literal.value)
-                    ?: throw InterpreterException("Undefined variable: ${literal.value}")
-            else -> throw InterpreterException("Unsupported literal type: ${literal.type}")
+                interpreter.variables.valueOf(node.value)
+                    ?: throw InterpreterException("Undefined variable: ${node.value}")
+            else -> throw InterpreterException("Unsupported literal type: ${node.type}")
         }
-    }
 }
