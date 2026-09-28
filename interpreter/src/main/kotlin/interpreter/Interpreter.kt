@@ -2,11 +2,12 @@ package interpreter
 
 import ast.ASTNode
 import interpreter.evaluators.NodeEvaluator
+import version.Version
 
 class Interpreter(
     val printer: Printer,
     val reader: Reader,
-    private val evaluators: List<NodeEvaluator> = InterpreterFactory.version11Evaluators(),
+    private val evaluators: List<NodeEvaluator> = InterpreterFactory.evaluatorsFor(Version.V1_1),
 ) {
     /**
      * Las variables del programa. Es pública porque un [NodeEvaluator] de terceros recibe el
@@ -36,9 +37,16 @@ class Interpreter(
 
     companion object {
         fun forVersion(
+            version: Version,
+            printer: Printer,
+            reader: Reader,
+        ): Interpreter = Interpreter(printer, reader, InterpreterFactory.evaluatorsFor(version))
+
+        /** Para quien recibe la versión como texto, como el TCK. */
+        fun forVersion(
             version: String,
             printer: Printer,
             reader: Reader,
-        ): Interpreter = InterpreterFactory.forVersion(version, printer, reader)
+        ): Interpreter = forVersion(Version.parse(version), printer, reader)
     }
 }

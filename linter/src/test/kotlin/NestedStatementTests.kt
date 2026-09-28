@@ -3,10 +3,10 @@ import lexer.Lexer
 import lexer.TokenMapper
 import linter.BrokenRule
 import linter.Linter
-import linter.LinterVersion
 import org.junit.jupiter.api.Test
 import parser.Parser
 import token.TokenPosition
+import version.Version
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -69,7 +69,7 @@ class NestedStatementTests {
         source: String,
         config: String,
     ): List<BrokenRule> {
-        val linter = Linter.forConfig(requireNotNull(LinterVersion.fromString(VERSION)), config)
+        val linter = Linter.forConfig(Version.parse(VERSION), config)
         return linter.check(nodesOf(source)).getBrokenRules()
     }
 

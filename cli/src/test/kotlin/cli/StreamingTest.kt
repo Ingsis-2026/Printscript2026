@@ -5,6 +5,7 @@ import cli.io.FormattedSink
 import cli.pipeline.ParsingPipeline
 import formatter.FormatterBuilderPS
 import org.junit.jupiter.api.Test
+import version.Version
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -30,7 +31,7 @@ class StreamingTest {
     fun `parsear las primeras sentencias no lee el fuente completo`() {
         val source = CountingSource(lineCount)
 
-        val result = ParsingPipeline("1.0").consume(source) { nodes -> nodes.take(3).toList() }
+        val result = ParsingPipeline(Version.V1_0).consume(source) { nodes -> nodes.take(3).toList() }
 
         assertEquals(3, result.value.size)
         assertTrue(source.linesRead <= 4, "se leyeron ${source.linesRead} líneas de $lineCount")
@@ -40,7 +41,7 @@ class StreamingTest {
     fun `formatear las primeras sentencias no lee el fuente completo`() {
         val source = CountingSource(lineCount)
         val sink = TakingSink(2)
-        val formatter = FormatterBuilderPS().build("src/test/resources/formatterRules.yaml", "1.0")
+        val formatter = FormatterBuilderPS().build("src/test/resources/formatterRules.yaml", Version.V1_0)
 
         FormattingCommand(source, formatter, sink, CapturingOutput()).execute()
 
@@ -53,7 +54,7 @@ class StreamingTest {
         val reporter = RecordingProgressReporter()
         val source = InMemorySource("p.ps", "let a : number = 1;\nlet b : number = 2;\nprintln(b);")
 
-        ParsingPipeline("1.0", reporter).consume(source) { nodes -> nodes.count() }
+        ParsingPipeline(Version.V1_0, reporter).consume(source) { nodes -> nodes.count() }
 
         assertEquals(listOf(1, 2, 3), reporter.counts)
         assertEquals(3, reporter.finishedAt)
@@ -64,7 +65,7 @@ class StreamingTest {
         val reporter = RecordingProgressReporter()
         val source = CountingSource(lineCount)
 
-        ParsingPipeline("1.0", reporter).consume(source) { nodes -> nodes.take(2).toList() }
+        ParsingPipeline(Version.V1_0, reporter).consume(source) { nodes -> nodes.take(2).toList() }
 
         assertEquals(listOf(1, 2), reporter.counts)
     }

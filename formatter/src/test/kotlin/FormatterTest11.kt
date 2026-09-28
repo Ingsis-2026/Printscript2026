@@ -2,13 +2,14 @@ import formatter.FormatterBuilderPS
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import rules.FormattingRules
+import version.Version
 
 /** Reglas que sólo existen en 1.1, donde hay bloques: la llave del "if" y su sangría. */
 class FormatterTest11 {
     private fun format(
         source: String,
         rules: FormattingRules,
-    ): String = FormatterBuilderPS().build(rules, "1.1").format(source)
+    ): String = FormatterBuilderPS().build(rules, Version.V1_1).format(source)
 
     @Test
     fun `the brace goes up to the line of the if`() {

@@ -1,5 +1,6 @@
 package cli.arguments
 
+import version.Version
 import java.io.File
 
 /**
@@ -9,16 +10,13 @@ import java.io.File
  * soportada, archivo existente, configuración presente cuando la operación la necesita— para
  * que los comandos reciban un [CliArguments] ya consistente y no tengan que revalidar nada.
  */
-class ArgumentParser(
-    private val supportedVersions: Set<String> = SUPPORTED_VERSIONS,
-) {
+class ArgumentParser {
     fun parse(arguments: List<String>): CliArguments {
         val (positional, flags) = split(arguments)
 
         val operation = readOperation(positional)
         val sourcePath = readSourcePath(positional)
-        val version = flags[VERSION_FLAG] ?: DEFAULT_VERSION
-        requireSupported(version)
+        val version = readVersion(flags)
 
         return CliArguments(
             operation = operation,
@@ -98,24 +96,25 @@ class ArgumentParser(
         return path
     }
 
-    private fun requireSupported(version: String) {
-        if (version !in supportedVersions) {
-            throw CliUsageException("Versión no soportada: $version. Versiones válidas: ${supportedVersions.joinToString(", ")}.")
-        }
+    private fun readVersion(flags: Map<String, String>): Version {
+        val number = flags[VERSION_FLAG] ?: return DEFAULT_VERSION
+        return Version.of(number)
+            ?: throw CliUsageException("Versión no soportada: $number. Versiones válidas: ${versionNumbers(", ")}.")
     }
 
     companion object {
-        const val DEFAULT_VERSION = "1.0"
+        val DEFAULT_VERSION = Version.V1_0
         const val VERSION_FLAG = "--version"
         const val CONFIG_FLAG = "--config"
         const val OUTPUT_FLAG = "--output"
 
-        val SUPPORTED_VERSIONS = setOf("1.0", "1.1")
         val KNOWN_FLAGS = listOf(VERSION_FLAG, CONFIG_FLAG, OUTPUT_FLAG)
+
+        private fun versionNumbers(separator: String): String = Version.entries.joinToString(separator) { it.number }
 
         /** Línea de uso que la CLI muestra cuando la invocación no es válida. */
         fun usage(): String =
             "Uso: printscript <${Operation.supportedArguments().replace(", ", "|")}> <archivo> " +
-                "[$VERSION_FLAG ${SUPPORTED_VERSIONS.joinToString("|")}] [$CONFIG_FLAG <archivo>] [$OUTPUT_FLAG <archivo>]"
+                "[$VERSION_FLAG ${versionNumbers("|")}] [$CONFIG_FLAG <archivo>] [$OUTPUT_FLAG <archivo>]"
     }
 }

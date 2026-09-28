@@ -6,38 +6,13 @@ import factories.ConditionalFactory
 import factories.DeclarationFactory
 import factories.FunctionFactory
 import factories.PrintlnFactory
+import version.Version
 
 object ParserFactory {
-    fun defaultFactories(): List<ASTFactory> =
-        listOf(
-            ConditionalFactory { forVersion("1.1") },
-            PrintlnFactory(),
-            DeclarationFactory(),
-            AssignationFactory(),
-            FunctionFactory(),
-        )
-
-    fun forVersion(version: String): Parser =
+    /** Las sentencias que la versión sabe construir. 1.1 es 1.0 más el `if`, que va primero. */
+    fun factoriesFor(version: Version): List<ASTFactory> =
         when (version) {
-            "1.0" ->
-                Parser(
-                    listOf(
-                        PrintlnFactory(),
-                        DeclarationFactory(),
-                        AssignationFactory(),
-                        FunctionFactory(),
-                    ),
-                )
-            "1.1" ->
-                Parser(
-                    listOf(
-                        ConditionalFactory { forVersion("1.1") },
-                        PrintlnFactory(),
-                        DeclarationFactory(),
-                        AssignationFactory(),
-                        FunctionFactory(),
-                    ),
-                )
-            else -> throw IllegalArgumentException("Unsupported version: $version")
+            Version.V1_0 -> listOf(PrintlnFactory(), DeclarationFactory(), AssignationFactory(), FunctionFactory())
+            Version.V1_1 -> listOf(ConditionalFactory { Parser.forVersion(Version.V1_1) }) + factoriesFor(Version.V1_0)
         }
 }

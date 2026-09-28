@@ -2,6 +2,7 @@ import formatter.FormatterBuilderPS
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import rules.FormattingRules
+import version.Version
 
 /**
  * Cada regla se prueba sola, que es como las entrega la configuración del TCK: un archivo
@@ -11,7 +12,7 @@ class FormatterTest10 {
     private fun format(
         source: String,
         rules: FormattingRules,
-    ): String = FormatterBuilderPS().build(rules, "1.0").format(source)
+    ): String = FormatterBuilderPS().build(rules, Version.V1_0).format(source)
 
     @Test
     fun `without rules the source is returned untouched`() {

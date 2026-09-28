@@ -1,19 +1,21 @@
 package linter
 
+import version.Version
+
 /**
- * Versiones del lenguaje que el linter reconoce.
+ * La versión como la recibe el adaptador del TCK, que construye el linter con este tipo.
  *
- * Se declaran de menor a mayor: [rules.RuleFactory] compara por ese orden para saber desde qué
- * versión está disponible una regla, así que una versión nueva se agrega al final.
+ * Dentro del proyecto la versión es un [Version]; este enum es sólo la puerta de entrada que el
+ * TCK ya conoce, y cada valor dice a qué [Version] corresponde.
  */
 enum class LinterVersion(
-    val version: String,
+    val version: Version,
 ) {
-    VERSION_1_0("1.0"),
-    VERSION_1_1("1.1"),
+    VERSION_1_0(Version.V1_0),
+    VERSION_1_1(Version.V1_1),
     ;
 
     companion object {
-        fun fromString(version: String): LinterVersion? = entries.find { it.version == version }
+        fun fromString(version: String): LinterVersion? = entries.find { it.version.number == version }
     }
 }

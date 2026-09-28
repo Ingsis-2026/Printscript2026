@@ -7,6 +7,7 @@ import cli.progress.ProgressReporter
 import lexer.Lexer
 import lexer.TokenMapper
 import parser.Parser
+import version.Version
 
 /** Resultado de recorrer el fuente: lo que produjo el consumidor y cuántas sentencias vio. */
 data class PipelineResult<T>(
@@ -24,7 +25,7 @@ data class PipelineResult<T>(
  * medida que el consumidor pide la sentencia siguiente, nunca de una sola vez.
  */
 class ParsingPipeline(
-    private val version: String,
+    private val version: Version,
     private val progressReporter: ProgressReporter = NoOpProgressReporter,
 ) {
     fun <T> consume(

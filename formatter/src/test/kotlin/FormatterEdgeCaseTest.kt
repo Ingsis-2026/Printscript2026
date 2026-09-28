@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import rules.FormattingRules
+import version.Version
 
 /** Casos límite: entrada vacía, literales de texto, y versiones no soportadas. */
 class FormatterEdgeCaseTest {
@@ -10,19 +11,19 @@ class FormatterEdgeCaseTest {
 
     @Test
     fun `formatting empty input returns empty string`() {
-        assertEquals("", builder.build(FormattingRules(), "1.0").format(""))
+        assertEquals("", builder.build(FormattingRules(), Version.V1_0).format(""))
     }
 
     @Test
     fun `formatting blank input returns empty string`() {
-        assertEquals("", builder.build(FormattingRules(), "1.0").format("\n\n"))
+        assertEquals("", builder.build(FormattingRules(), Version.V1_0).format("\n\n"))
     }
 
     @Test
     fun `string literals keep their quotes and their contents`() {
         val source = "let x: string = \"hola:  mundo = 5;\";"
 
-        assertEquals(source, builder.build(FormattingRules(), "1.0").format(source))
+        assertEquals(source, builder.build(FormattingRules(), Version.V1_0).format(source))
     }
 
     @Test
@@ -31,20 +32,20 @@ class FormatterEdgeCaseTest {
         // Igual que en el TCK, la separación uniforme también separa los paréntesis de la llamada.
         val expected = "let x : string = readInput ( \"name\" );"
 
-        assertEquals(expected, builder.build(FormattingRules(singleSpaceSeparation = true), "1.1").format(source))
+        assertEquals(expected, builder.build(FormattingRules(singleSpaceSeparation = true), Version.V1_1).format(source))
     }
 
     @Test
     fun `an identifier containing if is not treated as a conditional`() {
         val source = "let ifCount:number=1;"
 
-        assertEquals(source, builder.build(FormattingRules(), "1.0").format(source))
+        assertEquals(source, builder.build(FormattingRules(), Version.V1_0).format(source))
     }
 
     @Test
     fun `an unsupported version is rejected`() {
         assertThrows<IllegalArgumentException> {
-            builder.build(FormattingRules(), "2.0")
+            builder.build("{}".byteInputStream(), "2.0")
         }
     }
 }

@@ -1,13 +1,13 @@
 import lexer.Lexer
 import lexer.TokenMapper
 import linter.Linter
-import linter.LinterVersion
 import org.junit.jupiter.api.Test
 import parser.Parser
 import rules.CallArgumentRule
 import rules.IdentifierFormat
 import rules.IdentifierFormatRule
 import rules.Rule
+import version.Version
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -112,7 +112,7 @@ class LinterEndToEndTests {
 
     @Test
     fun `check twice on the same linter does not duplicate violations`() {
-        val linter = Linter.forConfig(LinterVersion.VERSION_1_0, """{"identifier_format": "camelCase"}""")
+        val linter = Linter.forConfig(Version.V1_0, """{"identifier_format": "camelCase"}""")
         val trees = parser.execute(lexer.execute("let my_variable : number = 5;"))
 
         val first = linter.check(trees).getBrokenRules().size

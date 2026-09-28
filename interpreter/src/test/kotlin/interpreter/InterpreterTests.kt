@@ -1086,12 +1086,12 @@ class InterpreterTests {
 
     @Test
     fun `test interpreter factory versions`() {
-        val i10 = InterpreterFactory.forVersion("1.0", printer, reader)
-        val i11 = InterpreterFactory.forVersion("1.1", printer, reader)
+        val i10 = Interpreter.forVersion("1.0", printer, reader)
+        val i11 = Interpreter.forVersion("1.1", printer, reader)
         assertEquals(true, i10.variables.isEmpty())
         assertEquals(true, i11.variables.isEmpty())
         assertThrows(IllegalArgumentException::class.java) {
-            InterpreterFactory.forVersion("9.9", printer, reader)
+            Interpreter.forVersion("9.9", printer, reader)
         }
     }
 

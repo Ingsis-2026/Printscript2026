@@ -1,6 +1,7 @@
 package lexer
 
 import token.TokenType
+import version.Version
 
 /**
  * El vocabulario de una versión de PrintScript: sus palabras y sus símbolos, con el tipo de token
@@ -13,9 +14,10 @@ class TokenMapper(
     val words: Map<String, TokenType>,
     val symbols: Map<String, TokenType>,
 ) {
-    constructor(version: String) : this(vocabularyOf(version))
+    constructor(version: Version) : this(vocabularyOf(version).words, vocabularyOf(version).symbols)
 
-    private constructor(vocabulary: TokenMapper) : this(vocabulary.words, vocabulary.symbols)
+    /** Para quien recibe la versión como texto, como el TCK. */
+    constructor(version: String) : this(Version.parse(version))
 
     private val symbolsLongestFirst = symbols.entries.sortedByDescending { it.key.length }
 
@@ -29,13 +31,10 @@ class TokenMapper(
     operator fun plus(addition: TokenMapper): TokenMapper = TokenMapper(words + addition.words, symbols + addition.symbols)
 
     companion object {
-        fun forVersion(version: String): TokenMapper = TokenMapper(version)
-
-        private fun vocabularyOf(version: String): TokenMapper =
+        private fun vocabularyOf(version: Version): TokenMapper =
             when (version) {
-                "1.0" -> VERSION_1_0
-                "1.1" -> VERSION_1_1
-                else -> throw IllegalArgumentException("Unsupported version: $version")
+                Version.V1_0 -> VERSION_1_0
+                Version.V1_1 -> VERSION_1_1
             }
 
         private val VERSION_1_0 =

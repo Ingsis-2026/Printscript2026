@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 47e0757 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ fe77af9 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit 2fb5a82. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -285,7 +285,7 @@ td:first-child{white-space:nowrap}
       <text class="s" x="569" y="307" text-anchor="middle">Token · TokenPosition · TokenType · ASTNode · PrintScriptException</text>
     </svg>
     </div>
-    <figcaption>Figure 2: component diagram as declared in each <code>build.gradle.kts</code>. Solid arrows from <code>cli</code> are <code>implementation</code> dependencies. The highlighted modules, parser and interpreter, compile against <code>commons</code> alone: the parser never imports the lexer, and the interpreter never imports the parser. The code that connects them lives at the edges, in <span class="ref">ParsingPipeline.kt:48</span> and in the TCK's <span class="ref">Pipeline.java:25</span>.</figcaption>
+    <figcaption>Figure 2: component diagram as declared in each <code>build.gradle.kts</code>. Solid arrows from <code>cli</code> are <code>implementation</code> dependencies. The highlighted modules, parser and interpreter, compile against <code>commons</code> alone: the parser never imports the lexer, and the interpreter never imports the parser. The code that connects them lives at the edges, in <span class="ref">ParsingPipeline.kt:49</span> and in the TCK's <span class="ref">Pipeline.java:25</span>.</figcaption>
   </figure>
 
   <div class="prose">
@@ -309,28 +309,28 @@ td:first-child{white-space:nowrap}
     <div class="tablewrap"><table>
       <thead><tr><th>Type</th><th>Value</th><th class="num">Row</th><th class="num">Columns</th><th>Read as</th></tr></thead>
       <tbody>
-        <tr><td>KEYWORD</td><td><code>let</code></td><td class="num">2</td><td class="num">0–3</td><td>a word, <span class="ref">TokenMapper.kt:45</span></td></tr>
+        <tr><td>KEYWORD</td><td><code>let</code></td><td class="num">2</td><td class="num">0–3</td><td>a word, <span class="ref">TokenMapper.kt:44</span></td></tr>
         <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">2</td><td class="num">4–5</td><td>a name that isn't a word, <span class="ref">LineScanner.kt:47</span></td></tr>
-        <tr><td>DECLARATOR</td><td><code>:</code></td><td class="num">2</td><td class="num">5–6</td><td>a symbol, <span class="ref">TokenMapper.kt:54</span></td></tr>
-        <tr><td>DATA_TYPE</td><td><code>number</code></td><td class="num">2</td><td class="num">7–13</td><td>a word, <span class="ref">TokenMapper.kt:48</span></td></tr>
-        <tr><td>ASSIGNATION</td><td><code>=</code></td><td class="num">2</td><td class="num">14–15</td><td>a symbol, <span class="ref">TokenMapper.kt:55</span></td></tr>
+        <tr><td>DECLARATOR</td><td><code>:</code></td><td class="num">2</td><td class="num">5–6</td><td>a symbol, <span class="ref">TokenMapper.kt:53</span></td></tr>
+        <tr><td>DATA_TYPE</td><td><code>number</code></td><td class="num">2</td><td class="num">7–13</td><td>a word, <span class="ref">TokenMapper.kt:47</span></td></tr>
+        <tr><td>ASSIGNATION</td><td><code>=</code></td><td class="num">2</td><td class="num">14–15</td><td>a symbol, <span class="ref">TokenMapper.kt:54</span></td></tr>
         <tr><td>IDENTIFIER</td><td><code>a</code></td><td class="num">2</td><td class="num">16–17</td><td>a name</td></tr>
-        <tr><td>OPERATOR</td><td><code>/</code></td><td class="num">2</td><td class="num">18–19</td><td>a symbol, <span class="ref">TokenMapper.kt:60</span></td></tr>
+        <tr><td>OPERATOR</td><td><code>/</code></td><td class="num">2</td><td class="num">18–19</td><td>a symbol, <span class="ref">TokenMapper.kt:59</span></td></tr>
         <tr><td>IDENTIFIER</td><td><code>b</code></td><td class="num">2</td><td class="num">20–21</td><td>a name</td></tr>
-        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">2</td><td class="num">21–22</td><td>a symbol, <span class="ref">TokenMapper.kt:56</span></td></tr>
-        <tr><td>FUNCTION</td><td><code>println</code></td><td class="num">4</td><td class="num">0–7</td><td>a word, <span class="ref">TokenMapper.kt:46</span></td></tr>
-        <tr><td>PARENTHESIS</td><td><code>(</code></td><td class="num">4</td><td class="num">7–8</td><td>a symbol, <span class="ref">TokenMapper.kt:52</span></td></tr>
+        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">2</td><td class="num">21–22</td><td>a symbol, <span class="ref">TokenMapper.kt:55</span></td></tr>
+        <tr><td>FUNCTION</td><td><code>println</code></td><td class="num">4</td><td class="num">0–7</td><td>a word, <span class="ref">TokenMapper.kt:45</span></td></tr>
+        <tr><td>PARENTHESIS</td><td><code>(</code></td><td class="num">4</td><td class="num">7–8</td><td>a symbol, <span class="ref">TokenMapper.kt:51</span></td></tr>
         <tr><td>STRINGLITERAL</td><td><code>Result: </code></td><td class="num">4</td><td class="num">8–18</td><td>a string, quotes stripped by <span class="ref">LineScanner.kt:68</span></td></tr>
-        <tr><td>OPERATOR</td><td><code>+</code></td><td class="num">4</td><td class="num">19–20</td><td>a symbol, <span class="ref">TokenMapper.kt:57</span></td></tr>
+        <tr><td>OPERATOR</td><td><code>+</code></td><td class="num">4</td><td class="num">19–20</td><td>a symbol, <span class="ref">TokenMapper.kt:56</span></td></tr>
         <tr><td>IDENTIFIER</td><td><code>c</code></td><td class="num">4</td><td class="num">21–22</td><td>a name</td></tr>
-        <tr><td>PARENTHESIS</td><td><code>)</code></td><td class="num">4</td><td class="num">22–23</td><td>a symbol, <span class="ref">TokenMapper.kt:53</span></td></tr>
-        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">4</td><td class="num">23–24</td><td>a symbol, <span class="ref">TokenMapper.kt:56</span></td></tr>
+        <tr><td>PARENTHESIS</td><td><code>)</code></td><td class="num">4</td><td class="num">22–23</td><td>a symbol, <span class="ref">TokenMapper.kt:52</span></td></tr>
+        <tr><td>PUNCTUATOR</td><td><code>;</code></td><td class="num">4</td><td class="num">23–24</td><td>a symbol, <span class="ref">TokenMapper.kt:55</span></td></tr>
       </tbody>
     </table></div>
     <p>Two things to point out. Row 3 is empty, so it produces no tokens and the parser never sees it. And the string's value is 8 characters long while its columns span 10, because the quotes are stripped from the value but the positions still cover them. That difference is why the formatter keeps each token's original text.</p>
 
     <h3>Parser: four statements, four nodes</h3>
-    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:72–77</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:45</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:61–66</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
+    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:72–77</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:49</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:61–66</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
 <pre>DeclarationNode  id=c  let : number        <span class="c">@2:4   position = the identifier</span>
 └─ BinaryNode "/"                          <span class="c">@2:18  ExpressionParser split at "/"</span>
    ├─ LiteralNode IDENTIFIER a             <span class="c">@2:16</span>
@@ -414,17 +414,17 @@ println("Result: " + c);</pre></td>
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Pick the vocabulary for the version.</strong> <span class="ref">TokenMapper.kt:16</span> builds a mapper from a version string, and <code>vocabularyOf</code> (:34–39) picks that version's two maps: its words (:43–49) and its symbols (:50–63), each with the token type it produces. A word 1.0 doesn't have simply isn't in its map.</div></li>
+      <li><div><strong>Pick the vocabulary for the version.</strong> <span class="ref">TokenMapper.kt:17</span> builds a mapper for a <code>Version</code>, and <code>vocabularyOf</code> (:34–38) picks that version's two maps: its words (:42–48) and its symbols (:49–62), each with the token type it produces. A word 1.0 doesn't have simply isn't in its map.</div></li>
       <li><div><strong>Stream the lines.</strong> <span class="ref">Lexer.kt:17–18</span> maps each line to a <code>LineScanner</code> and flattens the result. Sequences are lazy, so a line is read only when the parser asks for tokens past the previous one. The <code>InputStream</code> overload (:20–21) wraps a <code>BufferedReader.lineSequence()</code>.</div></li>
       <li><div><strong>Walk the line.</strong> <span class="ref">LineScanner.kt:18–31</span> skips blanks, reads one token at a time, and continues where each token ends. Positions are the columns where the token started and ended.</div></li>
       <li><div><strong>Let the first character decide.</strong> <span class="ref">LineScanner.kt:33–41</span>: a letter or <code>_</code> starts a name, a digit a number, a quote a string, and anything else must be a symbol.</div></li>
       <li><div><strong>Names.</strong> The whole name is read first (<span class="ref">LineScanner.kt:45</span>) and then looked up in the version's words (:47). If it isn't there, it's an IDENTIFIER. That's why <code>letter</code> isn't <code>let</code> + <code>ter</code>.</div></li>
       <li><div><strong>Numbers and strings.</strong> A number is digits with optional decimals (<span class="ref">LineScanner.kt:50–60</span>), and one glued to a name, like <code>123abc</code>, is rejected (:55–58). A string ends at the next quote of the same kind (:64), fails if there isn't one (:65–66), and drops its quotes from the value while its positions keep them (:68).</div></li>
-      <li><div><strong>Symbols.</strong> The longest symbol of the version that starts at that column wins (<span class="ref">TokenMapper.kt:20–26</span>). If none does, the character is invalid (<span class="ref">LineScanner.kt:74</span>): <em>"Carácter inválido encontrado"</em>, with its exact columns.</div></li>
+      <li><div><strong>Symbols.</strong> The longest symbol of the version that starts at that column wins (<span class="ref">TokenMapper.kt:22–28</span>). If none does, the character is invalid (<span class="ref">LineScanner.kt:74</span>): <em>"Carácter inválido encontrado"</em>, with its exact columns.</div></li>
     </ol>
 
     <h3>1.0 vs 1.1</h3>
-    <p><span class="ref">TokenMapper.kt:66–85</span> is 1.0 plus eight words (<code>const</code>, <code>if</code>/<code>else</code>, <code>readInput</code>/<code>readEnv</code>, <code>boolean</code>, <code>true</code>/<code>false</code>) and the <code>{ }</code> punctuators. Nothing is replaced. Under 1.0 those words are plain identifiers, so <code>const x : number = 8;</code> reaches the parser, which rejects it: <code>Expected a KEYWORD token but found none.</code> at line 1, column 1. Braces aren't in the 1.0 vocabulary, so an <code>if</code> program under 1.0 fails right in the lexer with <code>Carácter inválido encontrado: '{'</code>. I checked both by running the CLI.</p>
+    <p><span class="ref">TokenMapper.kt:65–84</span> is 1.0 plus eight words (<code>const</code>, <code>if</code>/<code>else</code>, <code>readInput</code>/<code>readEnv</code>, <code>boolean</code>, <code>true</code>/<code>false</code>) and the <code>{ }</code> punctuators. Nothing is replaced. Under 1.0 those words are plain identifiers, so <code>const x : number = 8;</code> reaches the parser, which rejects it: <code>Expected a KEYWORD token but found none.</code> at line 1, column 1. Braces aren't in the 1.0 vocabulary, so an <code>if</code> program under 1.0 fails right in the lexer with <code>Carácter inválido encontrado: '{'</code>. I checked both by running the CLI.</p>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
@@ -450,10 +450,10 @@ println("Result: " + c);</pre></td>
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Choose factories for the version.</strong> <span class="ref">ParserFactory.kt:20–42</span>: the 1.0 list is Println, Declaration, Assignation and Function, and 1.1 puts <code>ConditionalFactory</code> first. The language version comes down to which factories are in the list.</div></li>
-      <li><div><strong>Stay lazy.</strong> <span class="ref">Parser.kt:21</span> calls <code>StatementSplitter().split(tokens)</code> and then <code>.map { createNode(it) }</code>, so a statement is only parsed when someone asks for the next node.</div></li>
+      <li><div><strong>Choose factories for the version.</strong> <span class="ref">ParserFactory.kt:13–17</span>: the 1.0 list is Println, Declaration, Assignation and Function, and 1.1 is <code>ConditionalFactory</code> followed by the 1.0 list. The language version comes down to which factories are in the list.</div></li>
+      <li><div><strong>Stay lazy.</strong> <span class="ref">Parser.kt:25</span> calls <code>StatementSplitter().split(tokens)</code> and then <code>.map { createNode(it) }</code>, so a statement is only parsed when someone asks for the next node.</div></li>
       <li><div><strong>Cut statements (the state machine).</strong> In <span class="ref">StatementSplitter.kt:16–91</span>, <code>;</code> ends a statement (:72–77), but only outside braces: <code>openBraces</code> is counted at :38–47 so the <code>;</code>s inside a block stay together. When a block closes, the statement is held back one token in case an <code>else</code> follows (:26–35). An <code>if</code> must start a fresh statement (:66–70), a stray <code>}</code> is an error (:59), and the stream can't end mid-statement (:83–88). An empty program is rejected (:90). Every one of these checks asks for the token's type, not just its text (<span class="ref">TokenRoles.kt:12–24</span>): a string literal <code>"}"</code> arrives without its quotes and would otherwise look like a brace.</div></li>
-      <li><div><strong>Pick a factory (chain of responsibility).</strong> <span class="ref">Parser.kt:45</span> takes the first factory whose <code>canHandle</code> returns true. If none does, it throws "Can't handle this sentence" with the statement's range (:39–45).</div></li>
+      <li><div><strong>Pick a factory (chain of responsibility).</strong> <span class="ref">Parser.kt:49</span> takes the first factory whose <code>canHandle</code> returns true. If none does, it throws "Can't handle this sentence" with the statement's range (:43–49).</div></li>
       <li><div><strong>Build the node.</strong> Each factory is described below.</div></li>
     </ol>
 
@@ -502,9 +502,9 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Choose evaluators for the version.</strong> <span class="ref">InterpreterFactory.kt:14–47</span>: <code>version10Evaluators()</code> is the 1.0 list, and <code>version11Evaluators()</code> is written as that list plus what 1.1 adds — <code>ConditionalEvaluator</code> and <code>FunctionEvaluator</code> (:34).</div></li>
-      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:11–15</span> keeps one <code>VariableTable</code>, which stores each variable's <code>Declaration</code> (the keyword, to reject reassigning a <code>const</code>, and the declared type, to type a later <code>readInput</code>) separately from its value — because a variable can be declared without a value, and can get a value without being declared.</div></li>
-      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:25–35</span> finds the evaluator that <code>canEvaluate</code> the node and runs it. Evaluators throw errors without positions; the catch at :38–40 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
+      <li><div><strong>Choose evaluators for the version.</strong> <span class="ref">InterpreterFactory.kt:20–33</span>: <code>evaluatorsFor</code> has one branch per version. 1.0 is a list, and 1.1 is written as that list plus what it adds — <code>ConditionalEvaluator</code> and <code>FunctionEvaluator</code> (:32).</div></li>
+      <li><div><strong>Hold state.</strong> <span class="ref">Interpreter.kt:12–16</span> keeps one <code>VariableTable</code>, which stores each variable's <code>Declaration</code> (the keyword, to reject reassigning a <code>const</code>, and the declared type, to type a later <code>readInput</code>) separately from its value — because a variable can be declared without a value, and can get a value without being declared.</div></li>
+      <li><div><strong>Dispatch and position errors.</strong> <span class="ref">Interpreter.kt:26–36</span> finds the evaluator that <code>canEvaluate</code> the node and runs it. Evaluators throw errors without positions; the catch at :39–48 adds <code>node.position</code> only if the error has none yet, so the reported location is the <em>innermost</em> node that failed.</div></li>
       <li><div><strong>Literals.</strong> <span class="ref">LiteralEvaluator.kt:17–34</span>: a number becomes <code>Int</code> if possible, otherwise <code>Double</code> (:19). An identifier is looked up and throws "Undefined variable" if missing (:30–32).</div></li>
       <li><div><strong>Binary operations.</strong> <span class="ref">BinaryEvaluator.kt:19–27</span> dispatches on the operator, one named operation per branch. <code>+</code> tries string concatenation first (:30–36), which is how <code>"Result: " + 3</code> becomes a string. Numeric promotion between Int and Double is one <code>when</code> of two cases in <span class="ref">ArithmeticOperations.kt:24–36</span>. Division by zero is checked at :115–117, and multiplying or dividing a string is rejected at :47–49 and :57–59.</div></li>
       <li><div><strong>Declarations.</strong> <span class="ref">DeclarationEvaluator.kt:18–44</span> rejects a name that is already taken (:19–21) and records the <code>Declaration</code> even when there's no value (:32–35). It types an <code>ExternalInput</code> using the declared type (:38).</div></li>
@@ -545,7 +545,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <ol class="steps">
       <li><div><strong>Read the rules.</strong> <span class="ref">RulesReader.kt:16–31</span> parses YAML <em>and</em> JSON with SnakeYAML, since JSON is a subset of YAML. Anything that isn't a key/value map is rejected (:26–28).</div></li>
       <li><div><strong>Map config names to settings.</strong> <span class="ref">FormattingRules.kt:24–34</span> holds the TCK's rule names, and <code>from</code> (:36–47) builds the settings. A missing key means "don't touch" (:3–9). The two <code>=</code> rules collapse into a three-state <code>Boolean?</code> (:57–62), as do the two brace rules (:64–69).</div></li>
-      <li><div><strong>Build.</strong> <span class="ref">FormatterBuilderPS.kt:21–24</span> creates <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code>. Overloads accept a path (:10) or an <code>InputStream</code> (:16).</div></li>
+      <li><div><strong>Build.</strong> <span class="ref">FormatterBuilderPS.kt:22–25</span> creates <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code>. Overloads accept a path (:11) or an <code>InputStream</code> (:17).</div></li>
       <li><div><strong>Recover the original text.</strong> <span class="ref">SourceToken.kt:40–53</span> pairs each token with its exact source slice. It remembers only the line currently being lexed (:45–46), which works because the lexer emits all of a line's tokens before reading the next line.</div></li>
       <li><div><strong>Walk token pairs.</strong> <span class="ref">TokenFormatter.kt:30–54</span> computes the separator between the previous and current token. If the separator contains newlines, the finished line is emitted (:40–46). Then <code>FormattingState</code> advances (:49).</div></li>
       <li><div><strong>Decide a gap, in priority order.</strong> <span class="ref">TokenFormatter.kt:59–76</span>: brace placement (:66), then breaks after <code>;</code> (:67–71), then line breaks already in the source (:72–74), then same-line spacing (:75).</div></li>
@@ -578,9 +578,9 @@ fun asType(dataType: DataType): Any = when (dataType) {
 
     <h3>Step by step</h3>
     <ol class="steps">
-      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:19–22</span> passes the config to <span class="ref">RuleJsonReader.kt:29–42</span>, which uses Jackson and ignores unknown keys (:8). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (:33) and returns rule <em>names</em>, not rule objects.</div></li>
+      <li><div><strong>Read the config.</strong> <span class="ref">Linter.kt:23–26</span> passes the config to <span class="ref">RuleJsonReader.kt:29–42</span>, which uses Jackson and ignores unknown keys (:8). It normalises <code>"camel case"</code> and <code>"camelcase"</code> to the same value (:33) and returns rule <em>names</em>, not rule objects.</div></li>
       <li><div><strong>Build rules for the version.</strong> <span class="ref">RuleFactory.kt:6–21</span> maps names to rule instances. <code>inputonly</code> requires 1.1 (:19, :23–31), and asking for it under 1.0 is a configuration error.</div></li>
-      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:38–48</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
+      <li><div><strong>Stream and check.</strong> <span class="ref">Linter.kt:42–52</span> runs every rule on one statement at a time, walking into blocks so a statement inside an <code>if</code> is checked like any other. Only the report grows, and it grows with the number of violations, not the file size.</div></li>
       <li><div><strong>The rules.</strong>
         <ul class="plain" style="margin-top:6px">
           <li><span class="ref">CamelCaseRule.kt:10–22</span>: an identifier must start lowercase and contain no <code>_</code>.</li>
@@ -615,12 +615,12 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <h3>Step by step</h3>
     <ol class="steps">
       <li><div><strong>Entry point.</strong> <span class="ref">Main.kt:6–8</span>: <code>exitProcess(PrintScriptCli(ConsoleOutput()).run(args))</code>.</div></li>
-      <li><div><strong>Parse arguments.</strong> <span class="ref">ArgumentParser.kt:15–30</span> separates positional arguments from flags in a single pass (:39–55), then reads the operation (:70–76). It checks that the source file exists (:78–86) and that the version is supported, defaulting to <code>1.0</code> (:101–113). Config is required for formatting and analyzing (:88–99) via <code>Operation.requiresConfig</code> (<span class="ref">Operation.kt:14–17</span>).</div></li>
-      <li><div><strong>Build a command.</strong> <span class="ref">CommandFactory.kt:36–46</span> constructs one of four <code>Command</code>s and all of its collaborators: the pipeline, a formatter from <code>FormatterBuilder</code> (:68), a linter with its version (:78–86).</div></li>
+      <li><div><strong>Parse arguments.</strong> <span class="ref">ArgumentParser.kt:14–28</span> separates positional arguments from flags in a single pass (:37–53), then reads the operation (:68–74). It checks that the source file exists (:76–84) and turns the version into a <code>Version</code>, defaulting to <code>1.0</code> (:99–103). Config is required for formatting and analyzing (:86–97) via <code>Operation.requiresConfig</code> (<span class="ref">Operation.kt:14–17</span>).</div></li>
+      <li><div><strong>Build a command.</strong> <span class="ref">CommandFactory.kt:35–45</span> constructs one of four <code>Command</code>s and all of its collaborators: the pipeline, a formatter from <code>FormatterBuilder</code> (:67), a linter with its version (:77).</div></li>
       <li><div><strong>Run it.</strong> <span class="ref">CliInvoker.kt:7</span> runs the command, and <span class="ref">PrintScriptCli.kt:50–56</span> maps SUCCESS/FAILURE to exit codes.</div></li>
       <li><div><strong>Handle errors once.</strong> <span class="ref">PrintScriptCli.kt:26–48</span> is the only place that catches. <code>PrintScriptException</code> prints <code>Error: describe()</code> and exits 1. Usage errors print the usage line and exit 2. Invalid configuration exits 2, and I/O errors exit 1.</div></li>
-      <li><div><strong>Show progress while parsing.</strong> The assignment asks for this. <span class="ref">ParsingPipeline.kt:30–46</span> wraps the node stream in <code>onEach</code> and reports each statement as it's parsed (:38–41). <span class="ref">ConsoleProgressReporter.kt:14–22</span> rewrites a single stderr line using <code>\r</code>.</div></li>
-      <li><div><strong>The four operations.</strong> Validation consumes and counts nodes (<span class="ref">ValidationCommand.kt:18–23</span>). Execution runs the interpreter <em>inside</em> the stream (<span class="ref">ExecutionCommand.kt:24–29</span>). Formatting sends lines to a sink (<span class="ref">FormattingCommand.kt:20–24</span>). Analyzing returns FAILURE when there are violations (<span class="ref">AnalyzingCommand.kt:21–33</span>).</div></li>
+      <li><div><strong>Show progress while parsing.</strong> The assignment asks for this. <span class="ref">ParsingPipeline.kt:31–47</span> wraps the node stream in <code>onEach</code> and reports each statement as it's parsed (:39–42). <span class="ref">ConsoleProgressReporter.kt:14–22</span> rewrites a single stderr line using <code>\r</code>.</div></li>
+      <li><div><strong>The four operations.</strong> Validation consumes and counts nodes (<span class="ref">ValidationCommand.kt:18–23</span>). Execution runs the interpreter <em>inside</em> the stream (<span class="ref">ExecutionCommand.kt:25–30</span>). Formatting sends lines to a sink (<span class="ref">FormattingCommand.kt:20–24</span>). Analyzing returns FAILURE when there are violations (<span class="ref">AnalyzingCommand.kt:21–33</span>).</div></li>
       <li><div><strong>I/O boundaries.</strong> <code>Output</code> has three channels: result goes to stdout, while info and error go to stderr (<span class="ref">ConsoleOutput.kt:15–19</span>). <span class="ref">OutputPrinter.kt:14</span> adapts <code>Printer</code> to the result channel. <span class="ref">ConsoleReader.kt:12–16</span> keeps one <code>BufferedReader</code> on stdin so no lines are lost between reads. <span class="ref">FileSource.kt:17</span> closes the file after the block, and <code>FileSink</code>/<code>OutputSink</code> write formatted lines.</div></li>
     </ol>
 
@@ -647,15 +647,16 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <div class="tablewrap"><table>
       <thead><tr><th>Module</th><th>What changes between 1.0 and 1.1</th><th>Where</th></tr></thead>
       <tbody>
-        <tr><td>lexer</td><td>Token vocabulary: which words and symbols the version has</td><td><span class="ref">TokenMapper.kt:34–39</span></td></tr>
-        <tr><td>parser</td><td><code>ConditionalFactory</code> in the list or not</td><td><span class="ref">ParserFactory.kt:20–42</span></td></tr>
-        <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:14–47</span></td></tr>
+        <tr><td>commons</td><td>The versions themselves: one enum every module uses</td><td><span class="ref">Version.kt:9–14</span></td></tr>
+        <tr><td>lexer</td><td>Token vocabulary: which words and symbols the version has</td><td><span class="ref">TokenMapper.kt:34–38</span></td></tr>
+        <tr><td>parser</td><td><code>ConditionalFactory</code> in the list or not</td><td><span class="ref">ParserFactory.kt:13–17</span></td></tr>
+        <tr><td>interpreter</td><td>Conditional and Function evaluators in the list or not</td><td><span class="ref">InterpreterFactory.kt:20–33</span></td></tr>
         <tr><td>linter</td><td><code>inputonly</code> rule allowed or not</td><td><span class="ref">RuleFactory.kt:23–31</span></td></tr>
-        <tr><td>formatter</td><td>Only via its lexer, which must accept braces</td><td><span class="ref">FormatterBuilderPS.kt:24</span></td></tr>
-        <tr><td>cli</td><td><code>--version</code>, default 1.0, validated against {1.0, 1.1}</td><td><span class="ref">ArgumentParser.kt:108–113</span></td></tr>
+        <tr><td>formatter</td><td>Only via its lexer, which must accept braces</td><td><span class="ref">FormatterBuilderPS.kt:25</span></td></tr>
+        <tr><td>cli</td><td><code>--version</code>, default 1.0, turned into a <code>Version</code> once</td><td><span class="ref">ArgumentParser.kt:99–103</span></td></tr>
       </tbody>
     </table></div>
-    <p>The pattern is the same everywhere: the version selects <em>which pieces are in a list</em>, and no module branches on the version inside its logic. That's the answer to "how would you add 1.2?"</p>
+    <p>The pattern is the same everywhere: the version selects <em>which pieces are in a list</em>, and no module branches on the version inside its logic. Each module picks its pieces with a <code>when</code> over <code>Version</code> that has no <code>else</code>, so a new version doesn't compile until every module says what it adds. That's the answer to "how would you add 1.2?"</p>
 
     <h3>Errors with start and end position</h3>
     <p>Positions are 0-based everywhere internally and become 1-based only when displayed: <span class="ref">PrintScriptException.kt:29–31</span>, <span class="ref">AnalyzingCommand.kt:37–38</span>, <span class="ref">LinterAdapter.java:41</span>. The lexer and parser report full ranges. The interpreter reports a start point only, because AST nodes store one position (<span class="ref">InterpreterException.kt:9–11</span>). A real example from the CLI:</p>
@@ -724,7 +725,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <h4>Lexer: a hand-written scanner over the version's vocabulary</h4>
       <p class="over">instead of regex patterns or a lexer generator</p>
       <div class="cols">
-        <div><h5>Why</h5><p>Extending the language is adding an entry to a map (<span class="ref">TokenMapper.kt:41–85</span>), with no regex notation to know and no order to respect. Version 1.1 is 1.0 plus eight words and the braces. The version supplies the tables, so the scanner has no version checks in its loop.</p></div>
+        <div><h5>Why</h5><p>Extending the language is adding an entry to a map (<span class="ref">TokenMapper.kt:40–84</span>), with no regex notation to know and no order to respect. Version 1.1 is 1.0 plus eight words and the braces. The version supplies the tables, so the scanner has no version checks in its loop.</p></div>
         <div><h5 class="cost">Cost we accept</h5><p>About 100 lines of scanning code (<span class="ref">LineScanner.kt:18–92</span>) to explain, and a new <em>kind</em> of token, such as a comment, would need its own reader.</p></div>
       </div>
     </div>
@@ -742,7 +743,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <h4>Streaming: a pull pipeline of Kotlin <code>Sequence</code>s</h4>
       <p class="over">instead of reading the whole file, or a producer/consumer with threads or coroutine <code>Flow</code>s</p>
       <div class="cols">
-        <div><h5>Why</h5><p>The consumer drives reading: asking for the next node reads just enough lines. It's single-threaded, needs no synchronisation or extra library, composes with <code>map</code>/<code>onEach</code> (<span class="ref">ParsingPipeline.kt:38</span>), and an exception surfaces at the statement that caused it.</p></div>
+        <div><h5>Why</h5><p>The consumer drives reading: asking for the next node reads just enough lines. It's single-threaded, needs no synchronisation or extra library, composes with <code>map</code>/<code>onEach</code> (<span class="ref">ParsingPipeline.kt:39</span>), and an exception surfaces at the statement that caused it.</p></div>
         <div><h5 class="cost">Cost we accept</h5><p>A sequence over a file is only valid while the file is open, which is why <code>Source</code> exposes <code>useLines { }</code> rather than a sequence (<span class="ref">Source.kt:14</span>). And statements before an error have already executed.</p></div>
       </div>
     </div>
@@ -779,7 +780,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <p class="over">instead of <code>if (version == "1.1")</code> inside logic, or separate modules per version</p>
       <div class="cols">
         <div><h5>Why</h5><p>Each module has exactly one place where the version is read (the table in <a href="#crosscutting">Streaming, versions and errors</a>), and the logic is shared. Rejecting 1.1 features under 1.0 is simply the component not being present.</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>The version string is passed through several factories, and how clear the rejection is depends on where the feature first stops making sense. <code>const</code> under 1.0 is a plain identifier, so the parser reports <em>"Expected a KEYWORD token but found none."</em>, and an <code>if</code> is reported by the lexer as an invalid <code>{</code> character. Both are accurate and positioned, but not tailored.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>The version is passed through several factories, and how clear the rejection is depends on where the feature first stops making sense. <code>const</code> under 1.0 is a plain identifier, so the parser reports <em>"Expected a KEYWORD token but found none."</em>, and an <code>if</code> is reported by the lexer as an invalid <code>{</code> character. Both are accurate and positioned, but not tailored.</p></div>
       </div>
     </div>
 
@@ -817,13 +818,13 @@ fun asType(dataType: DataType): Any = when (dataType) {
   <div class="modhead"><h2>Likely questions</h2><span class="meta">short answers with the line to show</span></div>
   <div class="prose qa">
     <details><summary>How would you add PrintScript 1.2 with a <code>while</code> loop?</summary>
-      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:74</span>, <span class="ref">Statements.kt:85</span>) until it's handled. Add a 1.2 vocabulary that is 1.1's plus the word <code>while</code>, with a <code>"1.2"</code> branch (<span class="ref">TokenMapper.kt:34–39</span>), a <code>WhileFactory</code> in a 1.2 factory list (reusing ConditionalFactory's brace matching), and a <code>WhileEvaluator</code> in a 1.2 evaluator list. Finally add "1.2" to <span class="ref">ArgumentParser.kt:113</span>. No existing class changes its logic.</p></details>
+      <p>Add a <code>WhileNode</code> to the sealed AST; the compiler then flags the linter's walks (<span class="ref">Statements.kt:74</span>, <span class="ref">Statements.kt:85</span>) until it's handled. Add <code>V1_2</code> to <span class="ref">Version.kt:12–13</span>, and every module's <code>when</code> over the version stops compiling until it says what 1.2 is: a vocabulary that is 1.1's plus the word <code>while</code> (<span class="ref">TokenMapper.kt:34–38</span>), a factory list with a <code>WhileFactory</code> (<span class="ref">ParserFactory.kt:13–17</span>, reusing ConditionalFactory's brace matching), and an evaluator list with a <code>WhileEvaluator</code> (<span class="ref">InterpreterFactory.kt:20–33</span>). The CLI accepts <code>--version 1.2</code> by itself, because it lists <code>Version.entries</code> (<span class="ref">ArgumentParser.kt:113</span>). No existing class changes its logic.</p></details>
     <details><summary>Why doesn't the parser depend on the lexer?</summary>
-      <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:48–51</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
+      <p>It only needs <code>Token</code>, which lives in <code>commons</code>. The CLI (<span class="ref">ParsingPipeline.kt:49–52</span>) and the TCK (<span class="ref">Pipeline.java:25–28</span>) connect the two. Either module can be replaced or tested without the other; parser tests use real tokens only through <code>testImplementation</code>.</p></details>
     <details><summary>Where are the SOLID principles?</summary>
       <p><strong>SRP:</strong> StatementSplitter vs factories; ArgumentParser vs CommandFactory vs commands. <strong>OCP:</strong> the vocabulary maps and the factory, evaluator and rule lists, where a version is just data. <strong>LSP:</strong> the three <code>PrintScriptException</code> subclasses are caught as one (<span class="ref">PrintScriptCli.kt:29</span>). <strong>ISP:</strong> single-method <code>Printer</code>, <code>Reader</code>, <code>Command</code>. <strong>DIP:</strong> the interpreter depends on <code>Printer</code>/<code>Reader</code>, and commands on <code>Source</code>/<code>Output</code>, not on the console or files.</p></details>
     <details><summary>Which design patterns did you use?</summary>
-      <p>Strategy (evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:45</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
+      <p>Strategy (evaluators, lint rules), Factory (ParserFactory, InterpreterFactory, RuleFactory, CommandFactory, FormatterBuilder), Chain of Responsibility (<span class="ref">Parser.kt:49</span>), Command + Invoker (cli), Null Object (<code>NilNode</code>, <code>NoOpProgressReporter</code>), and Adapter (TCK, <code>OutputPrinter</code>).</p></details>
     <details><summary>How do you know it doesn't load the whole file?</summary>
       <p>The TCK runs 131,072 statements in a 7 MB heap (<span class="ref">InterpreterLargeFileTest.java:22</span>), and there are dedicated unit tests in each module: StreamingPipelineTest, FormatterStreamingTest, LinterStreamingTest and the CLI's StreamingTest. In the code, every stage signature takes and returns a <code>Sequence</code>.</p></details>
     <details><summary>How does <code>readInput</code> know what type to return?</summary>
