@@ -33,10 +33,10 @@ class DeclarationFactory : ASTFactory {
         }
 
         return DeclarationNode(
-            declValue = keywordToken.value,
+            keyword = keywordToken.value,
             id = identifierToken.value,
             dataType = dataType,
-            expr = expression,
+            expression = expression,
             position = identifierToken.getPosition(),
         )
     }

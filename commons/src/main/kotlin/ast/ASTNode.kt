@@ -27,10 +27,10 @@ data class PrintNode(
 ) : ASTNode()
 
 data class DeclarationNode(
-    val declValue: String,
+    val keyword: String,
     val id: String,
     val dataType: DataType,
-    val expr: ASTNode,
+    val expression: ASTNode,
     override val position: TokenPosition,
 ) : ASTNode()
 
