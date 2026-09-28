@@ -1,8 +1,8 @@
 package interpreter.evaluators
 
 import ast.ASTNode
+import ast.DataType
 import ast.FunctionNode
-import ast.LiteralNode
 import interpreter.ExternalInput
 import interpreter.Interpreter
 import interpreter.InterpreterException
@@ -63,15 +63,18 @@ class FunctionEvaluator : NodeEvaluator {
         return value
     }
 
+    /**
+     * El argumento puede ser cualquier expresión, como `readInput("Nombre" + "?")`, pero tiene que
+     * dar un texto. Un valor leído de afuera que llega como argumento es, entonces, un texto.
+     */
     private fun stringArgumentOf(
         node: FunctionNode,
         interpreter: Interpreter,
         functionName: String,
     ): String {
-        val argument: LiteralNode =
-            node.expression as? LiteralNode
-                ?: throw InterpreterException("$functionName necesita solo un argumento")
-        return interpreter.execute(argument) as? String
+        val value = interpreter.execute(node.expression)
+        val resolved = if (value is ExternalInput) value.asType(DataType.STRING) else value
+        return resolved as? String
             ?: throw InterpreterException("El argumento de $functionName debe ser String")
     }
 

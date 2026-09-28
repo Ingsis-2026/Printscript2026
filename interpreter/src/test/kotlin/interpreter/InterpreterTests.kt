@@ -997,7 +997,7 @@ class InterpreterTests {
     }
 
     @Test
-    fun `test readInput throws exception for multiple arguments`() {
+    fun `an argument that is an expression is evaluated before the call`() {
         val expression =
             BinaryNode(
                 LiteralNode("Enter your age: ", TokenType.STRINGLITERAL, position),
@@ -1005,15 +1005,23 @@ class InterpreterTests {
                 Token(TokenType.OPERATOR, "+", position, position),
                 position,
             )
-        val node = FunctionNode("readInput", expression, position)
-        val interpreter = Interpreter(printer, reader)
-
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                interpreter.execute(node)
+        val prompts = mutableListOf<String>()
+        val recordingPrinter =
+            object : Printer {
+                override fun print(message: String) {
+                    prompts.add(message)
+                }
             }
+        val answer =
+            object : Reader {
+                override fun input(message: String): String = "30"
+            }
+        val node = FunctionNode("readInput", expression, position)
+        val interpreter = Interpreter(recordingPrinter, answer)
 
-        assertEquals("readInput necesita solo un argumento", exception.message)
+        interpreter.execute(node)
+
+        assertEquals(listOf("Enter your age: 5"), prompts)
     }
 
     @Test
