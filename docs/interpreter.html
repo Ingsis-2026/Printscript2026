@@ -164,7 +164,7 @@ h3.part{font-family:var(--display);font-size:21px;font-weight:700;margin-top:40p
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 2705c6d · study sheet 4 of 8</p>
+  <p class="eyebrow">Printscript2026 @ b7ff6e3 · study sheet 4 of 8</p>
   <h1><code>interpreter</code></h1>
   <p class="lede">Executes AST nodes one at a time against one small table of state. Output and input go through two one-method interfaces, so the same code runs in the CLI and inside the TCK.</p>
   <ul class="meta">
@@ -429,6 +429,8 @@ PrintEvaluator ← Print
       <p>So whole numbers print as whole numbers. Example 2 must print <code>Result: 3</code>, and a Double would print <code>3.0</code>. For type checks they're the same PrintScript type, <code>DataType.NUMBER</code> (<span class="ref">AssignmentEvaluator.kt:60–66</span>).</p></details>
     <details><summary>How does <code>readInput</code> know its type?</summary>
       <p>It doesn't. It returns <code>ExternalInput</code>, and the declaration, assignment or <code>println</code> that receives it converts it with <code>asType</code>. A value that can't be converted fails there, like <code>"41"</code> for a boolean.</p></details>
+    <details><summary>Can the argument of <code>readInput</code> be an expression?</summary>
+      <p>Yes. The argument is evaluated like any expression and only has to give a text (<span class="ref">FunctionEvaluator.kt:66–79</span>), so <code>readInput("Your " + "name?")</code> prompts with <code>Your name?</code>. The TCK has exactly that program. Forbidding it is the job of the linter's optional <code>mandatory-variable-or-literal-in-readInput</code> rule, not of the language.</p></details>
     <details><summary>How is <code>const</code> enforced?</summary>
       <p>The declaration records the keyword (<span class="ref">DeclarationEvaluator.kt:32–35</span>), and any later assignment to that name checks it and throws (<span class="ref">AssignmentEvaluator.kt:48–51</span>).</p></details>
     <details><summary>What happens if the program fails halfway?</summary>
