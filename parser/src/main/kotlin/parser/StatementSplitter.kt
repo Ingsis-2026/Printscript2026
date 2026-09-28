@@ -15,83 +15,94 @@ internal class StatementSplitter(
 ) {
     fun split(tokens: Sequence<Token>): Sequence<List<Token>> =
         sequence {
-            val current = mutableListOf<Token>()
-            var openBraces = 0
-            var blockJustClosed = false
-            var emittedAny = false
-
+            val statement = PendingStatement(insideBlock)
             for (token in tokens) {
-                // Un "}" que cerró el bloque puede continuar con "else": la sentencia quedó
-                // retenida hasta poder mirar este token.
-                if (blockJustClosed) {
-                    blockJustClosed = false
-                    if (token.continuesConditional) {
-                        current.add(token)
-                        continue
-                    }
-                    yield(current.toList())
-                    emittedAny = true
-                    current.clear()
-                }
-
-                when {
-                    token.opensBlock -> {
-                        openBraces++
-                        current.add(token)
-                    }
-
-                    token.closesBlock && openBraces > 0 -> {
-                        openBraces--
-                        current.add(token)
-                        if (openBraces == 0) blockJustClosed = true
-                    }
-
-                    // El "}" que cierra el bloque que envuelve a este cuerpo no forma parte de
-                    // la última sentencia: la termina. Por eso esa sentencia puede omitir el ";".
-                    token.closesBlock && insideBlock -> {
-                        if (current.isNotEmpty()) {
-                            yield(current.toList())
-                            emittedAny = true
-                            current.clear()
-                        }
-                    }
-
-                    token.closesBlock -> throw unmatchedBrace(token)
-
-                    // Dentro de un bloque los tokens se acumulan tal cual: el ";" que separa
-                    // sus sentencias lo necesita quien parsee el cuerpo, y un "if" anidado no
-                    // abre una sentencia nueva en este nivel.
-                    openBraces > 0 -> current.add(token)
-
-                    token.startsConditional -> {
-                        // Una sentencia pendiente antes de un "if" quedó sin terminador.
-                        if (current.isNotEmpty()) throw unterminatedStatement(current)
-                        current.add(token)
-                    }
-
-                    token.endsStatement ->
-                        if (current.isNotEmpty()) {
-                            yield(current.toList())
-                            emittedAny = true
-                            current.clear()
-                        }
-
-                    else -> current.add(token)
-                }
+                statement.completedBefore(token)?.let { yield(it) }
+                statement.add(token)?.let { yield(it) }
             }
+            statement.completedAtEnd()?.let { yield(it) }
+        }.ifEmpty { throw ParserException("Error: No valid code.") }
+}
 
-            if (current.isNotEmpty()) {
-                val last = current.last()
-                if (!last.closesBlock && !last.opensBlock) throw unterminatedStatement(current)
-                yield(current.toList())
-                emittedAny = true
-            }
+/**
+ * La sentencia que se está armando.
+ *
+ * Termina en su `;`, o cuando se cierra el bloque que abrió, salvo que siga un `else`. Mientras
+ * tiene un bloque abierto, todo lo que llega es parte de ese bloque: el `;` de sus sentencias lo
+ * necesita quien parsee el cuerpo, y un `if` anidado no empieza una sentencia en este nivel.
+ *
+ * Con [insideBlock], los tokens son el cuerpo de un bloque y llegan con el `}` que lo cierra: ese
+ * `}` termina la última sentencia, que por eso puede omitir el `;`.
+ */
+private class PendingStatement(
+    private val insideBlock: Boolean,
+) {
+    private val tokens = mutableListOf<Token>()
+    private var openBlocks = 0
+    private var closedItsBlock = false
 
-            if (!emittedAny) throw ParserException("Error: No valid code.")
+    /** Una sentencia cuyo bloque se cerró termina ahí, salvo que [next] sea el `else` que la continúa. */
+    fun completedBefore(next: Token): List<Token>? {
+        if (!closedItsBlock || next.continuesConditional) return null
+        return take()
+    }
+
+    /** Suma [token] a la sentencia y la devuelve si ese token la terminó. */
+    fun add(token: Token): List<Token>? {
+        closedItsBlock = false
+        if (openBlocks > 0) return addToOpenBlock(token)
+        return when {
+            token.opensBlock -> openBlock(token)
+            token.closesBlock -> closeEnclosingBlock(token)
+            token.startsConditional -> startConditional(token)
+            token.endsStatement -> take()
+            else -> keep(token)
         }
+    }
 
-    private fun unterminatedStatement(statement: List<Token>): ParserException =
-        ParserException("las sentencias deben finalizar con \";\", \"}\" o \"{\"", statement)
+    /** Lo que queda al acabarse los tokens tiene que terminar en una llave; si no, le falta el `;`. */
+    fun completedAtEnd(): List<Token>? {
+        val last = tokens.lastOrNull() ?: return null
+        if (!last.closesBlock && !last.opensBlock) throw unterminatedStatement()
+        return take()
+    }
+
+    private fun addToOpenBlock(token: Token): List<Token>? {
+        if (token.opensBlock) openBlocks++
+        if (token.closesBlock) openBlocks--
+        if (openBlocks == 0) closedItsBlock = true
+        return keep(token)
+    }
+
+    private fun openBlock(token: Token): List<Token>? {
+        openBlocks++
+        return keep(token)
+    }
+
+    /** Sin un bloque propio abierto, un `}` sólo puede ser el del bloque que envuelve a este cuerpo. */
+    private fun closeEnclosingBlock(token: Token): List<Token>? {
+        if (!insideBlock) throw unmatchedBrace(token)
+        return take()
+    }
+
+    /** Un `if` empieza una sentencia: si había otra en curso, le faltó el terminador. */
+    private fun startConditional(token: Token): List<Token>? {
+        if (tokens.isNotEmpty()) throw unterminatedStatement()
+        return keep(token)
+    }
+
+    private fun keep(token: Token): List<Token>? {
+        tokens.add(token)
+        return null
+    }
+
+    private fun take(): List<Token>? {
+        if (tokens.isEmpty()) return null
+        return tokens.toList().also { tokens.clear() }
+    }
+
+    private fun unterminatedStatement(): ParserException =
+        ParserException("las sentencias deben finalizar con \";\", \"}\" o \"{\"", tokens)
 
     private fun unmatchedBrace(token: Token): ParserException =
         ParserException("se encontró un \"}\" que no cierra ningún bloque", listOf(token))

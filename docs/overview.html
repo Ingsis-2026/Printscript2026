@@ -151,9 +151,9 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ e9b829a · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ eac3573 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
-  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit e9b829a. Numbers in the index are lines of main-source Kotlin per module.</p>
+  <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit eac3573. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
     <li><b>3,295</b>lines of main Kotlin</li>
@@ -330,7 +330,7 @@ td:first-child{white-space:nowrap}
     <p>Two things to point out. Row 3 is empty, so it produces no tokens and the parser never sees it. And the string's value is 8 characters long while its columns span 10, because the quotes are stripped from the value but the positions still cover them. That difference is why the formatter keeps each token's original text.</p>
 
     <h3>Parser: four statements, four nodes</h3>
-    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:72–77</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:49</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:60–65</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
+    <p>The splitter emits a statement at each <code>;</code> (<span class="ref">StatementSplitter.kt:58</span>). The parser then asks each factory in turn whether it can handle the statement (<span class="ref">Parser.kt:49</span>). For <code>let c: number = a / b</code>, <code>PrintlnFactory</code> says no because the first token isn't <code>println</code>, and <code>DeclarationFactory</code> says yes because there's a KEYWORD token. In version 1.0 there is no <code>ConditionalFactory</code> in the list to ask first. The declared type is <code>number</code> and the expression has no string or boolean literals, so the static check passes (<span class="ref">DeclarationFactory.kt:60–65</span>). For the last statement, <code>PrintlnFactory</code> matches.</p>
 <pre>DeclarationNode  id=c  let : number        <span class="c">@2:4   position = the identifier</span>
 └─ BinaryNode "/"                          <span class="c">@2:18  ExpressionParser split at "/"</span>
    ├─ LiteralNode IDENTIFIER a             <span class="c">@2:16</span>
@@ -400,7 +400,7 @@ println("Result: " + c);</pre></td>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
-      <li><strong>Why one exception type with nullable positions?</strong> Some errors have no token at hand, such as an empty program (<span class="ref">StatementSplitter.kt:90</span>). Nullable positions let those share the same hierarchy instead of needing a second error type.</li>
+      <li><strong>Why one exception type with nullable positions?</strong> Some errors have no token at hand, such as an empty program (<span class="ref">StatementSplitter.kt:24</span>). Nullable positions let those share the same hierarchy instead of needing a second error type.</li>
     </ul></div>
     <p class="tests" style="margin-top:18px">Tests: 25 in ASTNodeTests, PrintScriptExceptionTest, ConfigurationExceptionTest and VersionTest.</p>
   </div>
@@ -446,13 +446,13 @@ println("Result: " + c);</pre></td>
 <section class="mod" id="parser">
   <div class="modhead"><h2><code>parser</code></h2><span class="meta">depends on commons (lexer only in tests)</span></div>
   <div class="prose">
-    <p>The parser groups the token stream into statements and turns each one into an AST node. It does this in two parts: a state machine that decides where a statement ends, and a list of factories that each know how to build one kind of statement.</p>
+    <p>The parser groups the token stream into statements and turns each one into an AST node. It does this in two parts: a splitter that decides where a statement ends, and a list of factories that each know how to build one kind of statement.</p>
 
     <h3>Step by step</h3>
     <ol class="steps">
       <li><div><strong>Choose factories for the version.</strong> <span class="ref">ParserFactory.kt:13–17</span>: the 1.0 list is Println, Declaration, Assignation and Function, and 1.1 is <code>ConditionalFactory</code> followed by the 1.0 list. The language version comes down to which factories are in the list.</div></li>
       <li><div><strong>Stay lazy.</strong> <span class="ref">Parser.kt:25</span> calls <code>StatementSplitter().split(tokens)</code> and then <code>.map { createNode(it) }</code>, so a statement is only parsed when someone asks for the next node.</div></li>
-      <li><div><strong>Cut statements (the state machine).</strong> In <span class="ref">StatementSplitter.kt:16–91</span>, <code>;</code> ends a statement (:72–77), but only outside braces: <code>openBraces</code> is counted at :38–47 so the <code>;</code>s inside a block stay together. When a block closes, the statement is held back one token in case an <code>else</code> follows (:26–35). An <code>if</code> must start a fresh statement (:66–70), a stray <code>}</code> is an error (:59), and the stream can't end mid-statement (:83–88). An empty program is rejected (:90). Every one of these checks asks for the token's type, not just its text (<span class="ref">TokenRoles.kt:12–24</span>): a string literal <code>"}"</code> arrives without its quotes and would otherwise look like a brace.</div></li>
+      <li><div><strong>Cut statements.</strong> <span class="ref">StatementSplitter.kt:16–24</span> feeds each token to a <code>PendingStatement</code>, the statement being built, whose rules are one method each. <code>;</code> ends a statement (:58), but only outside braces: while its own block is open, every token is kept (:70–75), so the <code>;</code>s inside a block stay together. When the block closes, the statement ends unless the next token is an <code>else</code> (:45–48). An <code>if</code> must start a fresh statement (:89–92), a stray <code>}</code> is an error (:83–86), and the stream can't end mid-statement (:64–68). An empty program is rejected (:24). Every one of these checks asks for the token's type, not just its text (<span class="ref">TokenRoles.kt:12–24</span>): a string literal <code>"}"</code> arrives without its quotes and would otherwise look like a brace.</div></li>
       <li><div><strong>Pick a factory (chain of responsibility).</strong> <span class="ref">Parser.kt:49</span> takes the first factory whose <code>canHandle</code> returns true. If none does, it throws "Can't handle this sentence" with the statement's range (:43–49).</div></li>
       <li><div><strong>Build the node.</strong> Each factory is described below.</div></li>
     </ol>
@@ -483,7 +483,7 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
       <div class="decision"><dt>Factories + chain of responsibility<small>ASTFactory.kt:6 · Parser.kt:45</small></dt><dd>Adding a construct means adding a factory and listing it for its version, with no edits to <code>Parser</code>. Each factory has one job (SRP).</dd></div>
       <div class="decision"><dt>Splitting separated from building<small>StatementSplitter.kt:13</small></dt><dd>The splitter only answers "where does this statement end?", and factories only see complete statements. It's also the only place memory has to be reasoned about: the current statement is all that's held (:8–11).</dd></div>
       <div class="decision"><dt>Sub-parser injected as a provider<small>ConditionalFactory.kt:20 · ParserFactory.kt:34</small></dt><dd>A block body is parsed by a fresh parser for the same version, which gives recursion for nested blocks. Tests can inject a fake parser.</dd></div>
-      <div class="decision"><dt><code>insideBlock</code> mode<small>Parser.kt:33 · StatementSplitter.kt:49–57</small></dt><dd>In a block body, the closing <code>}</code> terminates the last statement. At top level, the same <code>}</code> is an error.</dd></div>
+      <div class="decision"><dt><code>insideBlock</code> mode<small>Parser.kt:37 · StatementSplitter.kt:83–86</small></dt><dd>In a block body, the closing <code>}</code> terminates the last statement. At top level, the same <code>}</code> is an error.</dd></div>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
