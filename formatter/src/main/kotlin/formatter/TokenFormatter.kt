@@ -98,7 +98,7 @@ class TokenFormatter(
         brokeLine: Boolean,
     ): Int? {
         rules.lineBreaksAfterPrintln?.let { blankLines ->
-            if (state.statementWasPrintln) return blankLines + 1
+            if (state.closedStatement == StatementKind.PRINTLN) return blankLines + 1
         }
         if (rules.lineBreakAfterStatement) return if (brokeLine) null else 1
         return null
@@ -135,8 +135,9 @@ class TokenFormatter(
         next: SourceToken,
         state: FormattingState,
     ): String {
-        if (rules.spaceBeforeColon && state.inDeclaration && next.isColon) return " "
-        if (rules.spaceAfterColon && state.inDeclaration && previous.isColon) return " "
+        val inDeclaration = state.currentStatement == StatementKind.DECLARATION
+        if (rules.spaceBeforeColon && inDeclaration && next.isColon) return " "
+        if (rules.spaceAfterColon && inDeclaration && previous.isColon) return " "
 
         rules.spaceAroundEquals?.let { spaced ->
             if (previous.isAssignation || next.isAssignation) return if (spaced) " " else ""

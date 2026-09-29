@@ -2,26 +2,26 @@ package formatter
 
 /**
  * Lo que hay que saber del recorrido para decidir un hueco: en qué bloque estamos, qué
- * sentencia se está leyendo y con cuánta sangría empezó la línea en curso.
+ * sentencia se está leyendo, cuál acaba de terminar y con cuánta sangría empezó la línea en curso.
  *
- * Se actualiza *después* de resolver el separador que precede a cada token, así que mientras
- * se decide el hueco que sigue a un ";" el estado todavía describe la sentencia que ese ";"
- * terminó. De ahí que la regla de saltos después de un println pueda consultarla.
+ * Se actualiza *después* de resolver el hueco que precede a cada token, así que el hueco que
+ * sigue a un ";" se decide con [closedStatement] apuntando a la sentencia que ese ";" terminó.
  */
 internal class FormattingState {
     var depth: Int = 0
         private set
 
-    var inDeclaration: Boolean = false
+    /** La sentencia que se está leyendo, o `null` entre un ";" o una llave y el token que sigue. */
+    var currentStatement: StatementKind? = null
         private set
 
-    var statementWasPrintln: Boolean = false
+    /** La última sentencia que terminó en un ";" o en una llave. */
+    var closedStatement: StatementKind? = null
         private set
 
     var currentLineIndent: Int = 0
         private set
 
-    private var atStatementStart = true
     private var lastRow = -1
 
     fun advance(token: SourceToken) {
@@ -30,34 +30,14 @@ internal class FormattingState {
             currentLineIndent = token.startColumn
         }
 
-        if (atStatementStart) {
-            statementWasPrintln = token.value == PRINTLN
-            inDeclaration = token.value in DECLARATION_KEYWORDS
-            atStatementStart = false
+        if (currentStatement == null) currentStatement = StatementKind.startedBy(token)
+
+        if (token.isOpeningBrace) depth += 1
+        if (token.isClosingBrace) depth -= 1
+
+        if (token.isSemicolon || token.isOpeningBrace || token.isClosingBrace) {
+            closedStatement = currentStatement
+            currentStatement = null
         }
-
-        when {
-            token.isOpeningBrace -> {
-                depth += 1
-                startStatement()
-            }
-
-            token.isClosingBrace -> {
-                depth -= 1
-                startStatement()
-            }
-
-            token.isSemicolon -> startStatement()
-        }
-    }
-
-    private fun startStatement() {
-        atStatementStart = true
-        inDeclaration = false
-    }
-
-    private companion object {
-        const val PRINTLN = "println"
-        val DECLARATION_KEYWORDS = setOf("let", "const")
     }
 }
