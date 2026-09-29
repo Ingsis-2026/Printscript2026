@@ -64,8 +64,8 @@ ul.docs .what{font-size:15px;color:var(--muted)}
 <h2>Una ficha por módulo</h2>
 <p>En orden del pipeline. Cada una trae un resumen de 30 segundos, el código comentado con números de línea, las decisiones a defender, preguntas frecuentes y un autotest.</p>
 <ul class="docs">
-  <li><a href="commons.html"><span class="name">commons</span><span class="what">Token, AST y el tipo de error que viaja con su ubicación.</span></a></li>
-  <li><a href="lexer.html"><span class="name">lexer</span><span class="what">De texto a tokens: la expresión regular combinada, 1.0 vs 1.1 y la pereza medida.</span></a></li>
+  <li><a href="commons.html"><span class="name">commons</span><span class="what">Token, el AST, <code>Version</code>, <code>DataType</code> y los dos tipos de error: el que viaja con su ubicación y el de configuración.</span></a></li>
+  <li><a href="lexer.html"><span class="name">lexer</span><span class="what">De texto a tokens: un scanner que lee cada línea contra el vocabulario de la versión, 1.0 vs 1.1 y la pereza medida.</span></a></li>
   <li><a href="parser.html"><span class="name">parser</span><span class="what">El separador de sentencias y la cadena de factories, con los árboles que producen.</span></a></li>
   <li><a href="interpreter.html"><span class="name">interpreter</span><span class="what">El ciclo de evaluadores, con la traza real del Ejemplo 2 y el tipado de readInput.</span></a></li>
   <li><a href="formatter.html"><span class="name">formatter</span><span class="what">Reescribir los huecos entre tokens, con un antes y después por cada regla.</span></a></li>
@@ -76,7 +76,7 @@ ul.docs .what{font-size:15px;color:var(--muted)}
 
 <div class="note">
   <p style="margin:0 0 8px"><b>Cómo leerlas.</b> Las fichas están enlazadas entre sí: la barra de arriba de cada una lleva a las demás y a <code>overview</code>. Para empezar de cero, el orden es el del pipeline: <code>commons</code> → <code>lexer</code> → <code>parser</code> → <code>interpreter</code>.</p>
-  <p style="margin:0"><b>Sobre el contenido.</b> Están en inglés. Las salidas, trazas y mediciones que aparecen se obtuvieron ejecutando el código de la versión 1.0.0, y las referencias <code>Archivo.kt:línea</code> corresponden a esa versión.</p>
+  <p style="margin:0"><b>Sobre el contenido.</b> Están en inglés. Cada ficha dice arriba qué commit describe (<code>Printscript2026 @ …</code>): las salidas, trazas y referencias <code>Archivo.kt:línea</code> corresponden a ese commit.</p>
 </div>
 </div>
 </body>
