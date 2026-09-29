@@ -1,7 +1,5 @@
 package formatter
 
-import rules.FormattingRules
-
 interface Formatter {
     fun format(input: String): String
 
@@ -13,6 +11,4 @@ interface Formatter {
      * de a una línea sin conocer la clase concreta.
      */
     fun formatLines(lines: Sequence<String>): Sequence<String>
-
-    fun getRules(): FormattingRules
 }

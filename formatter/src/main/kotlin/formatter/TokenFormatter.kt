@@ -22,12 +22,7 @@ class TokenFormatter(
     private val scanner = SourceScanner(lexer)
     private val indentation = Indentation(rules.indentInsideIf)
 
-    override fun getRules(): FormattingRules = rules
-
-    override fun format(input: String): String {
-        if (input.isBlank()) return ""
-        return formatLines(input.lineSequence()).joinToString("\n")
-    }
+    override fun format(input: String): String = formatLines(input.lineSequence()).joinToString("\n")
 
     override fun formatLines(lines: Sequence<String>): Sequence<String> =
         sequence {

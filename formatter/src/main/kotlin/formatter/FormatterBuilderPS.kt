@@ -7,7 +7,7 @@ import rules.RulesReader
 import version.Version
 import java.io.InputStream
 
-open class FormatterBuilderPS : FormatterBuilder {
+class FormatterBuilderPS : FormatterBuilder {
     override fun build(
         rulesPath: String,
         version: Version,

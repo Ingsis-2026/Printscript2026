@@ -13,8 +13,7 @@ internal class OutputLines {
         gap: Gap,
         text: String,
     ): List<String> {
-        // El primer salto cierra la línea en curso; cada salto de más deja una línea en blanco.
-        val finished = List(gap.breaks) { index -> if (index == 0) takeCurrent() else "" }
+        val finished = if (gap.breaks == 0) emptyList() else listOf(takeCurrent()) + List(gap.breaks - 1) { "" }
         current.append(" ".repeat(gap.spaces)).append(text)
         return finished
     }
