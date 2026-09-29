@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import rules.BracePlacement
 import rules.FormattingRules
 import rules.RulesReader
 
@@ -19,7 +20,7 @@ class RulesReaderTest {
 
         assertEquals(4, rules.indentInsideIf)
         assertFalse(rules.singleSpaceSeparation)
-        assertNull(rules.spaceAroundEquals)
+        assertNull(rules.spacesAroundEquals)
     }
 
     @Test
@@ -27,7 +28,7 @@ class RulesReaderTest {
         val rules = reader.read("mandatory-single-space-separation: true\nline-breaks-after-println: 2")
 
         assertTrue(rules.singleSpaceSeparation)
-        assertEquals(2, rules.lineBreaksAfterPrintln)
+        assertEquals(2, rules.blankLinesAfterPrintln)
     }
 
     @Test
@@ -43,14 +44,14 @@ class RulesReaderTest {
 
     @Test
     fun `the two spellings of the equals rule are the same setting`() {
-        assertEquals(true, reader.read("""{ "enforce-spacing-around-equals": true }""").spaceAroundEquals)
-        assertEquals(false, reader.read("""{ "enforce-no-spacing-around-equals": true }""").spaceAroundEquals)
+        assertEquals(1, reader.read("""{ "enforce-spacing-around-equals": true }""").spacesAroundEquals)
+        assertEquals(0, reader.read("""{ "enforce-no-spacing-around-equals": true }""").spacesAroundEquals)
     }
 
     @Test
     fun `the two spellings of the brace rule are the same setting`() {
-        assertEquals(true, reader.read("""{ "if-brace-same-line": true }""").braceOnSameLine)
-        assertEquals(false, reader.read("""{ "if-brace-below-line": true }""").braceOnSameLine)
+        assertEquals(BracePlacement.SAME_LINE, reader.read("""{ "if-brace-same-line": true }""").bracePlacement)
+        assertEquals(BracePlacement.NEXT_LINE, reader.read("""{ "if-brace-below-line": true }""").bracePlacement)
     }
 
     @Test

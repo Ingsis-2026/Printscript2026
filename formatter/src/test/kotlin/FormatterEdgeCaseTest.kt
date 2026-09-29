@@ -2,6 +2,7 @@ import formatter.FormatterBuilderPS
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import rules.BracePlacement
 import rules.FormattingRules
 import version.Version
 
@@ -46,7 +47,7 @@ class FormatterEdgeCaseTest {
     fun `an opening brace inside a string is not moved by the brace rule`() {
         val source = "if (true)\n{\nprintln(\"{\");\n}"
 
-        assertEquals(source, builder.build(FormattingRules(braceOnSameLine = false), Version.V1_1).format(source))
+        assertEquals(source, builder.build(FormattingRules(bracePlacement = BracePlacement.NEXT_LINE), Version.V1_1).format(source))
     }
 
     @Test

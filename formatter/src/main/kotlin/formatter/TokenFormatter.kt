@@ -1,6 +1,7 @@
 package formatter
 
 import lexer.Lexer
+import rules.BracePlacement
 import rules.FormattingRules
 
 /**
@@ -55,11 +56,12 @@ class TokenFormatter(
     ): Gap {
         val sourceBreaks = next.startRow - previous.endRow
         val indent = if (sourceBreaks > 0) indentation.forSourceBreak(next, state) else indentation.forAddedBreak(next, state)
-        val blankLinesAfterPrintln = rules.lineBreaksAfterPrintln
+        val bracePlacement = if (next.isOpeningBrace) rules.bracePlacement else null
+        val blankLinesAfterPrintln = rules.blankLinesAfterPrintln
         val endsPrintln = previous.isSemicolon && state.statement == StatementKind.PRINTLN
         return when {
-            next.isOpeningBrace && rules.braceOnSameLine == true -> Gap.sameLine(1)
-            next.isOpeningBrace && rules.braceOnSameLine == false -> Gap.lineBreaks(1, indentation.forAddedBreak(next, state))
+            bracePlacement == BracePlacement.SAME_LINE -> Gap.sameLine(1)
+            bracePlacement == BracePlacement.NEXT_LINE -> Gap.lineBreaks(1, indentation.forAddedBreak(next, state))
             blankLinesAfterPrintln != null && endsPrintln -> Gap.lineBreaks(blankLinesAfterPrintln + 1, indent)
             rules.lineBreakAfterStatement && previous.isSemicolon && sourceBreaks == 0 -> Gap.lineBreaks(1, indent)
             sourceBreaks > 0 -> Gap.lineBreaks(sourceBreaks, indent)
@@ -73,11 +75,11 @@ class TokenFormatter(
         state: FormattingState,
     ): Int {
         val inDeclaration = state.statement == StatementKind.DECLARATION
-        val spaceAroundEquals = rules.spaceAroundEquals
+        val spacesAroundEquals = rules.spacesAroundEquals
         return when {
             rules.spaceBeforeColon && inDeclaration && next.isColon -> 1
             rules.spaceAfterColon && inDeclaration && previous.isColon -> 1
-            spaceAroundEquals != null && (previous.isAssignation || next.isAssignation) -> if (spaceAroundEquals) 1 else 0
+            spacesAroundEquals != null && (previous.isAssignation || next.isAssignation) -> spacesAroundEquals
             rules.spaceSurroundingOperations && (previous.isOperator || next.isOperator) -> 1
             rules.singleSpaceSeparation -> if (next.isSemicolon) 0 else 1
             else -> next.startColumn - previous.endColumn
