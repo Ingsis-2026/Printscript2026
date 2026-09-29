@@ -217,7 +217,7 @@ td .c{color:var(--muted)}
 <section id="idea">
   <h2>Gaps, not trees</h2>
   <p class="sub">The one idea the whole module is built on.</p>
-  <p>The TCK's formatter cases enable one rule per config file and expect the rest of the source untouched. Two declarations can end up with <em>different</em> spacing before <code>:</code> when only the "space after colon" rule is on. A tree has already thrown away how the source was spaced, so reprinting from it would normalise everything. Token positions still hold that information (<span class="ref">TokenFormatter.kt:6–15</span>).</p>
+  <p>The TCK's formatter cases enable one rule per config file and expect the rest of the source untouched. Two declarations can end up with <em>different</em> spacing before <code>:</code> when only the "space after colon" rule is on. A tree has already thrown away how the source was spaced, so reprinting from it would normalise everything. Token positions still hold that information (<span class="ref">TokenFormatter.kt:7–17</span>).</p>
   <figure>
     <div class="figure">
     <svg viewBox="0 0 681 136" role="img" aria-label="The line let, two spaces, x colon number equals a plus b semicolon, shown as nine tokens with eight numbered gaps. With the after-colon, around-equals and around-operators rules on, gaps 3 to 7 become one space each; gaps 1, 2 and 8 are copied from the source unchanged, including the two spaces after let.">
