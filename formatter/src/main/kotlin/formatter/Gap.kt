@@ -17,13 +17,3 @@ internal data class Gap(
         ): Gap = Gap(breaks = breaks, spaces = indent)
     }
 }
-
-/** Una de las decisiones sobre el hueco entre dos tokens vecinos. */
-internal fun interface GapRule {
-    /** El hueco entre [previous] y [next], o `null` si esta regla no lo gobierna. */
-    fun decide(
-        previous: SourceToken,
-        next: SourceToken,
-        state: FormattingState,
-    ): Gap?
-}

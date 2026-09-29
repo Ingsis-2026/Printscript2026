@@ -21,15 +21,6 @@ class TokenFormatter(
     private val scanner = SourceScanner(lexer)
     private val indentation = Indentation(rules.indentInsideIf)
 
-    /** Quién decide cada hueco, de lo más puntual a lo más amplio: el primero que responde gana. */
-    private val gapRules =
-        listOf(
-            BracePlacement(rules.braceOnSameLine, indentation),
-            BreaksAfterStatement(rules, indentation),
-            SourceLineBreaks(indentation),
-            SameLineSpacing(rules),
-        )
-
     override fun getRules(): FormattingRules = rules
 
     override fun format(input: String): String {
@@ -56,9 +47,40 @@ class TokenFormatter(
     /** Los saltos y la sangría que preceden al primer token del fuente. */
     private fun leadingGap(first: SourceToken): Gap = Gap.lineBreaks(first.startRow, first.startColumn)
 
+    /** Las reglas van de la más puntual a la más amplia, así que la primera que aplica decide. */
     private fun gapBetween(
         previous: SourceToken,
         next: SourceToken,
         state: FormattingState,
-    ): Gap = gapRules.firstNotNullOf { it.decide(previous, next, state) }
+    ): Gap {
+        val sourceBreaks = next.startRow - previous.endRow
+        val indent = if (sourceBreaks > 0) indentation.forSourceBreak(next, state) else indentation.forAddedBreak(next, state)
+        val blankLinesAfterPrintln = rules.lineBreaksAfterPrintln
+        val endsPrintln = previous.isSemicolon && state.closedStatement == StatementKind.PRINTLN
+        return when {
+            next.isOpeningBrace && rules.braceOnSameLine == true -> Gap.sameLine(1)
+            next.isOpeningBrace && rules.braceOnSameLine == false -> Gap.lineBreaks(1, indentation.forAddedBreak(next, state))
+            blankLinesAfterPrintln != null && endsPrintln -> Gap.lineBreaks(blankLinesAfterPrintln + 1, indent)
+            rules.lineBreakAfterStatement && previous.isSemicolon && sourceBreaks == 0 -> Gap.lineBreaks(1, indent)
+            sourceBreaks > 0 -> Gap.lineBreaks(sourceBreaks, indent)
+            else -> Gap.sameLine(spacesBetween(previous, next, state))
+        }
+    }
+
+    private fun spacesBetween(
+        previous: SourceToken,
+        next: SourceToken,
+        state: FormattingState,
+    ): Int {
+        val inDeclaration = state.currentStatement == StatementKind.DECLARATION
+        val spaceAroundEquals = rules.spaceAroundEquals
+        return when {
+            rules.spaceBeforeColon && inDeclaration && next.isColon -> 1
+            rules.spaceAfterColon && inDeclaration && previous.isColon -> 1
+            spaceAroundEquals != null && (previous.isAssignation || next.isAssignation) -> if (spaceAroundEquals) 1 else 0
+            rules.spaceSurroundingOperations && (previous.isOperator || next.isOperator) -> 1
+            rules.singleSpaceSeparation -> if (next.isSemicolon) 0 else 1
+            else -> next.startColumn - previous.endColumn
+        }
+    }
 }
