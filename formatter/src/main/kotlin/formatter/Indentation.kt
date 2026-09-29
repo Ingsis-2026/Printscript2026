@@ -3,8 +3,8 @@ package formatter
 /**
  * Sangría de la línea que empieza en un token.
  *
- * Con la regla de sangría activa se calcula por profundidad —la llave que cierra pertenece al
- * bloque de afuera, así que va un nivel menos—. Sin la regla depende de quién puso el salto.
+ * Con la regla de sangría activa se calcula por profundidad. Sin la regla depende de quién puso
+ * el salto.
  */
 internal class Indentation(
     private val size: Int?,
@@ -29,7 +29,6 @@ internal class Indentation(
         state: FormattingState,
     ): Int? {
         val size = size ?: return null
-        val depth = if (next.isClosingBrace) state.depth - 1 else state.depth
-        return size * depth.coerceAtLeast(0)
+        return size * state.depthOf(next)
     }
 }
