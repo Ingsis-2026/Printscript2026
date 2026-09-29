@@ -13,9 +13,9 @@ internal enum class StatementKind {
 
     companion object {
         fun startedBy(token: SourceToken): StatementKind =
-            when (token.value) {
-                "let", "const" -> DECLARATION
-                "println" -> PRINTLN
+            when {
+                token.isDeclarationKeyword -> DECLARATION
+                token.isPrintln -> PRINTLN
                 else -> OTHER
             }
     }

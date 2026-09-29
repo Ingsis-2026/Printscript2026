@@ -41,7 +41,7 @@ class TokenFormatter(
         }
 
     /** Los saltos y la sangría que preceden al primer token del fuente. */
-    private fun leadingGap(first: SourceToken): Gap = Gap.lineBreaks(first.startRow, first.startColumn)
+    private fun leadingGap(first: SourceToken): Gap = Gap.lineBreaks(first.row, first.startColumn)
 
     /** Las reglas van de la más puntual a la más amplia, así que la primera que aplica decide. */
     private fun gapBetween(
@@ -49,7 +49,7 @@ class TokenFormatter(
         next: SourceToken,
         state: FormattingState,
     ): Gap {
-        val sourceBreaks = next.startRow - previous.endRow
+        val sourceBreaks = next.row - previous.row
         val indent = if (sourceBreaks > 0) indentation.forSourceBreak(next, state) else indentation.forAddedBreak(next, state)
         val bracePlacement = if (next.isOpeningBrace) rules.bracePlacement else null
         val blankLinesAfterPrintln = rules.blankLinesAfterPrintln

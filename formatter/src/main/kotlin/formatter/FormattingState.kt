@@ -16,8 +16,8 @@ internal class FormattingState {
     private var lastRow = -1
 
     fun advance(token: SourceToken) {
-        if (token.startRow != lastRow) {
-            lastRow = token.startRow
+        if (token.row != lastRow) {
+            lastRow = token.row
             currentLineIndent = token.startColumn
         }
 
