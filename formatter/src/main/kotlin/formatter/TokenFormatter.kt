@@ -56,7 +56,7 @@ class TokenFormatter(
         val sourceBreaks = next.startRow - previous.endRow
         val indent = if (sourceBreaks > 0) indentation.forSourceBreak(next, state) else indentation.forAddedBreak(next, state)
         val blankLinesAfterPrintln = rules.lineBreaksAfterPrintln
-        val endsPrintln = previous.isSemicolon && state.closedStatement == StatementKind.PRINTLN
+        val endsPrintln = previous.isSemicolon && state.statement == StatementKind.PRINTLN
         return when {
             next.isOpeningBrace && rules.braceOnSameLine == true -> Gap.sameLine(1)
             next.isOpeningBrace && rules.braceOnSameLine == false -> Gap.lineBreaks(1, indentation.forAddedBreak(next, state))
@@ -72,7 +72,7 @@ class TokenFormatter(
         next: SourceToken,
         state: FormattingState,
     ): Int {
-        val inDeclaration = state.currentStatement == StatementKind.DECLARATION
+        val inDeclaration = state.statement == StatementKind.DECLARATION
         val spaceAroundEquals = rules.spaceAroundEquals
         return when {
             rules.spaceBeforeColon && inDeclaration && next.isColon -> 1
