@@ -25,9 +25,14 @@ internal data class SourceToken(
     val isColon: Boolean get() = type == TokenType.DECLARATOR
     val isAssignation: Boolean get() = type == TokenType.ASSIGNATION
     val isOperator: Boolean get() = type == TokenType.OPERATOR
-    val isSemicolon: Boolean get() = value == ";"
-    val isOpeningBrace: Boolean get() = value == "{"
-    val isClosingBrace: Boolean get() = value == "}"
+
+    // La puntuación se reconoce por su tipo además de su texto: el string de `println(";")` llega
+    // sin comillas, así que su valor es ";" igual que el del punto y coma que cierra la sentencia.
+    val isSemicolon: Boolean get() = isPunctuator(";")
+    val isOpeningBrace: Boolean get() = isPunctuator("{")
+    val isClosingBrace: Boolean get() = isPunctuator("}")
+
+    private fun isPunctuator(symbol: String): Boolean = type == TokenType.PUNCTUATOR && value == symbol
 }
 
 /**
