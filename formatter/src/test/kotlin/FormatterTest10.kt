@@ -67,7 +67,7 @@ class FormatterTest10 {
         val source = "let something: string= \"one\";\nlet other: string =\"two\";"
         val expected = "let something: string = \"one\";\nlet other: string = \"two\";"
 
-        assertEquals(expected, format(source, FormattingRules(spaceAroundEquals = true)))
+        assertEquals(expected, format(source, FormattingRules(spacesAroundEquals = 1)))
     }
 
     @Test
@@ -75,7 +75,7 @@ class FormatterTest10 {
         val source = "let something: string = \"one\";\nlet other: string =\"two\";"
         val expected = "let something: string=\"one\";\nlet other: string=\"two\";"
 
-        assertEquals(expected, format(source, FormattingRules(spaceAroundEquals = false)))
+        assertEquals(expected, format(source, FormattingRules(spacesAroundEquals = 0)))
     }
 
     @Test
@@ -106,15 +106,15 @@ class FormatterTest10 {
     fun `line breaks after println collapse the blank lines the source had`() {
         val source = "println(a);\n\n\n\n\nprintln(b);"
 
-        assertEquals("println(a);\nprintln(b);", format(source, FormattingRules(lineBreaksAfterPrintln = 0)))
+        assertEquals("println(a);\nprintln(b);", format(source, FormattingRules(blankLinesAfterPrintln = 0)))
     }
 
     @Test
     fun `line breaks after println add the blank lines the source lacked`() {
         val source = "println(a);\nprintln(b);"
 
-        assertEquals("println(a);\n\nprintln(b);", format(source, FormattingRules(lineBreaksAfterPrintln = 1)))
-        assertEquals("println(a);\n\n\nprintln(b);", format(source, FormattingRules(lineBreaksAfterPrintln = 2)))
+        assertEquals("println(a);\n\nprintln(b);", format(source, FormattingRules(blankLinesAfterPrintln = 1)))
+        assertEquals("println(a);\n\n\nprintln(b);", format(source, FormattingRules(blankLinesAfterPrintln = 2)))
     }
 
     @Test
@@ -123,12 +123,12 @@ class FormatterTest10 {
 
         assertEquals(
             "let a: number = 1;\nprintln(a);\n\nlet b: number = 2;",
-            format(source, FormattingRules(lineBreaksAfterPrintln = 1)),
+            format(source, FormattingRules(blankLinesAfterPrintln = 1)),
         )
     }
 
     @Test
     fun `the last println does not leave trailing blank lines`() {
-        assertEquals("println(a);", format("println(a);", FormattingRules(lineBreaksAfterPrintln = 2)))
+        assertEquals("println(a);", format("println(a);", FormattingRules(blankLinesAfterPrintln = 2)))
     }
 }

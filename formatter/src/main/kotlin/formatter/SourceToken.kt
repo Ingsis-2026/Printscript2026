@@ -1,6 +1,5 @@
 package formatter
 
-import lexer.Lexer
 import token.Token
 import token.TokenType
 
@@ -15,40 +14,23 @@ internal data class SourceToken(
     private val token: Token,
     val text: String,
 ) {
-    val value: String get() = token.value
-    val type: TokenType get() = token.getType()
-    val startRow: Int get() = token.getPosition().row
+    private val type: TokenType get() = token.getType()
+
+    val row: Int get() = token.getPosition().row
     val startColumn: Int get() = token.getPosition().column
-    val endRow: Int get() = token.getFinalPosition().row
     val endColumn: Int get() = token.getFinalPosition().column
 
     val isColon: Boolean get() = type == TokenType.DECLARATOR
     val isAssignation: Boolean get() = type == TokenType.ASSIGNATION
     val isOperator: Boolean get() = type == TokenType.OPERATOR
-    val isSemicolon: Boolean get() = value == ";"
-    val isOpeningBrace: Boolean get() = value == "{"
-    val isClosingBrace: Boolean get() = value == "}"
-}
+    val isDeclarationKeyword: Boolean get() = type == TokenType.KEYWORD
+    val isPrintln: Boolean get() = type == TokenType.FUNCTION && token.value == "println"
 
-/**
- * Empareja cada token con su texto original sin dejar de ser perezoso.
- *
- * El Lexer consume una línea, emite todos sus tokens y recién entonces pide la siguiente, así
- * que mientras se entregan los tokens de una fila la última línea leída es justamente la de
- * esos tokens. Alcanza con recordar esa única línea: no se retiene el fuente.
- */
-internal class SourceScanner(
-    private val lexer: Lexer,
-) {
-    fun scan(lines: Sequence<String>): Sequence<SourceToken> =
-        sequence {
-            var currentLine = ""
-            val recorded = lines.map { line -> line.also { currentLine = it } }
+    // La puntuación se reconoce por su tipo además de su texto: el string de `println(";")` llega
+    // sin comillas, así que su valor es ";" igual que el del punto y coma que cierra la sentencia.
+    val isSemicolon: Boolean get() = isPunctuator(";")
+    val isOpeningBrace: Boolean get() = isPunctuator("{")
+    val isClosingBrace: Boolean get() = isPunctuator("}")
 
-            for (token in lexer.convertToTokens(recorded)) {
-                val start = token.getPosition().column
-                val end = token.getFinalPosition().column
-                yield(SourceToken(token, currentLine.substring(start, end)))
-            }
-        }
+    private fun isPunctuator(symbol: String): Boolean = type == TokenType.PUNCTUATOR && token.value == symbol
 }

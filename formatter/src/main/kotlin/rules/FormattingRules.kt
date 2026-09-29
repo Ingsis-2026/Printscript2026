@@ -10,14 +10,12 @@ package rules
 data class FormattingRules(
     val spaceBeforeColon: Boolean = false,
     val spaceAfterColon: Boolean = false,
-    /** `true` exige espacios alrededor del "="; `false` los prohíbe; `null` no toca nada. */
-    val spaceAroundEquals: Boolean? = null,
+    val spacesAroundEquals: Int? = null,
     val singleSpaceSeparation: Boolean = false,
     val spaceSurroundingOperations: Boolean = false,
     val lineBreakAfterStatement: Boolean = false,
-    val lineBreaksAfterPrintln: Int? = null,
-    /** `true` deja la llave en la línea del "if"; `false` la baja; `null` la deja donde está. */
-    val braceOnSameLine: Boolean? = null,
+    val blankLinesAfterPrintln: Int? = null,
+    val bracePlacement: BracePlacement? = null,
     val indentInsideIf: Int? = null,
 ) {
     companion object {
@@ -37,12 +35,12 @@ data class FormattingRules(
             FormattingRules(
                 spaceBeforeColon = values.flag(SPACE_BEFORE_COLON),
                 spaceAfterColon = values.flag(SPACE_AFTER_COLON),
-                spaceAroundEquals = values.equalsSpacing(),
+                spacesAroundEquals = values.equalsSpacing(),
                 singleSpaceSeparation = values.flag(SINGLE_SPACE_SEPARATION),
                 spaceSurroundingOperations = values.flag(SPACE_SURROUNDING_OPERATIONS),
                 lineBreakAfterStatement = values.flag(LINE_BREAK_AFTER_STATEMENT),
-                lineBreaksAfterPrintln = values.count(LINE_BREAKS_AFTER_PRINTLN),
-                braceOnSameLine = values.bracePlacement(),
+                blankLinesAfterPrintln = values.count(LINE_BREAKS_AFTER_PRINTLN),
+                bracePlacement = values.bracePlacement(),
                 indentInsideIf = values.count(INDENT_INSIDE_IF),
             )
 
@@ -54,17 +52,17 @@ data class FormattingRules(
          * Las dos escrituras del espaciado del "=" son reglas distintas en la configuración,
          * pero acá son el mismo ajuste con dos valores.
          */
-        private fun Map<String, Any?>.equalsSpacing(): Boolean? =
+        private fun Map<String, Any?>.equalsSpacing(): Int? =
             when {
-                flag(SPACE_AROUND_EQUALS) -> true
-                flag(NO_SPACE_AROUND_EQUALS) -> false
+                flag(SPACE_AROUND_EQUALS) -> 1
+                flag(NO_SPACE_AROUND_EQUALS) -> 0
                 else -> null
             }
 
-        private fun Map<String, Any?>.bracePlacement(): Boolean? =
+        private fun Map<String, Any?>.bracePlacement(): BracePlacement? =
             when {
-                flag(BRACE_SAME_LINE) -> true
-                flag(BRACE_BELOW_LINE) -> false
+                flag(BRACE_SAME_LINE) -> BracePlacement.SAME_LINE
+                flag(BRACE_BELOW_LINE) -> BracePlacement.NEXT_LINE
                 else -> null
             }
     }

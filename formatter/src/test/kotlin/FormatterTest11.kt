@@ -1,6 +1,7 @@
 import formatter.FormatterBuilderPS
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import rules.BracePlacement
 import rules.FormattingRules
 import version.Version
 
@@ -30,7 +31,7 @@ class FormatterTest11 {
             |}
             """.trimMargin()
 
-        assertEquals(expected, format(source, FormattingRules(braceOnSameLine = true)))
+        assertEquals(expected, format(source, FormattingRules(bracePlacement = BracePlacement.SAME_LINE)))
     }
 
     @Test
@@ -52,7 +53,7 @@ class FormatterTest11 {
             |}
             """.trimMargin()
 
-        assertEquals(expected, format(source, FormattingRules(braceOnSameLine = false)))
+        assertEquals(expected, format(source, FormattingRules(bracePlacement = BracePlacement.NEXT_LINE)))
     }
 
     @Test
