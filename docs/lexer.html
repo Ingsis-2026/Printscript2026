@@ -163,7 +163,7 @@ td.mono{font-family:var(--mono);font-size:13px}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ fe77af9 · study sheet 2 of 8</p>
+  <p class="eyebrow">Printscript2026 @ 7b493fb · study sheet 2 of 8</p>
   <h1><code>lexer</code></h1>
   <p class="lede">Turns source text into a lazy stream of tokens, one line at a time. Each version is a plain list of words and symbols, so extending the language never means writing a regex, and anything that isn't in the vocabulary becomes an error at its exact column.</p>
   <ul class="meta">
@@ -201,7 +201,7 @@ td.mono{font-family:var(--mono);font-size:13px}
     <thead><tr><th>Caller</th><th>Call</th><th>Input</th><th>Tokens go to</th></tr></thead>
     <tbody>
       <tr><td>CLI</td><td><span class="ref">ParsingPipeline.kt:50</span></td><td><code>Sequence&lt;String&gt;</code> from the file</td><td>the parser</td></tr>
-      <tr><td>formatter</td><td><span class="ref">FormatterBuilderPS.kt:25</span> <span class="ref">SourceToken.kt:48</span></td><td><code>Sequence&lt;String&gt;</code></td><td>the formatter, paired with their original text</td></tr>
+      <tr><td>formatter</td><td><span class="ref">FormatterBuilderPS.kt:25</span> <span class="ref">SourceScanner.kt:20</span></td><td><code>Sequence&lt;String&gt;</code></td><td>the formatter, paired with their original text</td></tr>
       <tr><td>TCK</td><td><span class="ref">Pipeline.java:26</span></td><td><code>InputStream</code></td><td>the parser</td></tr>
     </tbody>
   </table></div>
@@ -459,7 +459,7 @@ td.mono{font-family:var(--mono);font-size:13px}
     <details><summary>Is <code>if</code> a valid variable name in 1.0?</summary>
       <p>Yes. The lexer reads it as an IDENTIFIER, and the parser decides what starts a conditional by token type, not by text (<span class="ref">TokenRoles.kt:22</span>), so <code>let if: number = 1;</code> is an ordinary declaration under 1.0.</p></details>
     <details><summary>Why does a string's value lose its quotes?</summary>
-      <p>Everything downstream wants the content: the interpreter prints it, and the parser checks its type. The positions still cover the quotes (<span class="ref">LineScanner.kt:68</span>), and the formatter re-reads the original text when it needs them (<span class="ref">SourceToken.kt:51</span>).</p></details>
+      <p>Everything downstream wants the content: the interpreter prints it, and the parser checks its type. The positions still cover the quotes (<span class="ref">LineScanner.kt:68</span>), and the formatter re-reads the original text when it needs them (<span class="ref">SourceScanner.kt:21</span>).</p></details>
     <details><summary>Is the lexer thread-safe?</summary>
       <p>A <code>Lexer</code> holds only its vocabulary, which is immutable. Each line gets its own <code>LineScanner</code> (<span class="ref">Lexer.kt:18</span>), so one instance can serve several sources. Each returned sequence has its own state and should be consumed by one thread.</p></details>
     <details><summary>What does <code>execute(input)</code> do?</summary>
