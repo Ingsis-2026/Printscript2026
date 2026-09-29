@@ -126,7 +126,7 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
 </nav>
 
 <header>
-  <p class="eyebrow">Printscript2026 @ 5adf300 · study sheet 1 of 8</p>
+  <p class="eyebrow">Printscript2026 @ e814dc7 · study sheet 1 of 8</p>
   <h1><code>commons</code></h1>
   <p class="lede">The contract between modules: what a token is, the nine kinds of AST node, and the one error type every stage throws. It has no dependencies and almost no behaviour, which is exactly why it's the right place to start.</p>
   <ul class="meta">
@@ -237,8 +237,8 @@ td.t{font-family:var(--mono);font-size:13px;font-weight:600;white-space:nowrap}
   <div class="tablewrap"><table>
     <thead><tr><th>Node</th><th>Source example</th><th>Built by</th><th>Position stored</th><th>Run by</th></tr></thead>
     <tbody>
-      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">ExpressionParser.kt:79</span></td><td>the token</td><td>LiteralEvaluator</td></tr>
-      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">ExpressionParser.kt:55</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
+      <tr><td class="t">LiteralNode</td><td><code>12</code> <code>"Joe"</code> <code>a</code> <code>true</code></td><td><span class="ref">ExpressionParser.kt:86</span></td><td>the token</td><td>LiteralEvaluator</td></tr>
+      <tr><td class="t">BinaryNode</td><td><code>a / b</code></td><td><span class="ref">ExpressionParser.kt:51</span></td><td>the operator</td><td>BinaryEvaluator</td></tr>
       <tr><td class="t">PrintNode</td><td><code>println(x)</code></td><td><span class="ref">PrintlnFactory.kt:31</span></td><td><code>println</code></td><td>PrintEvaluator</td></tr>
       <tr><td class="t">DeclarationNode</td><td><code>let c: number = a / b</code></td><td><span class="ref">DeclarationFactory.kt:35</span></td><td>the identifier</td><td>DeclarationEvaluator</td></tr>
       <tr><td class="t">AssignationNode</td><td><code>a = a / b</code></td><td><span class="ref">AssignationFactory.kt:22</span></td><td>the <code>=</code></td><td>AssignmentEvaluator</td></tr>
