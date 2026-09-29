@@ -130,8 +130,8 @@ td:first-child{white-space:nowrap}
     <li><a href="#trace"><span>Example 2, traced</span><span></span></a></li>
     <li><a href="#commons"><span>commons</span><span>197</span></a></li>
     <li><a href="#lexer"><span>lexer</span><span>217</span></a></li>
-    <li><a href="#parser"><span>parser</span><span>601</span></a></li>
-    <li><a href="#interpreter"><span>interpreter</span><span>720</span></a></li>
+    <li><a href="#parser"><span>parser</span><span>625</span></a></li>
+    <li><a href="#interpreter"><span>interpreter</span><span>695</span></a></li>
     <li><a href="#formatter"><span>formatter</span><span>431</span></a></li>
     <li><a href="#linter"><span>linter</span><span>411</span></a></li>
     <li><a href="#cli"><span>cli</span><span>718</span></a></li>
@@ -151,13 +151,13 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 5adf300 · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ e814dc7 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit eac3573. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
     <li><b>7</b>Gradle modules</li>
-    <li><b>3,295</b>lines of main Kotlin</li>
-    <li><b>403</b>unit tests</li>
+    <li><b>3,294</b>lines of main Kotlin</li>
+    <li><b>407</b>unit tests</li>
     <li><b>59/59</b>TCK tests passing</li>
     <li><b>91–97%</b>instruction coverage per module</li>
     <li><b>7 MB</b>TCK heap limit</li>
@@ -474,9 +474,9 @@ println("Result: " + c);</pre></td>
 private val PRECEDENCE_LEVELS = listOf(setOf("+", "-"), setOf("*", "/"))
 
 private fun operation(tokens: List&lt;Token&gt;): ASTNode =
-    PRECEDENCE_LEVELS.firstNotNullOfOrNull { operators -&gt; splitAtFirst(tokens, operators) }
+    PRECEDENCE_LEVELS.firstNotNullOfOrNull { operators -&gt; splitAtLast(tokens, operators) }
         ?: throw ParserException("Error in operation", tokens)</pre>
-    <p><code>2 + 3 * 4</code> splits at <code>+</code>, so the tree is <code>2 + (3 * 4)</code> and the result is 14. Parentheses work the same way: the operators inside them are skipped at this level, then the outer pair is removed (<span class="ref">ExpressionParser.kt:19</span>) and the inner expression is split again.</p>
+    <p><code>2 + 3 * 4</code> splits at <code>+</code>, so the tree is <code>2 + (3 * 4)</code> and the result is 14. Parentheses work the same way: the operators inside them are skipped at this level, then the outer pair is removed (<span class="ref">ExpressionParser.kt:19</span>) and the inner expression is split again. Within a level the split is at the <em>last</em> operator (<span class="ref">ExpressionParser.kt:50</span>), so <code>10 - 2 - 3</code> is <code>(10 - 2) - 3</code> and prints 5.</p>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
@@ -488,9 +488,9 @@ private fun operation(tokens: List&lt;Token&gt;): ASTNode =
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
       <li><strong>Factories choose by the tokens they see, not by a grammar.</strong> Each <code>canHandle</code> is one line, so factories stay independent of each other. The cost is that list order matters: <code>ConditionalFactory</code> goes first because an <code>if</code> block contains declarations and assignments too (<span class="ref">ParserFactory.kt:34–38</span>).</li>
-      <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 60 lines with no parser generator. A new precedence level is one more set in <code>PRECEDENCE_LEVELS</code> (<span class="ref">ExpressionParser.kt:15</span>).</li>
+      <li><strong>Expressions are parsed by splitting, not by grammar rules.</strong> For PrintScript's four operators and parentheses, that's about 70 lines with no parser generator. A new precedence level is one more set in <code>PRECEDENCE_LEVELS</code> (<span class="ref">ExpressionParser.kt:15</span>).</li>
     </ul></div>
-    <p class="tests" style="margin-top:18px">Tests: 77, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
+    <p class="tests" style="margin-top:18px">Tests: 79, including BlockParsingTest, StreamingPipelineTest, PositionedErrorTest, ExpressionParserTest and one test class per factory.</p>
   </div>
 </section>
 
@@ -528,7 +528,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <div class="decision"><dt><code>Printer</code> / <code>Reader</code> interfaces<small>Printer.kt:3 · Reader.kt:3</small></dt><dd>Dependency inversion. The spec requires a programmatic way to provide input, which is the TCK's <code>InputProvider</code>. Being single-method interfaces, they take Java method references directly (<span class="ref">InterpreterAdapter.java:54</span>).</dd></div>
       <div class="decision"><dt>Executes node by node<small>Interpreter.kt:32</small></dt><dd>The interpreter never sees the whole program, and the caller decides how the stream is fed. That's what lets execution interleave with parsing.</dd></div>
     </dl>
-    <p class="tests" style="margin-top:18px">Tests: 131, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
+    <p class="tests" style="margin-top:18px">Tests: 133, including SpecComplianceTest, ExternalInputTypingTest, AssignmentTypeTests and PositionedRuntimeErrorTest.</p>
   </div>
 </section>
 
@@ -830,13 +830,13 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>Why is the formatter not built on the AST?</summary>
       <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
-      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:41–43</span>), so it ends up at the root of the tree and is evaluated last. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
+      <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:41–43</span>), so it ends up at the root of the tree and is evaluated last. Within a level it splits at the last operator, so chains group left to right. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
     <details><summary>Why Kotlin?</summary>
       <p>Sealed classes make the AST closed and checkable, <code>Sequence</code> gives lazy pipelines from the standard library, and data classes give tokens and nodes value equality for tests. It also runs on the JVM next to the Java TCK: our single-method <code>Printer</code>/<code>Reader</code> interfaces accept <code>emitter::print</code> directly (<span class="ref">InterpreterAdapter.java:54</span>).</p></details>
     <details><summary>How is it tested?</summary>
-      <p>Three layers. First, 403 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
+      <p>Three layers. First, 407 unit tests, with every module tested in isolation; the CLI uses in-memory <code>Source</code>/<code>Output</code> doubles (<code>TestDoubles.kt</code>). Second, dedicated streaming tests per stage. Third, the TCK as an external acceptance suite. <code>./gradlew check</code> also enforces Ktlint, Detekt and an 80% coverage floor per module, on every commit (pre-commit hook) and every PR (CI).</p></details>
     <details><summary>What would you change with more time?</summary>
-      <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. Make expression parsing split on the <em>last</em> operator of the lowest precedence, so chains like <code>10 - 2 - 3</code> group left to right. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
+      <p>Answer with direction, not apology. Add a checking pass between parsing and execution, so type errors such as assigning a string to a <code>number</code> declared without a value are caught before anything runs. Give blocks their own variable scope. None of these are exercised by the TCK, and each fits inside the existing structure: the same factories, evaluators and lists.</p></details>
     <details><summary>What happens when the program has an error halfway through?</summary>
       <p>With lazy execution, the statements before the error have already run and printed, and then the error stops the run with its position. Validation mode reads the whole file without executing anything, so it's the way to check a file first.</p></details>
   </div>
