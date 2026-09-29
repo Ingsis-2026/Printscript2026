@@ -132,7 +132,7 @@ td:first-child{white-space:nowrap}
     <li><a href="#lexer"><span>lexer</span><span>217</span></a></li>
     <li><a href="#parser"><span>parser</span><span>625</span></a></li>
     <li><a href="#interpreter"><span>interpreter</span><span>695</span></a></li>
-    <li><a href="#formatter"><span>formatter</span><span>431</span></a></li>
+    <li><a href="#formatter"><span>formatter</span><span>445</span></a></li>
     <li><a href="#linter"><span>linter</span><span>411</span></a></li>
     <li><a href="#cli"><span>cli</span><span>718</span></a></li>
   </ol>
@@ -151,7 +151,7 @@ td:first-child{white-space:nowrap}
 
 <main>
 <header class="top">
-  <p class="eyebrow">Printscript2026 @ 7b493fb · integration/legibilidad</p>
+  <p class="eyebrow">Printscript2026 @ bb9c3e6 · integration/legibilidad</p>
   <h1>PrintScript defense notes</h1>
   <p class="lede">How the implementation works, module by module, with the lines to point at, the decisions behind each part, and how to defend them when challenged. Line references are <span class="ref">File.kt:line</span> at commit eac3573. Numbers in the index are lines of main-source Kotlin per module.</p>
   <ul class="facts">
@@ -375,7 +375,7 @@ let c: number = a / b;
 println("Result: " + c);</pre></td>
       </tr></tbody>
     </table></div>
-    <p>Row 1 keeps its space <em>before</em> the colon because no active rule governs that gap (<span class="ref">GapRules.kt:105</span>). Reprinting from an AST couldn't do this, because the AST no longer knows that space was there. This one line is the evidence for the formatter's central design decision.</p>
+    <p>Row 1 keeps its space <em>before</em> the colon because no active rule governs that gap (<span class="ref">TokenFormatter.kt:85</span>). Reprinting from an AST couldn't do this, because the AST no longer knows that space was there. This one line is the evidence for the formatter's central design decision.</p>
   </div>
 </section>
 
@@ -544,27 +544,27 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <h3>Step by step</h3>
     <ol class="steps">
       <li><div><strong>Read the rules.</strong> <span class="ref">RulesReader.kt:17–32</span> parses YAML <em>and</em> JSON with SnakeYAML, since JSON is a subset of YAML. Anything that isn't a key/value map is rejected (:27–29).</div></li>
-      <li><div><strong>Map config names to settings.</strong> <span class="ref">FormattingRules.kt:24–34</span> holds the TCK's rule names, and <code>from</code> (:36–47) builds the settings. A missing key means "don't touch" (:3–9). The two <code>=</code> rules collapse into a three-state <code>Boolean?</code> (:57–62), as do the two brace rules (:64–69).</div></li>
+      <li><div><strong>Map config names to settings.</strong> <span class="ref">FormattingRules.kt:22–32</span> holds the TCK's rule names, and <code>from</code> (:34–45) builds the settings. A missing key means "don't touch" (:3–9). The two <code>=</code> rules collapse into one number of spaces, 1 or 0 (:55–60), and the two brace rules into one <code>BracePlacement</code> (:62–67).</div></li>
       <li><div><strong>Build.</strong> <span class="ref">FormatterBuilderPS.kt:22–25</span> creates <code>TokenFormatter(rules, Lexer(TokenMapper(version)))</code>. Overloads accept a path (:11) or an <code>InputStream</code> (:17).</div></li>
       <li><div><strong>Recover the original text.</strong> <span class="ref">SourceScanner.kt:12–25</span> pairs each token with its exact source slice. It remembers only the line currently being lexed (:17–18), which works because the lexer emits all of a line's tokens before reading the next line. <span class="ref">SourceToken.kt:28–34</span> recognises punctuation by its type, so a <code>;</code> or a brace inside a string stays a string.</div></li>
-      <li><div><strong>Walk token pairs.</strong> <span class="ref">TokenFormatter.kt:40–54</span> decides the <code>Gap</code> between the previous and current token (:47). <code>OutputLines</code> writes it and returns the lines it finished, which are emitted right away (:48). Then <code>FormattingState</code> advances (:49).</div></li>
-      <li><div><strong>Decide a gap, in priority order.</strong> <span class="ref">TokenFormatter.kt:24–31</span> lists the rules, and the first that answers wins (:63): <code>BracePlacement</code>, then <code>BreaksAfterStatement</code>, then <code>SourceLineBreaks</code>, then <code>SameLineSpacing</code> (<span class="ref">GapRules.kt</span>, in that order).</div></li>
-      <li><div><strong>Same-line spacing.</strong> <span class="ref">GapRules.kt:90–107</span>: colon rules only apply inside a declaration (:98–99), then <code>=</code> (:100), then operators (:101). Single-space separation goes last because it's the broadest rule (:102–104). With no rule active, the original gap is preserved (:105).</div></li>
-      <li><div><strong>Indentation.</strong> <span class="ref">Indentation.kt:9–35</span>: with <code>indent-inside-if</code> set, indent = n × depth, and a closing brace is one level out (:32). Otherwise it depends on who made the break: the source's own column if it was already there (:16), the current line's indent if the formatter adds it (:25). <span class="ref">FormattingState.kt:27–42</span> tracks depth, the statement being read, the one that just closed, and the current line's indent.</div></li>
-      <li><div><strong>Blank lines after println.</strong> <span class="ref">GapRules.kt:50–60</span>: <em>n</em> blank lines means <em>n + 1</em> line breaks, after a statement whose kind is <code>PRINTLN</code> (:56).</div></li>
+      <li><div><strong>Walk token pairs.</strong> <span class="ref">TokenFormatter.kt:32–46</span> decides the <code>Gap</code> between the previous and current token (:39). <code>OutputLines</code> writes it and returns the lines it finished, which are emitted right away (:40). Then <code>FormattingState</code> advances (:41).</div></li>
+      <li><div><strong>Decide a gap, in priority order.</strong> <span class="ref">TokenFormatter.kt:62–69</span> is one <code>when</code> whose branch order is the precedence: brace placement, blank lines after a <code>println</code>, a break after a statement the source didn't break (:66), the source's own breaks, and otherwise same-line spacing.</div></li>
+      <li><div><strong>Same-line spacing.</strong> <span class="ref">TokenFormatter.kt:72–87</span>: colon rules only apply inside a declaration (:80–81), then <code>=</code> (:82), then operators (:83). Single-space separation goes last because it's the broadest rule (:84). With no rule active, the original gap is preserved (:85).</div></li>
+      <li><div><strong>Indentation.</strong> <span class="ref">Indentation.kt:9–35</span>: with <code>indent-inside-if</code> set, indent = n × depth, and a closing brace is one level out (:32). Otherwise it depends on who made the break: the source's own column if it was already there (:16), the current line's indent if the formatter adds it (:25). <span class="ref">FormattingState.kt:18–29</span> tracks depth, the statement of the last token read (a <code>;</code> belongs to the one it closes), and the current line's indent.</div></li>
+      <li><div><strong>Blank lines after println.</strong> <span class="ref">TokenFormatter.kt:61, :65</span>: <em>n</em> blank lines means <em>n + 1</em> line breaks, after the <code>;</code> of a statement whose kind is <code>PRINTLN</code>.</div></li>
     </ol>
 
     <h3>Decisions to defend</h3>
     <dl class="decisions">
-      <div class="decision"><dt>Preserve the source, rewrite only governed gaps<small>TokenFormatter.kt:6–15</small></dt><dd>This matches what the TCK expects rule by rule, and it's the least surprising behaviour for a user: turning on one rule changes only what that rule governs.</dd></div>
-      <div class="decision"><dt>Three-state settings<small>FormattingRules.kt:13–21</small></dt><dd><code>true</code> enforces the rule, <code>false</code> enforces the opposite, and <code>null</code> leaves the source alone. Two config keys become one field, so the two can't contradict each other.</dd></div>
+      <div class="decision"><dt>Preserve the source, rewrite only governed gaps<small>TokenFormatter.kt:7–17</small></dt><dd>This matches what the TCK expects rule by rule, and it's the least surprising behaviour for a user: turning on one rule changes only what that rule governs.</dd></div>
+      <div class="decision"><dt>A missing rule is <code>null</code> or <code>false</code><small>FormattingRules.kt:3–19</small></dt><dd>Each setting holds what the formatter uses (a number of spaces, a <code>BracePlacement</code>), and <code>null</code> leaves the source alone. Two config keys become one field, so the two can't contradict each other.</dd></div>
       <div class="decision"><dt>Lazy line emission<small>Formatter.kt:8–15</small></dt><dd><code>formatLines</code> is part of the <em>interface</em> so that any caller can format a file too large for memory. The CLI uses it (<span class="ref">FormattingCommand.kt:21</span>).</dd></div>
     </dl>
 
     <div class="watch"><h4>Trade-offs to own</h4><ul>
       <li><strong>"Not configurable" rules became configurable.</strong> The 1.0 spec lists single spacing, spaces around operators and a break after <code>;</code> as fixed. The TCK's config names them as rules, so we implemented them as rules whose absence leaves the source unchanged. That satisfies both documents.</li>
       <li><strong>The formatter doesn't validate syntax.</strong> Its job is layout, and validation is its own CLI operation. Needing only the lexer keeps it fast, and it can format code that's still being written.</li>
-      <li><strong>Two entry points.</strong> <code>formatLines</code> streams (used by the CLI), and <code>format(String)</code> is a convenience built on it (<span class="ref">TokenFormatter.kt:35–38</span>). The TCK hands over a whole string, so it uses the convenience method.</li>
+      <li><strong>Two entry points.</strong> <code>formatLines</code> streams (used by the CLI), and <code>format(String)</code> is a convenience built on it (<span class="ref">TokenFormatter.kt:27–30</span>). The TCK hands over a whole string, so it uses the convenience method.</li>
     </ul></div>
     <p class="tests" style="margin-top:18px">Tests: 36 in FormatterTest10, FormatterTest11, FormatterEdgeCaseTest, FormatterStreamingTest and RulesReaderTest.</p>
   </div>
@@ -679,7 +679,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
         <tr><td>lexer</td><td class="num">217</td><td class="num">23</td><td class="num">97.4%</td></tr>
         <tr><td>parser</td><td class="num">601</td><td class="num">73</td><td class="num">95.0%</td></tr>
         <tr><td>interpreter</td><td class="num">720</td><td class="num">127</td><td class="num">90.8%</td></tr>
-        <tr><td>formatter</td><td class="num">431</td><td class="num">33</td><td class="num">94.0%</td></tr>
+        <tr><td>formatter</td><td class="num">445</td><td class="num">36</td><td class="num">94.6%</td></tr>
         <tr><td>linter</td><td class="num">411</td><td class="num">45</td><td class="num">96.6%</td></tr>
         <tr><td>cli</td><td class="num">718</td><td class="num">69</td><td class="num">94.1%</td></tr>
       </tbody>
@@ -787,7 +787,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
       <p class="over">instead of parsing to an AST and reprinting it</p>
       <div class="cols">
         <div><h5>Why</h5><p>A rule that isn't enabled must leave the source as written. The traced example keeps <code>let b :number</code> untouched while fixing the other lines (<a href="#trace">Example 2, traced</a>). It also needs only the lexer and streams line by line.</p></div>
-        <div><h5 class="cost">Cost we accept</h5><p>Every rule is expressed as a decision about one gap, with an explicit priority order (<span class="ref">TokenFormatter.kt:24–31</span>), and the formatter doesn't check syntax.</p></div>
+        <div><h5 class="cost">Cost we accept</h5><p>Every rule is expressed as a decision about one gap, with an explicit priority order (<span class="ref">TokenFormatter.kt:62–69</span>), and the formatter doesn't check syntax.</p></div>
       </div>
     </div>
 
@@ -828,7 +828,7 @@ fun asType(dataType: DataType): Any = when (dataType) {
     <details><summary>How does <code>readInput</code> know what type to return?</summary>
       <p>It doesn't. It returns raw text wrapped in <code>ExternalInput</code>, and the destination converts it: the declaration, the assignment, or, as a string, <code>println</code>, a call's argument and an operation (<span class="ref">ExternalInput.kt:12–22</span>). An unparseable value fails there, positioned at the node.</p></details>
     <details><summary>Why is the formatter not built on the AST?</summary>
-      <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:6–15</span>).</p></details>
+      <p>Because a rule that isn't enabled must leave the source untouched, and the AST has already discarded spacing. Working on token positions keeps everything (<span class="ref">TokenFormatter.kt:7–17</span>).</p></details>
     <details><summary>How is operator precedence handled?</summary>
       <p>By splitting at the lowest-precedence operator first (<span class="ref">ExpressionParser.kt:41–43</span>), so it ends up at the root of the tree and is evaluated last. Within a level it splits at the last operator, so chains group left to right. Parenthesised groups are skipped during the split and then parsed recursively (<span class="ref">ExpressionParser.kt:19</span>).</p></details>
     <details><summary>Why Kotlin?</summary>
