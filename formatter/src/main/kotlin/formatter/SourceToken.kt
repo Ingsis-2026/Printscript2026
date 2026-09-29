@@ -1,6 +1,5 @@
 package formatter
 
-import lexer.Lexer
 import token.Token
 import token.TokenType
 
@@ -33,27 +32,4 @@ internal data class SourceToken(
     val isClosingBrace: Boolean get() = isPunctuator("}")
 
     private fun isPunctuator(symbol: String): Boolean = type == TokenType.PUNCTUATOR && value == symbol
-}
-
-/**
- * Empareja cada token con su texto original sin dejar de ser perezoso.
- *
- * El Lexer consume una línea, emite todos sus tokens y recién entonces pide la siguiente, así
- * que mientras se entregan los tokens de una fila la última línea leída es justamente la de
- * esos tokens. Alcanza con recordar esa única línea: no se retiene el fuente.
- */
-internal class SourceScanner(
-    private val lexer: Lexer,
-) {
-    fun scan(lines: Sequence<String>): Sequence<SourceToken> =
-        sequence {
-            var currentLine = ""
-            val recorded = lines.map { line -> line.also { currentLine = it } }
-
-            for (token in lexer.convertToTokens(recorded)) {
-                val start = token.getPosition().column
-                val end = token.getFinalPosition().column
-                yield(SourceToken(token, currentLine.substring(start, end)))
-            }
-        }
 }
