@@ -83,6 +83,28 @@ class ProgramTest {
     }
 
     @Test
+    fun `chains of the same level are evaluated left to right`() {
+        val input =
+            """
+            println(10 - 2 - 3);
+            println(8 / 2 / 2);
+            """.trimIndent()
+
+        assertEquals("5\n2", runProgram(input, "1.0"))
+    }
+
+    @Test
+    fun `plus adds and concatenates in reading order`() {
+        val input =
+            """
+            println(1 + 2 + "a");
+            println("a" + 1 + 2);
+            """.trimIndent()
+
+        assertEquals("3a\na12", runProgram(input, "1.0"))
+    }
+
+    @Test
     fun `test variable reassignment e2e`() {
         val input =
             """

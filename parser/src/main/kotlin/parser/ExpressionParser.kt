@@ -39,28 +39,35 @@ internal object ExpressionParser {
     }
 
     private fun operation(tokens: List<Token>): ASTNode =
-        PRECEDENCE_LEVELS.firstNotNullOfOrNull { operators -> splitAtFirst(tokens, operators) }
+        PRECEDENCE_LEVELS.firstNotNullOfOrNull { operators -> splitAtLast(tokens, operators) }
             ?: throw ParserException("Error in operation", tokens)
 
-    /** Parte por el primer operador de [operators] que no esté dentro de un paréntesis. */
-    private fun splitAtFirst(
+    /** Parte por el último operador de [operators] que no esté dentro de un paréntesis: `a - b - c` es `(a - b) - c`. */
+    private fun splitAtLast(
         tokens: List<Token>,
         operators: Set<String>,
     ): BinaryNode? {
+        val index = lastTopLevelOperator(tokens, operators) ?: return null
+        return BinaryNode(
+            left = parse(tokens.subList(0, index)),
+            right = parse(tokens.subList(index + 1, tokens.size)),
+            operator = tokens[index],
+            position = tokens[index].getPosition(),
+        )
+    }
+
+    private fun lastTopLevelOperator(
+        tokens: List<Token>,
+        operators: Set<String>,
+    ): Int? {
         var depth = 0
+        var last: Int? = null
         for ((index, token) in tokens.withIndex()) {
             if (token.opensParenthesis) depth++
             if (token.closesParenthesis) depth--
-            if (depth == 0 && operators.any { token.isOperator(it) }) {
-                return BinaryNode(
-                    left = parse(tokens.subList(0, index)),
-                    right = parse(tokens.subList(index + 1, tokens.size)),
-                    operator = token,
-                    position = token.getPosition(),
-                )
-            }
+            if (depth == 0 && operators.any { token.isOperator(it) }) last = index
         }
-        return null
+        return last
     }
 
     /** Si el `)` del final es el que cierra el `(` del principio: en `(a + b)` sí, en `(a) + (b)` no. */

@@ -97,7 +97,7 @@ class ExpressionParserTest {
     fun `a string that reads like an operator is an operand`() {
         val result = parseExpression("\"a\" + \"+\" + \"b\"") as BinaryNode
 
-        val middle = (result.right as BinaryNode).left as LiteralNode
+        val middle = (result.left as BinaryNode).right as LiteralNode
         assertEquals(TokenType.STRINGLITERAL, middle.type)
         assertEquals("+", middle.value)
     }
@@ -108,6 +108,22 @@ class ExpressionParserTest {
 
         assertEquals("*", result.operator.value)
         assertEquals("+", (result.left as BinaryNode).operator.value)
+    }
+
+    @Test
+    fun `operators of the same level group to the left`() {
+        val result = parseExpression("10 - 2 - 3") as BinaryNode
+
+        assertEquals("-", (result.left as BinaryNode).operator.value)
+        assertEquals("3", (result.right as LiteralNode).value)
+    }
+
+    @Test
+    fun `multiplication and division also group to the left`() {
+        val result = parseExpression("8 / 2 * 2") as BinaryNode
+
+        assertEquals("*", result.operator.value)
+        assertEquals("/", (result.left as BinaryNode).operator.value)
     }
 
     private fun parseExpression11(source: String) = parser.parse(Lexer(TokenMapper("1.1")).execute(source))
